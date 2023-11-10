@@ -1,10 +1,5 @@
-using System.Collections.Concurrent;
 using System.Net.WebSockets;
-using System.Text;
-using api.Controllers.Utility;
-using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace api.Controllers;
 
@@ -26,7 +21,4 @@ public class WebSocketController(WebsocketService websocketService) : Controller
             context.Response.StatusCode = 400;
         }
     }
-
-
-
 }

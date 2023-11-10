@@ -1,4 +1,4 @@
-using api.Controllers.Utility;
+using api;
 using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
