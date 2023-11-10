@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
-using api.Controllers.Utility;
 using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -27,40 +26,17 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
         }
     }
 
+
     private async Task EstablishConnection(WebSocket webSocket, string room)
     {
-        if (!Rooms.ContainsKey(room))
-            Rooms[room] = new List<WebSocket>();
-        Rooms[room].Add(webSocket);
-        Console.WriteLine($" -> A new client connected to room: {room}");
-
-        await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(webSocket, repository.GetPastMessages());
-        byte[] websocketPayloadBytes = new byte[4096];
+        await AddToRoom(webSocket, room);
+        var dataToSendToNewClient = repository.GetPastMessages();
+        await SendDataToClient(webSocket, dataToSendToNewClient);
         try
         {
             while (webSocket.State == WebSocketState.Open)
             {
-                WebSocketReceiveResult webSocketReceiveResult =
-                    await webSocket.ReceiveAsync(new ArraySegment<byte>(websocketPayloadBytes), CancellationToken.None);
-                if (webSocketReceiveResult.MessageType != WebSocketMessageType.Text)
-                {
-                    await webSocket.CloseAsync(webSocketReceiveResult.CloseStatus.GetValueOrDefault(),
-                        webSocketReceiveResult.CloseStatusDescription,
-                        CancellationToken.None);
-                    return;
-                }
-                // Extract message from the buffer and process it
-                var message = Encoding.UTF8.GetString(websocketPayloadBytes, 0, webSocketReceiveResult.Count);
-                var obj = JsonConvert.DeserializeObject<Message>(message);
-                var insertedMessage = repository.InsertMessage(obj);
-
-                foreach (var client in Rooms[room])
-                {
-                    if (client.State == WebSocketState.Open)
-                    {
-                        await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(client, insertedMessage!);
-                    }
-                }
+                await SendNewMessagesToConnection(webSocket, room, new byte[4096]);
             }
         }
         catch (WebSocketException)
@@ -68,23 +44,60 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
             Console.WriteLine("A websocket exception has occured!");
             throw;
         }
-        
-        await HandleDisconnection(webSocket, room);
+
+        await RemoveClientFromRoom(webSocket, room);
     }
 
-    
-
-    private async Task HandleDisconnection(WebSocket webSocket, string room)
+    private async Task SendNewMessagesToConnection(WebSocket webSocket, string room, byte[] websocketPayloadBytes)
     {
-        var msg = $" -> A client disconnected from room: {room}";
-        Console.WriteLine(msg);
+        WebSocketReceiveResult webSocketReceiveResult =
+            await webSocket.ReceiveAsync(new ArraySegment<byte>(websocketPayloadBytes), CancellationToken.None);
+        if (webSocketReceiveResult.MessageType != WebSocketMessageType.Text)
+        {
+            await webSocket.CloseAsync(webSocketReceiveResult.CloseStatus.GetValueOrDefault(),
+                webSocketReceiveResult.CloseStatusDescription,
+                CancellationToken.None);
+            return;
+        }
+
+        var messageToInsert = JsonConvert.DeserializeObject<Message>
+            (Encoding.UTF8.GetString(websocketPayloadBytes, 0, webSocketReceiveResult.Count));
+        var insertedMessage = repository.InsertMessage(messageToInsert!);
+        await BroadCastToRoom(room, insertedMessage);
+    }
+    public async Task AddToRoom(WebSocket webSocket, string room)
+    {
+        if (!Rooms.ContainsKey(room))
+            Rooms[room] = new List<WebSocket>();
+        Rooms[room].Add(webSocket);
+        await BroadCastToRoom(room, "A client has entered the room!");
+    }
+
+    public async Task RemoveClientFromRoom(WebSocket webSocket, string room)
+    {
         Rooms[room].Remove(webSocket);
+        Console.WriteLine("A client has left the room!");
+        await BroadCastToRoom(room, "A client has left the room!");
+    }
+
+    private async Task BroadCastToRoom(string room, object message)
+    {
         foreach (var client in Rooms[room])
         {
             if (client.State == WebSocketState.Open)
             {
-                await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(client, msg);
+                await SendDataToClient(client, message);
             }
         }
+    }
+
+    private static Task SendDataToClient(WebSocket webSocket, object data)
+    {
+        var serialized = JsonConvert.SerializeObject(data);
+        return webSocket.SendAsync(new ArraySegment<byte>(
+                Encoding.UTF8.GetBytes(serialized)),
+            WebSocketMessageType.Text,
+            true,
+            CancellationToken.None);
     }
 }

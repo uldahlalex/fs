@@ -6,7 +6,7 @@ namespace api.Controllers.Utility
 {
     public static class WebSocketUtilities
     {
-        public static Task SendMessageToWebsocketConnectionAsync(WebSocket webSocket, object data)
+        public static Task SendDataToClient(WebSocket webSocket, object data)
         {
             var serialized = JsonConvert.SerializeObject(data);
             return webSocket.SendAsync(new ArraySegment<byte>(
