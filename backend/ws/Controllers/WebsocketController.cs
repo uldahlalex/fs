@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
@@ -18,80 +17,25 @@ public class WebSocketController() : ControllerBase
         using var socket = await context.WebSockets.AcceptWebSocketAsync();
 
         Console.WriteLine(" -> A new client connected!");
-        
+
         bool connectionAlive = true;
         List<byte> webSocketPayload = new List<byte>(1024 * 4); // 4 KB initial capacity
+        webSocketPayload.Clear();
         byte[] tempMessage = new byte[1024 * 4]; // Message reader
+
+    
+        WebSocketReceiveResult? webSocketResponse = await socket.ReceiveAsync(tempMessage, CancellationToken.None);
+
+        webSocketPayload.AddRange(new ArraySegment<byte>(tempMessage, 0, webSocketResponse.Count));
+
         
-        while (connectionAlive)
+        string message = Encoding.UTF8.GetString(webSocketPayload.ToArray());
+        Websockets.Add(socket);
+        Console.WriteLine("Client says {0}", message);
+        var bf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message + " RESPONSE"));
+        foreach (var client in Websockets)
         {
-
-            webSocketPayload.Clear();
-
-            WebSocketReceiveResult? webSocketResponse;
-
-            // Read message in a loop until fully read
-            do
-            {
-                // Wait until client sends message
-                webSocketResponse = await socket.ReceiveAsync(tempMessage, CancellationToken.None);
-
-                // Save bytes
-                webSocketPayload.AddRange(new ArraySegment<byte>(tempMessage, 0, webSocketResponse.Count));
-            } while (webSocketResponse.EndOfMessage == false);
-
-            // Process the message
-            if (webSocketResponse.MessageType == WebSocketMessageType.Text)
-            {
-                // 3. Convert textual message from bytes to string
-                string message = System.Text.Encoding.UTF8.GetString(webSocketPayload.ToArray());
-                Websockets.Add(socket);
-                Console.WriteLine("Client says {0}", message);
-                //string receivedMessage = await ReadFromWebSocket(socket);
-                var bf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message + " RESPONSE"));
-                foreach (var client in Websockets)
-                {
-                    await client.SendAsync(bf, WebSocketMessageType.Text, true, CancellationToken.None);
-                }
-            }
-            else if (webSocketResponse.MessageType == WebSocketMessageType.Close)
-            {
-                connectionAlive = false;
-            }
-            else
-            {
-                connectionAlive = true;
-            }
+            await client.SendAsync(bf, WebSocketMessageType.Text, true, CancellationToken.None);
         }
-        Console.WriteLine(" -> A client disconnected.");
-    }
-
-    private static async Task<string> ReadFromWebSocket(System.Net.WebSockets.WebSocket webSocket)
-    {
-        var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
-
-        using (var ms = new MemoryStream())
-        {
-            WebSocketReceiveResult result;
-            do
-            {
-                result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-                ms.Write(buffer.Array, buffer.Offset, result.Count);
-            } while (!result.EndOfMessage);
-
-            ms.Seek(0, SeekOrigin.Begin);
-
-            if (result.MessageType == WebSocketMessageType.Text)
-            {
-                using (var reader = new StreamReader(ms, Encoding.UTF8))
-                {
-                    return await reader.ReadToEndAsync();
-                }
-            }
-        }
-
-        return null;
     }
 }
-
-
