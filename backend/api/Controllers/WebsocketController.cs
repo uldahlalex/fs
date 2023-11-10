@@ -1,11 +1,10 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using api.Controllers.Utility;
 using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-
-namespace api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -21,12 +20,9 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
         {
             WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
-            if (!Rooms.ContainsKey(room))
-            {
-                Rooms[room] = new List<WebSocket>();
-            }
+  
 
-            Rooms[room].Add(webSocket);
+            
             await EstablishConnection(webSocket, room);
         }
         else
@@ -35,28 +31,20 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
         }
     }
 
-    private async Task<string> GetMessageFromWebsocketAsync(WebSocket webSocket)
-    {
-        var bytes = new byte[4 * 1024];
-        return Encoding.UTF8.GetString(bytes, 0,
-            (await webSocket.ReceiveAsync(new ArraySegment<byte>(bytes), CancellationToken.None)).Count);
-    }
-
-    private Task SendMessageAsync(WebSocket webSocket, object data)
-    {
-        var serialized = JsonConvert.SerializeObject(data);
-        return webSocket.SendAsync(new ArraySegment<byte>(
-                Encoding.UTF8.GetBytes(serialized)),
-            WebSocketMessageType.Text,
-            true,
-            CancellationToken.None);
-    }
-
     private async Task EstablishConnection(WebSocket webSocket, string room)
     {
+        if (!Rooms.ContainsKey(room)) 
+            Rooms[room] = new List<WebSocket>();
+        Rooms[room].Add(webSocket);
         Console.WriteLine($" -> A new client connected to room: {room}");
 
-        await SendMessageAsync(webSocket, repository.GetPastMessages());
+        await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(webSocket, repository.GetPastMessages());
+        await HandleMessages(webSocket, room);
+        await HandleDisconnection(webSocket, room);
+    }
+
+    private async Task HandleMessages(WebSocket webSocket, string room)
+    {
         byte[] bytes = new byte[4096];
         try
         {
@@ -79,7 +67,7 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
                     {
                         if (client.State == WebSocketState.Open)
                         {
-                            await SendMessageAsync(client, insertedMessage!);
+                            await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(client, insertedMessage!);
                         }
                     }
                 }
@@ -96,7 +84,21 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
             // Handle case when socket is abruptly closed
             Console.WriteLine("A websocket exception has occured!");
         }
+    }
 
+    private async Task SendMessageToAllClientsInRoom(Message insertedMessage, string room)
+    {
+        foreach (var client in Rooms[room])
+        {
+            if (client.State == WebSocketState.Open)
+            {
+                await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(client, insertedMessage!);
+            }
+        }
+    }
+
+    private async Task HandleDisconnection(WebSocket webSocket, string room)
+    {
         var msg = $" -> A client disconnected from room: {room}";
         Console.WriteLine(msg);
         Rooms[room].Remove(webSocket);
@@ -104,7 +106,7 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
         {
             if (client.State == WebSocketState.Open)
             {
-                await SendMessageAsync(client, msg);
+                await WebSocketUtilities.SendMessageToWebsocketConnectionAsync(client, msg);
             }
         }
     }
