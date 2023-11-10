@@ -14,37 +14,26 @@ public class WebsocketService(ChatRepository repository)
 
     public async Task EstablishConnection(WebSocket webSocket, string room)
     {
-        await AddToRoom(webSocket, room);
-        var dataToSendToNewClient = repository.GetPastMessages();
-        await SendDataToClient(webSocket, dataToSendToNewClient);
         try
         {
-            // TODO refactor to heartbeat?
+            await AddToRoom(webSocket, room);
+            var dataToSendToNewClient = repository.GetPastMessages();
+            await SendDataToClient(webSocket, dataToSendToNewClient);
             while (webSocket.State == WebSocketState.Open)
             {
-                await Task.Delay(1000);
                 await KeepSendingNewMessagesToOpenConnection(webSocket, room, new byte[4096]);
+                await Task.Delay(1000);
             }
-        }
-        catch (WebSocketException)
-        {
-            Console.WriteLine("A websocket exception has occured!");
-            throw;
-        }
 
-        await RemoveClientFromRoom(webSocket, room);
-    }
-    
-    public async Task StartHeartbeat(WebSocket webSocket)
-    {
-        while (webSocket.State != WebSocketState.Open)
-        {
-            await Task.Delay(5000); // Wait for 5 seconds before checking again
+            await RemoveClientFromRoom(webSocket, room);
         }
-
-        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
-        // Remove the closed WebSocket from Rooms.
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            await RemoveClientFromRoom(webSocket, room);
+        }
     }
+
 
     private async Task KeepSendingNewMessagesToOpenConnection(WebSocket webSocket, string room,
         byte[] websocketPayloadBytes)
@@ -59,12 +48,13 @@ public class WebsocketService(ChatRepository repository)
             return;
         }
 
-        string rawMessageJsonString = Encoding.UTF8.GetString(websocketPayloadBytes, 0, webSocketReceiveResult.Count);
-        Message messageToInsert = JsonSerializer.Deserialize<Message>(rawMessageJsonString, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-        }) ?? throw new InvalidOperationException("Could not deserialize into a Message object");
-        Console.WriteLine(messageToInsert.MessageContent);
+        string rawMessageJsonString =
+            Encoding.UTF8.GetString(websocketPayloadBytes, 0, webSocketReceiveResult.Count);
+        Message messageToInsert = JsonSerializer.Deserialize<Message>(rawMessageJsonString,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            }) ?? throw new InvalidOperationException("Could not deserialize into a Message object"); 
         var insertedMessage = repository.InsertMessage(messageToInsert!);
         await BroadCastToRoom(room, insertedMessage);
     }
@@ -79,6 +69,8 @@ public class WebsocketService(ChatRepository repository)
 
     private Task RemoveClientFromRoom(WebSocket webSocket, string room)
     {
+        if (!_rooms.ContainsKey(room)) 
+            return null;
         _rooms[room].Remove(webSocket);
         Console.WriteLine("A client has left the room!");
         return BroadCastToRoom(room, "A client has left the room!");

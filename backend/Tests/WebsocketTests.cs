@@ -42,6 +42,9 @@ public class Tests
             PropertyNameCaseInsensitive = true
         };
         var deSerializedMessage = JsonSerializer.Deserialize<Message>(receivedMessage, opts);*/
+        await clientWebSocket1.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None);
+        await clientWebSocket2.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None);
+        
         receivedMessage.Should().BeEquivalentTo("\"A client has entered the room!\"");
     }
 }
