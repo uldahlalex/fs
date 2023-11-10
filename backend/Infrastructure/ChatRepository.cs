@@ -15,6 +15,15 @@ public class ChatRepository(NpgsqlDataSource dataSource)
         }
         
     }
+
+    public Message InsertMessage(Message message)
+    {
+        var sql = $@"insert into chat.messages (messagecontent) values (@messagecontent) returning *;";
+        using (var conn = dataSource.OpenConnection())
+        {
+            return conn.QueryFirst<Message>(sql, new {messagecontent = message.MessageContent});
+        }
+    }
 }
 
 public class Message {
