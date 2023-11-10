@@ -47,8 +47,8 @@ public class WebSocketController() : ControllerBase
                 string message = System.Text.Encoding.UTF8.GetString(webSocketPayload.ToArray());
                 Websockets.Add(socket);
                 Console.WriteLine("Client says {0}", message);
-                string receivedMessage = await ReadFromWebSocket(socket);
-                var bf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(receivedMessage + " RESPONSE"));
+                //string receivedMessage = await ReadFromWebSocket(socket);
+                var bf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message + " RESPONSE"));
                 foreach (var client in Websockets)
                 {
                     await client.SendAsync(bf, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -57,6 +57,10 @@ public class WebSocketController() : ControllerBase
             else if (webSocketResponse.MessageType == WebSocketMessageType.Close)
             {
                 connectionAlive = false;
+            }
+            else
+            {
+                connectionAlive = true;
             }
         }
         Console.WriteLine(" -> A client disconnected.");
