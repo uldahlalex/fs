@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace api.Controllers;
+
 [ApiController]
 [Route("[controller]")]
 public class WebSocketController(ChatRepository repository) : ControllerBase
@@ -51,63 +52,60 @@ public class WebSocketController(ChatRepository repository) : ControllerBase
             CancellationToken.None);
     }
 
-   private async Task EstablishConnection(WebSocket webSocket, string room)
-{
-    Console.WriteLine($" -> A new client connected to room: {room}");
-
-    await SendMessageAsync(webSocket, repository.GetPastMessages());
-
-    // Create a byte array for the receive buffer
-    byte[] bytes = new byte[4096];
-
-    // Keep listening as long as the WebSocket is open
-    try
+    private async Task EstablishConnection(WebSocket webSocket, string room)
     {
-        while (webSocket.State == WebSocketState.Open)
+        Console.WriteLine($" -> A new client connected to room: {room}");
+
+        await SendMessageAsync(webSocket, repository.GetPastMessages());
+        byte[] bytes = new byte[4096];
+        try
         {
-            // Listen for new messages
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(bytes), CancellationToken.None);
-
-            // Handle the received message based on its MessageType
-            if (result.MessageType == WebSocketMessageType.Text)
+            while (webSocket.State == WebSocketState.Open)
             {
-                // Extract message from the buffer and process it
-                var message = Encoding.UTF8.GetString(bytes, 0, result.Count);
-                var obj = JsonConvert.DeserializeObject<Message>(message);
-                var insertedMessage = repository.InsertMessage(obj);
+                // Listen for new messages
+                WebSocketReceiveResult result =
+                    await webSocket.ReceiveAsync(new ArraySegment<byte>(bytes), CancellationToken.None);
 
-                // Send the message to all clients in the room
-                foreach (var client in Rooms[room])
+                // Handle the received message based on its MessageType
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    if (client.State == WebSocketState.Open)
+                    // Extract message from the buffer and process it
+                    var message = Encoding.UTF8.GetString(bytes, 0, result.Count);
+                    var obj = JsonConvert.DeserializeObject<Message>(message);
+                    var insertedMessage = repository.InsertMessage(obj);
+
+                    // Send the message to all clients in the room
+                    foreach (var client in Rooms[room])
                     {
-                        await SendMessageAsync(client, insertedMessage!);
+                        if (client.State == WebSocketState.Open)
+                        {
+                            await SendMessageAsync(client, insertedMessage!);
+                        }
                     }
                 }
-            }
-            else if (result.MessageType == WebSocketMessageType.Close)
-            {
-                // If the client has sent a close frame
-                await webSocket.CloseAsync(result.CloseStatus.GetValueOrDefault(), result.CloseStatusDescription, CancellationToken.None);
+                else if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    // If the client has sent a close frame
+                    await webSocket.CloseAsync(result.CloseStatus.GetValueOrDefault(), result.CloseStatusDescription,
+                        CancellationToken.None);
+                }
             }
         }
-    }
-    catch (WebSocketException)
-    {
-        // Handle case when socket is abruptly closed
-    }
-
-    var msg = $" -> A client disconnected from room: {room}";
-    Console.WriteLine(msg);
-    Rooms[room].Remove(webSocket);
-
-    // Notify other clients in the room about the disconnection
-    foreach (var client in Rooms[room])
-    {
-        if (client.State == WebSocketState.Open)
+        catch (WebSocketException)
         {
-            await SendMessageAsync(client, msg);
+            // Handle case when socket is abruptly closed
+            Console.WriteLine("A websocket exception has occured!");
+        }
+
+        var msg = $" -> A client disconnected from room: {room}";
+        Console.WriteLine(msg);
+        Rooms[room].Remove(webSocket);
+        foreach (var client in Rooms[room])
+        {
+            if (client.State == WebSocketState.Open)
+            {
+                await SendMessageAsync(client, msg);
+            }
         }
     }
-}
 }
