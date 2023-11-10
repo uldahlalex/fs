@@ -1,9 +1,11 @@
+using api.Controllers.Utility;
 using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
 builder.Services.AddSingleton<ChatRepository>();
+builder.Services.AddSingleton<WebsocketService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
