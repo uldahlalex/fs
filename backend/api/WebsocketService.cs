@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using Infrastructure;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -21,6 +22,7 @@ public class WebsocketService(ChatRepository repository)
             // TODO refactor to heartbeat?
             while (webSocket.State == WebSocketState.Open)
             {
+                await Task.Delay(1000);
                 await KeepSendingNewMessagesToOpenConnection(webSocket, room, new byte[4096]);
             }
         }
@@ -31,6 +33,17 @@ public class WebsocketService(ChatRepository repository)
         }
 
         await RemoveClientFromRoom(webSocket, room);
+    }
+    
+    public async Task StartHeartbeat(WebSocket webSocket)
+    {
+        while (webSocket.State != WebSocketState.Open)
+        {
+            await Task.Delay(5000); // Wait for 5 seconds before checking again
+        }
+
+        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+        // Remove the closed WebSocket from Rooms.
     }
 
     private async Task KeepSendingNewMessagesToOpenConnection(WebSocket webSocket, string room,
@@ -46,8 +59,12 @@ public class WebsocketService(ChatRepository repository)
             return;
         }
 
-        var messageToInsert = JsonSerializer.Deserialize<Message>
-            (Encoding.UTF8.GetString(websocketPayloadBytes, 0, webSocketReceiveResult.Count));
+        string rawMessageJsonString = Encoding.UTF8.GetString(websocketPayloadBytes, 0, webSocketReceiveResult.Count);
+        Message messageToInsert = JsonSerializer.Deserialize<Message>(rawMessageJsonString, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+        }) ?? throw new InvalidOperationException("Could not deserialize into a Message object");
+        Console.WriteLine(messageToInsert.MessageContent);
         var insertedMessage = repository.InsertMessage(messageToInsert!);
         await BroadCastToRoom(room, insertedMessage);
     }
