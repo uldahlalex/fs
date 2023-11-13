@@ -5,20 +5,11 @@ namespace api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class WebSocketController(WebsocketService websocketService) : ControllerBase
+public class WebSocketController() : ControllerBase
 {
     [Route("/api/{room}")]
     public async Task Get(string room)
     {
-        var context = HttpContext;
-        if (context.WebSockets.IsWebSocketRequest)
-        {
-            WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            await websocketService.EstablishConnection(webSocket, room);
-        }
-        else
-        {
-            context.Response.StatusCode = 400;
-        }
+    
     }
 }
