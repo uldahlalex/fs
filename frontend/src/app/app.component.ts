@@ -24,7 +24,7 @@ import {FormsModule} from "@angular/forms";
 })
 export class AppComponent {
 
-  ws: WebSocket = new WebSocket("ws://localhost:8181/1/2/3");
+  ws: WebSocket = new WebSocket("ws://localhost:8181/1/2/3"); //only establish conn after login and room pick
 
   items: Message[] = [];
   input: string = "";

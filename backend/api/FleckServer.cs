@@ -25,25 +25,27 @@ public class FleckServer(ChatRepository chatRepository)
                
             };
             socket.OnClose = () => { RemoveClientFromRoom(socket, socket.ConnectionInfo.Path); };
-            socket.OnMessage = message => AddMessage(socket.ConnectionInfo.Path, message);
+            socket.OnMessage = message => AddMessage(socket, message);
         });
     }
 
-    private void AddMessage(string roomToBroadCastTo, string message)
+    private void AddMessage(IWebSocketConnection socket, string message)
     {
+        var jwt = socket.ConnectionInfo.Headers["Authorization"];
+        Console.WriteLine("jwt: "+jwt);
 
         Message messageToInsert = new Message()
         {
             messageContent = message,
-            room = int.Parse(roomToBroadCastTo.Split("/")[1]),
+            room = int.Parse(socket.ConnectionInfo.Path.Split("/")[1]),
             sender = 1,
             timestamp = DateTimeOffset.UtcNow
         };
         var insertionResponse = new List<Message> { chatRepository.InsertMessage(messageToInsert!) };
        
-        foreach (var socket in socketConnections[roomToBroadCastTo])
+        foreach (var s in socketConnections[socket.ConnectionInfo.Path])
         {
-            socket.Send(JsonConvert.SerializeObject(insertionResponse));
+            s.Send(JsonConvert.SerializeObject(insertionResponse));
         }
     }
 
