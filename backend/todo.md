@@ -1,5 +1,4 @@
 websocket testing
 - performance
-- correctness
+- more correctness
 - rooms frontend
-- persistence: timestamps, room, user

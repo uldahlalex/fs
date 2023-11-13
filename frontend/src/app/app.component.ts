@@ -38,7 +38,10 @@ export class AppComponent {
   }
 
   pushToItems() {
-    this.ws.send(JSON.stringify({messageContent: this.input}));
+    this.ws.send(
+      //JSON.stringify({messageContent: this.input})
+      this.input
+    );
   }
 }
 
