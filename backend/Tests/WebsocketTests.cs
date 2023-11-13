@@ -1,8 +1,8 @@
-using System.Net.WebSockets;
-using System.Text;
+using core;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using Websocket.Client;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
 
@@ -10,50 +10,33 @@ namespace Tests;
 
 public class Tests
 {
-    private string WebSocketServerUri = "ws://localhost:8181/room1";
+    private const string WebSocketServerUri = "ws://localhost:8181/room1";
 
     [Test]
     public async Task TwoClientsCanConnectAndSendMessage()
     {
-        var client = new ClientWebSocket();
-        await client.ConnectAsync(new Uri("ws://localhost:8181"), CancellationToken.None);
-
-        // Send a message
-        var msg = new { MessageContent = "Hello, server!" };
-        var msgString = JsonConvert.SerializeObject(msg);
-        var buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(msgString));
-        await client.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
-
-        // Receive the response
-        var receivedBuffer = new ArraySegment<byte>(new byte[1024]);
-        var result = await client.ReceiveAsync(receivedBuffer, CancellationToken.None);
-        
-        var receivedBuffer2 = new ArraySegment<byte>(new byte[1024]);
-        var result2 = await client.ReceiveAsync(receivedBuffer2, CancellationToken.None);
-
-        var actualResponse = Encoding.UTF8.GetString(receivedBuffer.Array, 0, result.Count);
-        var actualResponse2 = Encoding.UTF8.GetString(receivedBuffer2.Array, 0, result2.Count);
-        Console.WriteLine(actualResponse);
-        Console.WriteLine(actualResponse2);
-        MessageDto<Message> message = JsonSerializer.Deserialize<MessageDto<Message>>(actualResponse2,
-            new JsonSerializerOptions
+        var receivedResponses = new List<List<Message>>();
+        using (var client = new WebsocketClient(new Uri(WebSocketServerUri)))
+        {
+            client.MessageReceived.Subscribe(msg =>
             {
-                PropertyNameCaseInsensitive = true,
-            }) ?? throw new InvalidOperationException("Could not deserialize into a Message object");
-        // Verify the server sent back the same message we sent it
-        message.data.MessageContent.Should().Be(msg.MessageContent);
-        message.type.Should().Be("NEW_MESSAGE");
+                List<Message> response = JsonSerializer.Deserialize<List<Message>>(msg.Text ?? throw new InvalidOperationException("Could not deserialize into a List<Message>"),
+                                             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                                         ?? throw new ArgumentException("Could not convert to MessageDto");
+                receivedResponses.Add(response);
+            });
+            await client.Start();
+
+            // Send a message
+            var msg = new { MessageContent = "Hello, server!" };
+            var msgString = JsonConvert.SerializeObject(msg);
+            client.Send(msgString);
+        }
+
+        // Wait to receive the responses
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
+        receivedResponses[0][0].Should().Be("PAST_MESSAGES");
+        receivedResponses[1][0].messageContent.Should().Be("Hello, server!");
     }
-}
-
-public class MessageDto<T>
-{
-    public T data { get; set; }
-    public string type { get; set; }
-}
-
-public class Message
-{
-    public int Id { get; set; }
-    public string MessageContent { get; set; }
 }

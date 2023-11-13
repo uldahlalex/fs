@@ -1,3 +1,4 @@
+using core;
 using Dapper;
 using Npgsql;
 
@@ -7,7 +8,9 @@ public class ChatRepository(NpgsqlDataSource dataSource)
 {
     public IEnumerable<Message> GetPastMessages()
     {
-        var sql = $@"select * from chat.messages LIMIT 5;";
+        var sql = $@"
+SELECT * FROM chat.messages ORDER BY timestamp DESC LIMIT 5;
+";
 
         using (var conn = dataSource.OpenConnection())
         {
@@ -18,16 +21,13 @@ public class ChatRepository(NpgsqlDataSource dataSource)
 
     public Message InsertMessage(Message message)
     {
-        var sql = $@"insert into chat.messages (messagecontent) values (@messagecontent) returning *;";
+        var sql = $@"
+INSERT INTO chat.messages (timestamp, sender, room, messagecontent) 
+values (@timestamp, @sender, @room, @messagecontent) 
+returning *;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Message>(sql, new {messagecontent = message.MessageContent});
+            return conn.QueryFirst<Message>(sql, message);
         }
     }
-}
-
-public class Message {
-
-    public int Id { get; set; }
-    public string MessageContent { get; set; }
 }

@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using System.Text;
+using core;
 using Fleck;
 using Infrastructure;
 using Newtonsoft.Json;
@@ -9,12 +9,11 @@ using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
 namespace api;
 
 public class FleckServer(ChatRepository chatRepository)
-{        
+{
     private ConcurrentDictionary<string, List<IWebSocketConnection>> socketConnections = new();
 
     public void Start()
     {
-
         var server = new WebSocketServer("ws://127.0.0.1:8181");
         server.RestartAfterListenError = true;
         server.Start(socket =>
@@ -22,34 +21,29 @@ public class FleckServer(ChatRepository chatRepository)
             socket.OnOpen = () =>
             {
                 AddToRoom(socket, socket.ConnectionInfo.Path);
-                var data = JsonConvert.SerializeObject(new {data= chatRepository.GetPastMessages(), type = "PAST_MESSAGES"});
-                Console.WriteLine(data);
-                socket.Send(data);
+                socket.Send(JsonConvert.SerializeObject(chatRepository.GetPastMessages()));
+               
             };
-            socket.OnClose = () =>
-            {
-                RemoveClientFromRoom(socket, socket.ConnectionInfo.Path);
-            };
+            socket.OnClose = () => { RemoveClientFromRoom(socket, socket.ConnectionInfo.Path); };
             socket.OnMessage = message => AddMessage(socket.ConnectionInfo.Path, message);
         });
     }
 
     private void AddMessage(string roomToBroadCastTo, string message)
     {
-        Console.WriteLine("Received the following message: "+message);
-        Message messageToInsert = JsonSerializer.Deserialize<Message>(message,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-            }) ?? throw new InvalidOperationException("Could not deserialize into a Message object");
-        var insertedMessage = new
+
+        Message messageToInsert = new Message()
         {
-            data = chatRepository.InsertMessage(messageToInsert!),
-            type = "NEW_MESSAGE"
+            messageContent = message,
+            room = int.Parse(roomToBroadCastTo.Split("/")[1]),
+            sender = 1,
+            timestamp = DateTimeOffset.UtcNow
         };
+        var insertionResponse = new List<Message> { chatRepository.InsertMessage(messageToInsert!) };
+       
         foreach (var socket in socketConnections[roomToBroadCastTo])
         {
-            socket.Send(JsonConvert.SerializeObject(insertedMessage));
+            socket.Send(JsonConvert.SerializeObject(insertionResponse));
         }
     }
 
