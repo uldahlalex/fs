@@ -1,8 +1,5 @@
 websocket testing
 - performance
 - correctness
-- fleck chat
-  - rooms / endpoints
-
-- client socket:
-  - 
+- rooms frontend
+- persistence: timestamps, room, user

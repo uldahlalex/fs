@@ -22,6 +22,9 @@ public class FleckServer(ChatRepository chatRepository)
             socket.OnOpen = () =>
             {
                 AddToRoom(socket, socket.ConnectionInfo.Path);
+                var data = JsonConvert.SerializeObject(new {data= chatRepository.GetPastMessages(), type = "PAST_MESSAGES"});
+                Console.WriteLine(data);
+                socket.Send(data);
             };
             socket.OnClose = () =>
             {
@@ -33,12 +36,17 @@ public class FleckServer(ChatRepository chatRepository)
 
     private void AddMessage(string roomToBroadCastTo, string message)
     {
+        Console.WriteLine("Received the following message: "+message);
         Message messageToInsert = JsonSerializer.Deserialize<Message>(message,
             new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-            }) ?? throw new InvalidOperationException("Could not deserialize into a Message object"); 
-        var insertedMessage = chatRepository.InsertMessage(messageToInsert!);
+            }) ?? throw new InvalidOperationException("Could not deserialize into a Message object");
+        var insertedMessage = new
+        {
+            data = chatRepository.InsertMessage(messageToInsert!),
+            type = "NEW_MESSAGE"
+        };
         foreach (var socket in socketConnections[roomToBroadCastTo])
         {
             socket.Send(JsonConvert.SerializeObject(insertedMessage));

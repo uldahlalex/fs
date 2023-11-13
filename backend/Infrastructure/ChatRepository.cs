@@ -7,7 +7,7 @@ public class ChatRepository(NpgsqlDataSource dataSource)
 {
     public IEnumerable<Message> GetPastMessages()
     {
-        var sql = $@"select * from chat.messages;";
+        var sql = $@"select * from chat.messages LIMIT 5;";
 
         using (var conn = dataSource.OpenConnection())
         {

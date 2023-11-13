@@ -6,7 +6,6 @@ builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString
     sourceBuilder => sourceBuilder.EnableParameterLogging());
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<FleckServer>();
-builder.Services.AddSingleton<SuperSocketServer>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -15,5 +14,5 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
-app.Services.GetService<FleckServer>().Start();
+app.Services.GetService<FleckServer>()!.Start();
 app.Run();
