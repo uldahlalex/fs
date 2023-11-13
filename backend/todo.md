@@ -3,4 +3,6 @@ websocket testing
 - correctness
 - fleck chat
   - rooms / endpoints
+
+- client socket:
   - 

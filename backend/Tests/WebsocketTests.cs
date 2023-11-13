@@ -10,42 +10,35 @@ namespace Tests;
 
 public class Tests
 {
+    private string WebSocketServerUri = "ws://localhost:8181/room1";
 
-    private string WebSocketServerUri = "ws://localhost:5000/api/room1";
-    
     [Test]
     public async Task TwoClientsCanConnectAndSendMessage()
     {
-        using var clientWebSocket1 = new ClientWebSocket();
-        using var clientWebSocket2 = new ClientWebSocket();
-        
-        await clientWebSocket1.ConnectAsync(new Uri(WebSocketServerUri), CancellationToken.None);
-        await clientWebSocket2.ConnectAsync(new Uri(WebSocketServerUri), CancellationToken.None);
+        var client = new ClientWebSocket();
+        await client.ConnectAsync(new Uri("ws://localhost:8181"), CancellationToken.None);
 
-        Assert.That(clientWebSocket1.State, Is.EqualTo(WebSocketState.Open));
-        Assert.That(clientWebSocket2.State, Is.EqualTo(WebSocketState.Open));
-        
-        // Client 1 sends a message
-        var obj = new { messageContent = "Hello from client 1" };
-        var objectString =
-            JsonConvert.SerializeObject(obj);
-        var buffer = Encoding.UTF8.GetBytes(objectString);
-        await clientWebSocket1.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
-        
-        // Client 2 receives a message
-        buffer = new byte[1024];
-        var result = await clientWebSocket2.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-        var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
-        /*Console.WriteLine(receivedMessage);
-        var opts = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-        var deSerializedMessage = JsonSerializer.Deserialize<Message>(receivedMessage, opts);*/
-        await clientWebSocket1.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None);
-        await clientWebSocket2.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None);
-        
-        receivedMessage.Should().BeEquivalentTo("\"A client has entered the room!\"");
+        var client2 = new ClientWebSocket();
+        await client2.ConnectAsync(new Uri("ws://localhost:8181"), CancellationToken.None);
+
+        // Send a message
+        var msg = new { MessageContent = "Hello, server!" };
+        var msgString = JsonConvert.SerializeObject(msg);
+        var buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(msgString));
+        await client.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+
+        // Receive the response
+        var receivedBuffer = new ArraySegment<byte>(new byte[1024]);
+        var result = await client2.ReceiveAsync(receivedBuffer, CancellationToken.None);
+
+        var actualResponse = Encoding.UTF8.GetString(receivedBuffer.Array, 0, result.Count);
+        Message message = JsonSerializer.Deserialize<Message>(actualResponse,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            }) ?? throw new InvalidOperationException("Could not deserialize into a Message object");
+        // Verify the server sent back the same message we sent it
+        message.MessageContent.Should().BeEquivalentTo(msg.MessageContent);
     }
 }
 

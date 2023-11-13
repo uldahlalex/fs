@@ -8,7 +8,7 @@ using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
 
 namespace api;
 
-public class WebsocketServer(ChatRepository chatRepository)
+public class FleckServer(ChatRepository chatRepository)
 {        
     private ConcurrentDictionary<string, List<IWebSocketConnection>> socketConnections = new();
 
