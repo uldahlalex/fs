@@ -1,5 +1,6 @@
 websocket testing
 - performance
 - correctness
-
-- not have loop
+- fleck chat
+  - rooms / endpoints
+  - 
