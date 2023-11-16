@@ -18,36 +18,26 @@ public class FleckServer(ChatRepository chatRepository)
         server.RestartAfterListenError = true;
         server.Start(socket =>
         {
+            socket.OnMessage = message => GetIncomingMessage(socket, message);
             socket.OnOpen = () =>
             {
-                AddToRoom(socket, socket.ConnectionInfo.Path);
-                socket.Send(JsonConvert.SerializeObject(chatRepository.GetPastMessages()));
-               
+                //skal room refactores?
+                //check jwt når conn åbnes
+                //AddToRoom(socket, socket.ConnectionInfo.Path); //add to room er kun for live connection - ikke persist
+                //socket.Send(JsonConvert.SerializeObject(chatRepository.GetPastMessages())); //skal man virkelig have alle messages for alle rooms når man logger ind?
             };
             socket.OnClose = () => { RemoveClientFromRoom(socket, socket.ConnectionInfo.Path); };
-            socket.OnMessage = message => AddMessage(socket, message);
         });
     }
 
-    private void AddMessage(IWebSocketConnection socket, string message)
+    private void GetIncomingMessage(IWebSocketConnection socket, string message)
     {
-        var jwt = socket.ConnectionInfo.Headers["Authorization"];
-        Console.WriteLine("jwt: "+jwt);
-
-        Message messageToInsert = new Message()
-        {
-            messageContent = message,
-            room = int.Parse(socket.ConnectionInfo.Path.Split("/")[1]),
-            sender = 1,
-            timestamp = DateTimeOffset.UtcNow
-        };
-        var insertionResponse = new List<Message> { chatRepository.InsertMessage(messageToInsert!) };
-       
-        foreach (var s in socketConnections[socket.ConnectionInfo.Path])
-        {
-            s.Send(JsonConvert.SerializeObject(insertionResponse));
-        }
+        TransferObject deserialized = JsonConvert.DeserializeObject<TransferObject>(message);
+        if (deserialized.Action == "addMessage")
+            AddMessage(socket, deserialized.Data.ToObject<Message>());
+        //create room
     }
+
 
     public Task AddToRoom(IWebSocketConnection socket, string room)
     {
@@ -67,5 +57,25 @@ public class FleckServer(ChatRepository chatRepository)
         Console.WriteLine("A client has left the room!");
         //return BroadCastToRoom(room, "A client has left the room!");
         return Task.CompletedTask;
+    }
+
+    private void AddMessage(IWebSocketConnection socket, Message message)
+    {
+        //var jwt = socket.ConnectionInfo.Headers["Authorization"];
+        //Console.WriteLine("jwt: "+jwt);
+
+        Message messageToInsert = new Message()
+        {
+            messageContent = message.messageContent,
+            room = message.room,
+            sender = message.sender,
+            timestamp = DateTimeOffset.UtcNow
+        };
+        var insertionResponse = new List<Message> { chatRepository.InsertMessage(messageToInsert!) };
+
+        foreach (var s in socketConnections[socket.ConnectionInfo.Path])
+        {
+            s.Send(JsonConvert.SerializeObject(insertionResponse));
+        }
     }
 }

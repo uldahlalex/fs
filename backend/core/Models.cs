@@ -1,4 +1,13 @@
-﻿namespace core;
+﻿using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
+
+namespace core;
+
+public class TransferObject
+{
+    public string Action { get; set; }
+    public JObject Data { get; set; }
+}
 
 public class Message
 {
