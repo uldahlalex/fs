@@ -5,8 +5,8 @@ namespace core;
 
 public class TransferObject
 {
-    public string Action { get; set; }
-    public JObject Data { get; set; }
+    public string eventType { get; set; }
+    public object data { get; set; }
 }
 
 public class Message
@@ -16,6 +16,17 @@ public class Message
     public DateTimeOffset timestamp { get; set; }
     public int sender {get; set;}
     public int room { get; set; }
+}
+
+public class DownstreamSendPastMessagesForRoom
+{
+    public int roomId { get; set; }
+    public IEnumerable<Message> messages { get; set; }
+}
+
+public class UpstreamEnterRoom
+{
+    public int roomId { get; set; }
 }
 
 public class EndUser

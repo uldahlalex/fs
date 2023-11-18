@@ -32,10 +32,26 @@ public class FleckServer(ChatRepository chatRepository)
 
     private void GetIncomingMessage(IWebSocketConnection socket, string message)
     {
+        Console.WriteLine(socket.ConnectionInfo.Path);
         TransferObject deserialized = JsonConvert.DeserializeObject<TransferObject>(message);
-        if (deserialized.Action == "addMessage")
-            AddMessage(socket, deserialized.Data.ToObject<Message>());
-        //create room
+        if (deserialized.eventType == "UpstreamEnterRoom")
+            //AddMessage(socket, deserialized.Data.ToObject<Message>());
+        {
+            UpstreamEnterRoom upsteamMessage = JsonConvert.DeserializeObject<UpstreamEnterRoom>(JsonConvert.SerializeObject(deserialized.data));
+            var data = new DownstreamSendPastMessagesForRoom()
+            {
+                messages = chatRepository.GetPastMessages(),
+                roomId = upsteamMessage.roomId
+            };
+            var dto = new TransferObject()
+            {
+                data = data,
+                eventType = "DownstreamSendPastMessagesForRoom"
+            };
+
+            socket.Send(JsonConvert.SerializeObject(dto));
+            //create room
+        }
     }
 
 

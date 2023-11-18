@@ -1,6 +1,6 @@
-import {Component, Inject} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {DataContainer} from "./service.datacontainer";
-import {JsonPipe, NgForOf} from "@angular/common";
+import {JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {FormsModule} from "@angular/forms";
 
@@ -11,15 +11,15 @@ import {FormsModule} from "@angular/forms";
 
       <div style="display: flex; flex-direction: row; align-items:stretch;">
           <input [(ngModel)]="service.input" placeholder="insert some number" style="height: 100%;">
-          <button (click)="service.pushToItems(roomId)" style="height: 100%;">insert</button>
+          <button (click)="service.upstreamAddMessage(null)" style="height: 100%;">insert</button>
       </div>
 
       <div style="
       display: flex;
       flex-direction: column;
-">
-          <div *ngFor="let i of service.items">
-              {{ i | json }}
+" *ngIf="service.roomsWithMessages!=undefined">
+          <div *ngFor="let i of service.roomsWithMessages.keys()">
+              <div *ngFor="let k of service.roomsWithMessages.get(i)">UID: {{k.sender}} said {{k.messageContent}} at {{k.timestamp}}</div>
           </div>
 
       </div>
@@ -27,15 +27,29 @@ import {FormsModule} from "@angular/forms";
   imports: [
     JsonPipe,
     NgForOf,
-    FormsModule
+    FormsModule,
+    NgIf
   ],
   standalone: true
 })
-export class ComponentRoom {
+export class ComponentRoom implements OnInit{
 
-  roomId = this.route.snapshot.params['id'];
+
 
   constructor(public service: DataContainer, public route: ActivatedRoute) {
-    this.service.enterRoom(this.roomId, 1)
+this.route.paramMap.subscribe(params => this.enter(params.get('id')));
+
+  }
+
+  ngOnInit() {
+
+
+  }
+
+
+
+  private enter(id: string | null) {
+    console.log("entering room", id);
+    this.service.upstreamEnterRoom(id)
   }
 }

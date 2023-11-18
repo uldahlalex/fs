@@ -25,8 +25,7 @@ import {Room} from "./types";
                           style="box-shadow: 10px 10px 10px lightgray; border: transparent 0px; position: absolute; left: 100px;">
                       <h3>Rooms</h3>
                       <ul>
-                          <li (click)="GoToRoom(1)">Room 1👈</li>
-                          <li>Room 2</li>
+                          <li (click)="GoToRoom(room.id)" *ngFor="let room of service.rooms">{{room.title}}👈</li>
                       </ul>
 
                   </dialog>
@@ -41,7 +40,8 @@ import {Room} from "./types";
 export class ComponentApp {
 
   constructor(public service: DataContainer, public http: HttpClient) {
-    this.getRooms();
+    this.service.EstablishConnection()
+
   }
 
   router: Router = inject(Router);
@@ -61,9 +61,7 @@ export class ComponentApp {
     this.router.navigate(['/room/'+roomId]);
   }
 
-  async getRooms() {
-    this.service.rooms = await firstValueFrom<Room[]>(this.http.get<Room[]>("http://localhost:8181/rooms"));
-  }
+
 }
 
 
