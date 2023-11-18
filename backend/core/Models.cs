@@ -3,11 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace core;
 
-public class TransferObject
-{
-    public string eventType { get; set; }
-    public object data { get; set; }
-}
+
 
 public class Message
 {
@@ -17,16 +13,24 @@ public class Message
     public int sender {get; set;}
     public int room { get; set; }
 }
+public class TransferObject
+{
+    public string eventType { get; set; }
+}
 
-public class DownstreamSendPastMessagesForRoom
+public class UpstreamSendPastMessagesForRoom : TransferObject
 {
     public int roomId { get; set; }
     public IEnumerable<Message> messages { get; set; }
 }
 
-public class UpstreamEnterRoom
+public class UpstreamEnterRoom : TransferObject
 {
     public int roomId { get; set; }
+}
+public class DownstreamError : TransferObject
+{
+    public string errorMessage { get; set; }
 }
 
 public class EndUser

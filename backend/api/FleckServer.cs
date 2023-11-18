@@ -21,42 +21,69 @@ public class FleckServer(ChatRepository chatRepository)
             socket.OnMessage = message => GetIncomingMessage(socket, message);
             socket.OnOpen = () =>
             {
-                //skal room refactores?
-                //check jwt når conn åbnes
-                //AddToRoom(socket, socket.ConnectionInfo.Path); //add to room er kun for live connection - ikke persist
-                //socket.Send(JsonConvert.SerializeObject(chatRepository.GetPastMessages())); //skal man virkelig have alle messages for alle rooms når man logger ind?
+
+                VerifyJwt(socket);
             };
-            socket.OnClose = () => { RemoveClientFromRoom(socket, socket.ConnectionInfo.Path); };
+            socket.OnClose = () => { RemoveClientFromRooms(socket); };
         });
     }
 
+ 
+
     private void GetIncomingMessage(IWebSocketConnection socket, string message)
     {
-        Console.WriteLine(socket.ConnectionInfo.Path);
-        TransferObject deserialized = JsonConvert.DeserializeObject<TransferObject>(message);
-        if (deserialized.eventType == "UpstreamEnterRoom")
-            //AddMessage(socket, deserialized.Data.ToObject<Message>());
+        try
         {
-            UpstreamEnterRoom upsteamMessage = JsonConvert.DeserializeObject<UpstreamEnterRoom>(JsonConvert.SerializeObject(deserialized.data));
-            var data = new DownstreamSendPastMessagesForRoom()
+            TransferObject deserialized = JsonConvert.DeserializeObject<TransferObject>(message) ??
+                                          throw new InvalidOperationException(
+                                              "Could not deserialize into a TransferObject");
+            switch (deserialized.eventType)
             {
-                messages = chatRepository.GetPastMessages(),
-                roomId = upsteamMessage.roomId
-            };
-            var dto = new TransferObject()
-            {
-                data = data,
-                eventType = "DownstreamSendPastMessagesForRoom"
-            };
-
-            socket.Send(JsonConvert.SerializeObject(dto));
-            //create room
+                case "UpstreamEnterRoom":
+                    UpstreamEnterRoom(socket, JsonConvert.DeserializeObject<UpstreamEnterRoom>(message)!);
+                    break;
+                case "UpstreamSendMessage":
+                    UpstreamSendMessageToRoom(socket, deserialized);
+                    break;
+            }
         }
+        catch (InvalidOperationException e)
+        {
+            var data = new DownstreamError()
+            {
+                eventType = "DownstreamError",
+                data = e.Message
+            };
+            socket.Send("Could not deserialize into a TransferObject");
+        }
+
     }
 
-
-    public Task AddToRoom(IWebSocketConnection socket, string room)
+    private void UpstreamSendMessageToRoom(IWebSocketConnection socket, object deserialized)
     {
+        throw new NotImplementedException();
+    }
+
+    private void UpstreamEnterRoom(IWebSocketConnection socket, TransferObject deserialized)
+    {
+        UpstreamEnterRoom upsteamMessage = JsonConvert.DeserializeObject<UpstreamEnterRoom>(JsonConvert.SerializeObject(deserialized.data));
+        var data = new UpstreamSendPastMessagesForRoom()
+        {
+            messages = chatRepository.GetPastMessages(),
+            roomId = upsteamMessage.roomId,
+            eventType = "DownstreamSendPastMessagesForRoom"
+        };
+        socket.Send(JsonConvert.SerializeObject(data));
+    }
+
+    private void VerifyJwt(IWebSocketConnection socket)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task AddSocketToRoomConnections(IWebSocketConnection socket)
+    {
+        
         if (!socketConnections.ContainsKey(room))
             socketConnections[room] = new List<IWebSocketConnection>();
         socketConnections[room].Add(socket);
@@ -65,8 +92,9 @@ public class FleckServer(ChatRepository chatRepository)
         return Task.CompletedTask;
     }
 
-    private Task RemoveClientFromRoom(IWebSocketConnection webSocket, string room)
+    private Task RemoveClientFromRooms(IWebSocketConnection webSocket)
     {
+        // todo refactor til at fjerne fra alle rooms
         if (!socketConnections.ContainsKey(room))
             return null;
         socketConnections[room].Remove(webSocket);
@@ -95,3 +123,4 @@ public class FleckServer(ChatRepository chatRepository)
         }
     }
 }
+

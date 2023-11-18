@@ -1,6 +1,5 @@
 import {Injectable} from "@angular/core";
-import {DownstreamSendPastMessagesForRoom, Message, Room, TransferObject} from "./types";
-import {concatWith} from "rxjs";
+import {Message, Room, TransferObject} from "./types";
 
 @Injectable({
   providedIn: 'root'
@@ -8,57 +7,45 @@ import {concatWith} from "rxjs";
 export class DataContainer {
 
   input: string = "";
-  socketConnection: WebSocket | undefined;
-
-  roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>( );
+  socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
+  roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
   rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {id: 3, title: "Sports"}];
 
   constructor() {
     this.rooms.forEach(room => this.roomsWithMessages.set(room.id, []));
-  }
-
-  EstablishConnection() {
-  //  const jwt = localStorage.getItem("jwt") || ""
-    this.socketConnection = new WebSocket(`ws://localhost:8181`);
-    this.socketConnection.onopen = () => { };
+    this.socketConnection.onopen = () => console.log("connection established");
     //TRIGGERED ON ANY DOWNSTREAM MESSAGE
     this.socketConnection.onmessage = (event) => {
-      const dataFromServer = JSON.parse(event.data) as TransferObject<any>;
+      const dataFromServer = JSON.parse(event.data.eventType) as TransferObject<any>;
       switch (dataFromServer.eventType) {
         case "DownstreamSendPastMessagesForRoom":
-            this.DownstreamSendPastMessagesForRoom(dataFromServer.data.roomId, dataFromServer.data.messages)
+          this.DownstreamSendPastMessagesForRoom(dataFromServer.data.roomId, dataFromServer.data.messages)
           break;
-       case "DownstreamBroadcastMessageToRoom":
+        case "DownstreamBroadcastMessageToRoom":
           // here a new message is added and appended to the list of messages
           break;
       }
     }
   }
 
+
   DownstreamSendPastMessagesForRoom(roomId: number, messages: Message[]) {
     this.roomsWithMessages.set(roomId, messages);
   }
 
-  upstreamAddMessage(roomId: any) {
+  upstreamSendMessageToRoom(roomId: any) {
 
   }
 
   async upstreamEnterRoom(roomId: any) {
-    console.log("now entering room", roomId);
     try {
-      await delay(1000);
-        this.socketConnection!.send(JSON.stringify({eventType: "UpstreamEnterRoom", data: {roomId: roomId}}));
-
-
-
+      this.socketConnection!.send(JSON.stringify({eventType: "UpstreamEnterRoom", data: {roomId: roomId}}));
     } catch (e) {
-      console.log("prob")
-      console.log(e)
+      console.log("connection not established, retrying in 1 second")
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      this.upstreamEnterRoom(roomId);
     }
+
   }
 }
 
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}

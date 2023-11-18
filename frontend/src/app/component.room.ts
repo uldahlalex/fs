@@ -12,7 +12,7 @@ import {FormsModule} from "@angular/forms";
 
       <div style="display: flex; flex-direction: row; align-items:stretch;">
           <input [(ngModel)]="service.input" placeholder="insert some number" style="height: 100%;">
-          <button (click)="service.upstreamAddMessage(null)" style="height: 100%;">insert</button>
+          <button (click)="service.upstreamSendMessageToRoom(null)" style="height: 100%;">insert</button>
       </div>
 
       <div style="
@@ -20,11 +20,11 @@ import {FormsModule} from "@angular/forms";
       flex-direction: column;
 ">
           <div *ngIf="roomId">
-              <div *ngFor="let k of service.roomsWithMessages.get(roomId)">UID: {{ k.sender }} said {{ k.messageContent }}
+              <div *ngFor="let k of service.roomsWithMessages.get(roomId)">UID: {{ k.sender }}
+                  said {{ k.messageContent }}
                   at {{ k.timestamp }}
               </div>
           </div>
-
 
 
       </div>

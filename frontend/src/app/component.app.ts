@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {APP_INITIALIZER, Component, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
@@ -6,61 +6,25 @@ import {DataContainer} from "./service.datacontainer";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpClientModule, HttpSentEvent} from "@angular/common/http";
 import {Room} from "./types";
+import {ComponentSidebar} from "./component.sidebar";
 
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, FormsModule, HttpClientModule],
+  imports: [CommonModule, RouterOutlet, FormsModule, HttpClientModule, ComponentSidebar],
   template: `
       <div style="display: flex; height: 100vh;">
           <div style="flex: 0 0 20%; background: #f8f9fa; margin-right: 10px;">
-              <h3>Controls</h3>
-
-
-              <div style="display: flex; flex-direction: row; position: relative;">
-                  <button (click)="openDialog()">{{ dialogText }}</button>
-                  <dialog (click)="openDialog()"
-                          [open]="isOpen"
-                          style="box-shadow: 10px 10px 10px lightgray; border: transparent 0px; position: absolute; left: 100px;">
-                      <h3>Rooms</h3>
-                      <ul>
-                          <li (click)="GoToRoom(room.id)" *ngFor="let room of service.rooms">{{room.title}}👈</li>
-                      </ul>
-
-                  </dialog>
+              <app-sidebar></app-sidebar>
+              <div style="flex: 1; border-left: black;">
+                  <router-outlet></router-outlet>
               </div>
-          </div>
-          <div style="flex: 1; border-left: black;">
-              <router-outlet></router-outlet>
           </div>
       </div>
   `
 })
 export class ComponentApp {
-
-  constructor(public service: DataContainer, public http: HttpClient) {
-    this.service.EstablishConnection()
-
-  }
-
-  router: Router = inject(Router);
-
-  isOpen: boolean = false;
-  dialogText: string = "Open Dialog";
-  openDialog() {
-    this.isOpen = !this.isOpen;
-    if (this.isOpen) {
-      this.dialogText = "Close Dialog";
-    } else {
-      this.dialogText = "Open Dialog";
-    }
-  }
-
-  GoToRoom(roomId: any) {
-    this.router.navigate(['/room/'+roomId]);
-  }
-
 
 }
 
