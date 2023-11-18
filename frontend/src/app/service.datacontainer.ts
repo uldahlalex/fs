@@ -18,7 +18,7 @@ export class DataContainer {
   }
 
   EstablishConnection() {
-    const jwt = localStorage.getItem("jwt") || ""
+  //  const jwt = localStorage.getItem("jwt") || ""
     this.socketConnection = new WebSocket(`ws://localhost:8181`);
     this.socketConnection.onopen = () => { };
     //TRIGGERED ON ANY DOWNSTREAM MESSAGE
@@ -29,15 +29,14 @@ export class DataContainer {
             this.DownstreamSendPastMessagesForRoom(dataFromServer.data.roomId, dataFromServer.data.messages)
           break;
        case "DownstreamBroadcastMessageToRoom":
-
+          // here a new message is added and appended to the list of messages
           break;
       }
     }
   }
 
   DownstreamSendPastMessagesForRoom(roomId: number, messages: Message[]) {
-    const messagesCombined = this.roomsWithMessages.get(roomId)!.concat(messages);
-    this.roomsWithMessages.set(roomId, messagesCombined);
+    this.roomsWithMessages.set(roomId, messages);
   }
 
   upstreamAddMessage(roomId: any) {

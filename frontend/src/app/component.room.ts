@@ -1,8 +1,9 @@
-import {Component, OnInit} from "@angular/core";
+import {Component} from "@angular/core";
 import {DataContainer} from "./service.datacontainer";
 import {JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {FormsModule} from "@angular/forms";
+
 
 @Component({
   template: `
@@ -17,10 +18,14 @@ import {FormsModule} from "@angular/forms";
       <div style="
       display: flex;
       flex-direction: column;
-" *ngIf="service.roomsWithMessages!=undefined">
-          <div *ngFor="let i of service.roomsWithMessages.keys()">
-              <div *ngFor="let k of service.roomsWithMessages.get(i)">UID: {{k.sender}} said {{k.messageContent}} at {{k.timestamp}}</div>
+">
+          <div *ngIf="roomId">
+              <div *ngFor="let k of service.roomsWithMessages.get(roomId)">UID: {{ k.sender }} said {{ k.messageContent }}
+                  at {{ k.timestamp }}
+              </div>
           </div>
+
+
 
       </div>
   `,
@@ -32,24 +37,19 @@ import {FormsModule} from "@angular/forms";
   ],
   standalone: true
 })
-export class ComponentRoom implements OnInit{
+export class ComponentRoom {
 
-
+  roomId: number | undefined;
 
   constructor(public service: DataContainer, public route: ActivatedRoute) {
-this.route.paramMap.subscribe(params => this.enter(params.get('id')));
-
-  }
-
-  ngOnInit() {
-
+    this.route.paramMap.subscribe(params => this.enter(Number.parseInt(params.get('id')!)));
 
   }
 
 
-
-  private enter(id: string | null) {
-    console.log("entering room", id);
+  private enter(id: number) {
+    this.roomId = id;
     this.service.upstreamEnterRoom(id)
   }
+
 }
