@@ -8,14 +8,21 @@ using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
 
 namespace api;
 
-public abstract class FleckServer(
+public class FleckServer(
     AuthUtilities auth,
-    ChatRepository chatRepository, 
-    ILogger<FleckServer> logger)
+    ChatRepository chatRepository)
 {
-    private readonly ConcurrentDictionary<string, List<IWebSocketConnection>> _clientSocketConnections = new(); //the key is the room name and the value is the sockets in there
-    //måske skal dette ændres, således at det er en liste af sockets og tilhørende metadata omkring hver socket
+    private readonly Dictionary<Guid, IWebSocketConnection> _allSockets = new(); //ext method refactor
 
+    private readonly ConcurrentDictionary<int, List<Guid>> _socketsConnectedToRoom = new(
+        new List<KeyValuePair<int, List<Guid>>>
+        {
+            new(1, new List<Guid>()),
+            new(2, new List<Guid>()),
+            new(3, new List<Guid>()),
+        });
+    
+    //ext method refactor
     public void Start()
     {
         try
@@ -25,8 +32,11 @@ public abstract class FleckServer(
             server.Start(socket =>
             {
                 socket.OnMessage = message => HandleClientMessage(socket, message);
-                socket.OnOpen = () => { auth.VerifyJwt(socket); };
-                socket.OnClose = () => { RemoveClientFromRooms(socket); };
+                socket.OnOpen = () =>
+                {
+                    _allSockets.TryAdd(socket.ConnectionInfo.Id, socket);
+                };
+                socket.OnClose = () => { PurgeClient(socket); };
             });
         }
         catch (Exception e)
@@ -42,74 +52,87 @@ public abstract class FleckServer(
         switch (eventType)
         {
             case "ClientWantsToEnterRoom":
-                ClientWantsToEnterRoom(socket, Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload));
+                ClientWantsToEnterRoom(socket,
+                    Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload));
                 break;
             case "ClientWantsToSendMessageToRoom":
-                ClientWantsToSendMessageToRoom(socket, Deserializer<ServerBroadcastsMessageToClients>.Deserialize(incomingClientMessagePayload));
+                ClientWantsToSendMessageToRoom(socket,
+                    Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload));
                 break;
+            
+            //todo data validation and eventType not found
         }
     }
 
-    private void ClientWantsToSendMessageToRoom(IWebSocketConnection socket, object deserialized)
+    private void ClientWantsToSendMessageToRoom(IWebSocketConnection socket,
+        ClientSendsMessageToRoom clientSendsMessageToRoom)
     {
-        
-        // todo refactor
         Message messageToInsert = new Message()
         {
-            messageContent = message.messageContent,
-            room = message.room,
-            sender = message.sender,
+            messageContent = clientSendsMessageToRoom.messageContent,
+            room = clientSendsMessageToRoom.roomId,
+            sender = 1, //todo refactor til at tage fra jwt
             timestamp = DateTimeOffset.UtcNow
         };
-        var insertionResponse = new List<Message> { chatRepository.InsertMessage(messageToInsert!) };
-
-        foreach (var s in _clientSocketConnections[socket.ConnectionInfo.Path])
+        var insertionResponse = chatRepository.InsertMessage(messageToInsert);
+        var response = new ServerBroadcastsMessageToClients()
         {
-            s.Send(JsonConvert.SerializeObject(insertionResponse));
-        }
-    
-        throw new NotImplementedException();
+            message = insertionResponse
+        };
+
+        BroadcastMessageToRoom(clientSendsMessageToRoom.roomId, response);
     }
+
+    public void BroadcastMessageToRoom(int roomId, BaseTransferObject transferObject)
+    {
+        foreach (var socketGuid in _socketsConnectedToRoom[roomId])
+        {
+            var exp = _allSockets.TryGetValue(socketGuid, out var socketToSendTo)
+                ? socketToSendTo
+                : throw new Exception("Socket not found");
+            socketToSendTo.Send(JsonConvert.SerializeObject(transferObject));
+        }
+    } 
 
     private void ClientWantsToEnterRoom(IWebSocketConnection socket, ClientWantsToEnterRoom clientWantsToEnterRoom)
     {
+        if (!_allSockets.ContainsKey(socket.ConnectionInfo.Id))
+            return;
+        if (_socketsConnectedToRoom[clientWantsToEnterRoom.roomId].Contains(socket.ConnectionInfo.Id))
+            return;
+        _socketsConnectedToRoom[clientWantsToEnterRoom.roomId].Add(socket.ConnectionInfo.Id);
         var data = new ServerLetsClientEnterRoom()
         {
-            messages = chatRepository.GetPastMessages(),
+            recentMessages = chatRepository.GetPastMessages(),
             roomId = clientWantsToEnterRoom.roomId,
-            eventType = "ServerLetsClientEnterRoom"
         };
         socket.Send(JsonConvert.SerializeObject(data));
+        //send to all other in room
     }
     
-
-    public Task AddSocketToRoomConnections(IWebSocketConnection socket)
+    private void ClientWantsToLeaveRoom(IWebSocketConnection socket, ClientWantsToLeaveRoom clientWantsToLeaveRoom)
     {
-        //todo refactor
-        
-        
-        
-        if (!_clientSocketConnections.ContainsKey(room))
-            _clientSocketConnections[room] = new List<IWebSocketConnection>();
-        _clientSocketConnections[room].Add(socket);
-        Console.WriteLine("A client has entered the room!");
-        //return BroadCastToRoom(room, "A client has entered the room!");
-        return Task.CompletedTask;
+        if (!_socketsConnectedToRoom[clientWantsToLeaveRoom.roomId].Contains(socket.ConnectionInfo.Id))
+            return;
+        _socketsConnectedToRoom[clientWantsToLeaveRoom.roomId].Remove(socket.ConnectionInfo.Id);
+        //notify people in room
     }
-
-    private Task RemoveClientFromRooms(IWebSocketConnection webSocket)
+    
+    private void PurgeClient(IWebSocketConnection socket)
     {
-        // todo refactor til at fjerne fra alle rooms
-        if (!_clientSocketConnections.ContainsKey(room))
-            return null;
-        _clientSocketConnections[room].Remove(webSocket);
-        Console.WriteLine("A client has left the room!");
-        //return BroadCastToRoom(room, "A client has left the room!");
-        return Task.CompletedTask;
+        foreach (var room in _socketsConnectedToRoom)
+        {
+            if (room.Value.Contains(socket.ConnectionInfo.Id))
+                room.Value.Remove(socket.ConnectionInfo.Id);
+        }
+        {
+            if (_allSockets.ContainsKey(socket.ConnectionInfo.Id))
+                _allSockets.Remove(socket.ConnectionInfo.Id, out _);
+        }
     }
-
-
 }
+
+
 
 public class AuthUtilities
 {
@@ -118,7 +141,6 @@ public class AuthUtilities
         throw new NotImplementedException();
     }
 }
-
 
 public static class Deserializer<T>
 {
@@ -149,10 +171,26 @@ public abstract class DeserializationException(string message, IWebSocketConnect
     {
         var data = new ServerSendsErrorMessageToClient()
         {
-            eventType = "ServerSendsErrorMessageToClient",
             errorMessage = Message
         };
         socket.Send(JsonConvert.SerializeObject(data));
         logger.LogError(data.errorMessage);
     }
 }
+
+
+public static class WebSocketExtensions
+{
+    private static readonly Dictionary<IWebSocketConnection, bool> AuthStates = new();
+
+    public static void SetAuthentication(this IWebSocketConnection connection, bool isAuthenticated)
+    {
+        AuthStates[connection] = isAuthenticated;
+    }
+
+    public static bool IsAuthenticated(this IWebSocketConnection connection)
+    {
+        return AuthStates.TryGetValue(connection, out var isAuthenticated) && isAuthenticated;
+    }
+}
+
