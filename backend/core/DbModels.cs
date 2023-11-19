@@ -1,9 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using Newtonsoft.Json.Linq;
-
 namespace core;
-
-
 
 public class Message
 {
@@ -12,25 +7,6 @@ public class Message
     public DateTimeOffset timestamp { get; set; }
     public int sender {get; set;}
     public int room { get; set; }
-}
-public class TransferObject
-{
-    public string eventType { get; set; }
-}
-
-public class UpstreamSendPastMessagesForRoom : TransferObject
-{
-    public int roomId { get; set; }
-    public IEnumerable<Message> messages { get; set; }
-}
-
-public class UpstreamEnterRoom : TransferObject
-{
-    public int roomId { get; set; }
-}
-public class DownstreamError : TransferObject
-{
-    public string errorMessage { get; set; }
 }
 
 public class EndUser
