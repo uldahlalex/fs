@@ -1,13 +1,8 @@
-using System.Collections.Concurrent;
-using System.Linq.Expressions;
 using core;
 using Fleck;
 using Infrastructure;
-using Microsoft.AspNetCore.Diagnostics;
 using Newtonsoft.Json;
 using Serilog;
-using Serilog.Core;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace api;
 
@@ -34,7 +29,6 @@ public class WebsocketServer(
             server.RestartAfterListenError = true;
             server.Start(socket =>
             {
-        
                 socket.OnMessage = message => HandleClientMessage(socket, message);
                 socket.OnOpen = () => { state.AllSockets.TryAdd(socket.ConnectionInfo.Id, socket); };
                 socket.OnClose = () => { websocketUtilities.PurgeClient(socket); };
@@ -73,17 +67,32 @@ public class WebsocketServer(
                     events.ClientWantsToSendMessageToRoom(socket,
                         Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload, socket));
                     break;
-                default: //fungerer dette default?
-                    websocketUtilities.EventNotFoundException(socket);
+                case "ClientWantsToLeaveRoom":
+                    events.ClientWantsToLeaveRoom(socket,
+                        Deserializer<ClientWantsToLeaveRoom>.Deserialize(incomingClientMessagePayload, socket));
                     break;
-                    //resp til client - måske er exc ikke ønskværdigt //er det altid ønskværdigt med resp?
+                default: //fungerer dette default?
+                    websocketUtilities.EventNotFound(socket);
+                    break;
             } //todo data validation and eventType not found
         }
         catch (DeserializationException e)
         {
             Log.Error(e, "WebsocketServer");
-            //respond to client with error
+            var response = JsonConvert.SerializeObject(new ServerSendsErrorMessageToClient
+            {
+                errorMessage = e.Message
+            });
+            socket.Send(response);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "WebsocketServer");
+            var response = JsonConvert.SerializeObject(new ServerSendsErrorMessageToClient
+            {
+                errorMessage = "Internal server error"
+            });
+            socket.Send(response);
         }
     }
 }
-

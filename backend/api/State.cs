@@ -5,5 +5,6 @@ namespace api;
 
 public class State
 {
-    public readonly Dictionary<Guid, IWebSocketConnection> AllSockets = new(); //todo refactor til liste sorteret efter guid?
+    //Concurrent dictionary for super fast lookup times
+    public readonly ConcurrentDictionary<Guid, IWebSocketConnection> AllSockets = new(); 
 }

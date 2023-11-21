@@ -1,13 +1,5 @@
 namespace api;
 
-internal class EventNotFoundException : Exception
-{
-    public EventNotFoundException(string notFound)
-    {
-        throw new NotImplementedException();
-    }
-}
-
 public class DeserializationException : Exception
 {
     public DeserializationException()

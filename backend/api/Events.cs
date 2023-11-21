@@ -39,12 +39,21 @@ public class Events(ChatRepository chatRepository, State state, WebsocketUtiliti
             roomId = clientWantsToEnterRoom.roomId,
         };
         socket.Send(JsonConvert.SerializeObject(data));
-        //send to all other in room
+        websocketUtilities.BroadcastMessageToRoom(clientWantsToEnterRoom.roomId, new ServerNotifiesClientsInRoom()
+        {
+            roomId = clientWantsToEnterRoom.roomId,
+            message = "A new user has entered the room!"
+        });
     }
     
     public void ClientWantsToLeaveRoom(IWebSocketConnection socket, ClientWantsToLeaveRoom clientWantsToLeaveRoom)
     {
         socket.RemoveFromRoom(clientWantsToLeaveRoom.roomId);
-        //notify people in room
+        websocketUtilities.BroadcastMessageToRoom(clientWantsToLeaveRoom.roomId, new ServerNotifiesClientsInRoom
+        {
+            message = "A user has left the room!",
+            roomId = clientWantsToLeaveRoom.roomId
+        });
+        
     }
 }
