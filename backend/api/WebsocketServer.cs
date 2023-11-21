@@ -36,7 +36,7 @@ public class WebsocketServer(
             {
         
                 socket.OnMessage = message => HandleClientMessage(socket, message);
-                socket.OnOpen = () => { state._allSockets.TryAdd(socket.ConnectionInfo.Id, socket); };
+                socket.OnOpen = () => { state.AllSockets.TryAdd(socket.ConnectionInfo.Id, socket); };
                 socket.OnClose = () => { websocketUtilities.PurgeClient(socket); };
                 socket.OnError = exception =>
                 {
@@ -73,41 +73,17 @@ public class WebsocketServer(
                     events.ClientWantsToSendMessageToRoom(socket,
                         Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload, socket));
                     break;
-                default:
-                    throw new Exception("not found"); //er det altid ønskværdigt med resp?
+                default: //fungerer dette default?
+                    websocketUtilities.EventNotFoundException(socket);
+                    break;
+                    //resp til client - måske er exc ikke ønskværdigt //er det altid ønskværdigt med resp?
             } //todo data validation and eventType not found
         }
         catch (DeserializationException e)
         {
-            
+            Log.Error(e, "WebsocketServer");
+            //respond to client with error
         }
     }
 }
 
-public class DeserializationException : Exception
-{
-    public DeserializationException()
-    {
-    }
-
-    public DeserializationException(string message)
-        : base(message)
-    {
-    }
-
-    public DeserializationException(string message, Exception inner)
-        : base(message, inner)
-    {
-    }
-}
-
-public class DeserializationExceptionHandler : IExceptionHandler
-{
-    public async ValueTask<bool>
-        TryHandleAsync(HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
-    {
-        return true;
-    }
-}

@@ -8,7 +8,6 @@ Log.Logger = new LoggerConfiguration()
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
-builder.Services.AddExceptionHandler<DeserializationExceptionHandler>();
 builder.Services.AddSingleton<State>();
 builder.Services.AddSingleton<AuthUtilities>();
 builder.Services.AddSingleton<WebsocketUtilities>();
