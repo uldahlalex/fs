@@ -31,10 +31,8 @@ public class Events(ChatRepository chatRepository, State state, WebsocketUtiliti
     public void ClientWantsToEnterRoom(IWebSocketConnection socket, ClientWantsToEnterRoom clientWantsToEnterRoom)
     {
         if (!state._allSockets.ContainsKey(socket.ConnectionInfo.Id))
-            return;
-        if (state._socketsConnectedToRoom[clientWantsToEnterRoom.roomId].Contains(socket.ConnectionInfo.Id))
-            return;
-        state._socketsConnectedToRoom[clientWantsToEnterRoom.roomId].Add(socket.ConnectionInfo.Id);
+            return; //todo der skal sikkert throwes exc
+        socket.JoinRoom(clientWantsToEnterRoom.roomId);
         var data = new ServerLetsClientEnterRoom()
         {
             recentMessages = chatRepository.GetPastMessages(),
@@ -46,9 +44,7 @@ public class Events(ChatRepository chatRepository, State state, WebsocketUtiliti
     
     public void ClientWantsToLeaveRoom(IWebSocketConnection socket, ClientWantsToLeaveRoom clientWantsToLeaveRoom)
     {
-        if (!state._socketsConnectedToRoom[clientWantsToLeaveRoom.roomId].Contains(socket.ConnectionInfo.Id))
-            return;
-        state._socketsConnectedToRoom[clientWantsToLeaveRoom.roomId].Remove(socket.ConnectionInfo.Id);
+        socket.RemoveFromRoom(clientWantsToLeaveRoom.roomId);
         //notify people in room
     }
 }

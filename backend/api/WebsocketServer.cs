@@ -11,10 +11,9 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace api;
 
-public class FleckServer(
+public class WebsocketServer(
     State state,
     Events events,
-    ILogger<FleckServer> logger,
     WebsocketUtilities websocketUtilities,
     AuthUtilities auth,
     ChatRepository chatRepository)
@@ -31,20 +30,17 @@ public class FleckServer(
     {
         try
         {
-            List<int> a = [];
-            var s = a[1];
             var server = new WebSocketServer("ws://127.0.0.1:8181");
             server.RestartAfterListenError = true;
             server.Start(socket =>
             {
-                //socket.IsAuthenticated();
+        
                 socket.OnMessage = message => HandleClientMessage(socket, message);
                 socket.OnOpen = () => { state._allSockets.TryAdd(socket.ConnectionInfo.Id, socket); };
                 socket.OnClose = () => { websocketUtilities.PurgeClient(socket); };
                 socket.OnError = exception =>
                 {
-                    //probably doesnt replace catch blocks
-                    logger.Log(LogLevel.Critical, exception, "FleckServer");
+                    Log.Error(exception, "WebsocketServer");
                     var data = new ServerSendsErrorMessageToClient()
                     {
                         errorMessage = exception.Message
@@ -55,11 +51,7 @@ public class FleckServer(
         }
         catch (Exception e)
         {
-            Log.Information(e, "FleckServer");
-            Log.Error(e, "FleckServer");
-            Log.Fatal(e, "FleckServer");
-            Log.Warning(e, "FleckServer");
-            Log.Debug(e, "FleckServer");
+            Log.Error(e, "WebsocketServer");
         }
     }
 
@@ -74,9 +66,8 @@ public class FleckServer(
             switch (eventType)
             {
                 case "ClientWantsToEnterRoom":
-                    ExceptionHandlers.TryExecute(() => events.ClientWantsToEnterRoom(socket,
-                            Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload, socket)),
-                        exception => { });
+                    events.ClientWantsToEnterRoom(socket,
+                        Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload, socket));
                     break;
                 case "ClientWantsToSendMessageToRoom":
                     events.ClientWantsToSendMessageToRoom(socket,
