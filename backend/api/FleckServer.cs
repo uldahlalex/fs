@@ -5,6 +5,8 @@ using Fleck;
 using Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Newtonsoft.Json;
+using Serilog;
+using Serilog.Core;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace api;
@@ -17,9 +19,35 @@ public class FleckServer(
     AuthUtilities auth,
     ChatRepository chatRepository)
 {
+    //excceptional
+    //extensoin method for error handling
+    //delegates
+    //PostSharp
+
     //ext method refactor
+
+
     public void Start()
     {
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
+
+        try
+        {
+            // Your program here...
+            const string name = "Serilog";
+            Log.Information("Hello, {Name}!", name);
+            throw new InvalidOperationException("Oops...");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Unhandled exception");
+        }
+        finally
+        {
+             Log.CloseAndFlush(); // ensure all logs written before app exits
+        }
         try
         {
             var server = new WebSocketServer("ws://127.0.0.1:8181");
@@ -39,7 +67,6 @@ public class FleckServer(
                         errorMessage = exception.Message
                     };
                     socket.Send(JsonConvert.SerializeObject(data));
-
                 };
             });
         }
@@ -52,15 +79,17 @@ public class FleckServer(
 
     private void HandleClientMessage(IWebSocketConnection socket, string incomingClientMessagePayload)
     {
-
-            string eventType = Deserializer<BaseTransferObject>.Deserialize(incomingClientMessagePayload, socket)
+        try
+        {
+            string eventType = Deserializer<BaseTransferObject>
+                .Deserialize(incomingClientMessagePayload, socket)
                 .eventType;
-            throw new DeserializationException();
             switch (eventType)
             {
                 case "ClientWantsToEnterRoom":
-                    events.ClientWantsToEnterRoom(socket,
-                        Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload, socket));
+                    ExceptionHandlers.TryExecute(() => events.ClientWantsToEnterRoom(socket,
+                            Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload, socket)),
+                        exception => { });
                     break;
                 case "ClientWantsToSendMessageToRoom":
                     events.ClientWantsToSendMessageToRoom(socket,
@@ -70,8 +99,11 @@ public class FleckServer(
                     throw new Exception("not found"); //er det altid ønskværdigt med resp?
             } //todo data validation and eventType not found
         }
-
-    
+        catch (DeserializationException e)
+        {
+            
+        }
+    }
 }
 
 public class DeserializationException : Exception
