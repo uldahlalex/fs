@@ -1,9 +1,8 @@
-using System.Runtime.CompilerServices;
+
 using Fleck;
 
 namespace api;
 
-//extensions eller subclass?
 
 public static class WebsocketExtensions
 {
@@ -12,9 +11,7 @@ public static class WebsocketExtensions
 
     public static void Authenticate(this IWebSocketConnection connection)
     {
-        if (!AuthenticationStatus.ContainsKey(connection))
-            AuthenticationStatus[connection] = false; // default to true when not present
-        else
+        if (!AuthenticationStatus.TryAdd(connection, false))
             AuthenticationStatus[connection] = true;
     }
 

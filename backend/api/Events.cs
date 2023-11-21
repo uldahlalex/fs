@@ -31,7 +31,7 @@ public class Events(ChatRepository chatRepository, State state, WebsocketUtiliti
     public void ClientWantsToEnterRoom(IWebSocketConnection socket, ClientWantsToEnterRoom clientWantsToEnterRoom)
     {
         if (!state.AllSockets.ContainsKey(socket.ConnectionInfo.Id))
-            return; //todo der skal sikkert throwes exc
+            return;
         socket.JoinRoom(clientWantsToEnterRoom.roomId);
         var data = new ServerLetsClientEnterRoom()
         {

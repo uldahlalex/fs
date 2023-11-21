@@ -1,6 +1,5 @@
 using core;
 using Fleck;
-using Infrastructure;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -9,19 +8,9 @@ namespace api;
 public class WebsocketServer(
     State state,
     Events events,
-    WebsocketUtilities websocketUtilities,
-    AuthUtilities auth,
-    ChatRepository chatRepository)
+    WebsocketUtilities websocketUtilities)
 {
-    //excceptional
-    //extensoin method for error handling
-    //delegates
-    //PostSharp
-
-    //ext method refactor
-
-
-    public void Start()
+    public void StartWebsocketServer()
     {
         try
         {
@@ -55,42 +44,39 @@ public class WebsocketServer(
         try
         {
             string eventType = Deserializer<BaseTransferObject>
-                .Deserialize(incomingClientMessagePayload, socket)
+                .Deserialize(incomingClientMessagePayload)
                 .eventType;
             switch (eventType)
             {
                 case "ClientWantsToEnterRoom":
                     events.ClientWantsToEnterRoom(socket,
-                        Deserializer<ClientWantsToEnterRoom>.Deserialize(incomingClientMessagePayload, socket));
+                        Deserializer<ClientWantsToEnterRoom>.DeserializeAndValidate(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToSendMessageToRoom":
                     events.ClientWantsToSendMessageToRoom(socket,
-                        Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload, socket));
+                        Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToLeaveRoom":
                     events.ClientWantsToLeaveRoom(socket,
-                        Deserializer<ClientWantsToLeaveRoom>.Deserialize(incomingClientMessagePayload, socket));
+                        Deserializer<ClientWantsToLeaveRoom>.Deserialize(incomingClientMessagePayload));
                     break;
-                default: //fungerer dette default?
+                case "ClientWantsToRegister":
+                    //todo
+                    break;
+                case "ClientWantsToAuthenticate":
+                    //todo
+                    break;
+                default: 
                     websocketUtilities.EventNotFound(socket);
                     break;
-            } //todo data validation and eventType not found
-        }
-        catch (DeserializationException e)
-        {
-            Log.Error(e, "WebsocketServer");
-            var response = JsonConvert.SerializeObject(new ServerSendsErrorMessageToClient
-            {
-                errorMessage = e.Message
-            });
-            socket.Send(response);
+            } 
         }
         catch (Exception e)
         {
             Log.Error(e, "WebsocketServer");
             var response = JsonConvert.SerializeObject(new ServerSendsErrorMessageToClient
             {
-                errorMessage = "Internal server error"
+                errorMessage = e.Message
             });
             socket.Send(response);
         }

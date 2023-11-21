@@ -15,5 +15,5 @@ builder.Services.AddSingleton<Events>();
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 var app = builder.Build();
-app.Services.GetService<WebsocketServer>()!.Start();
+app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
 app.Run();
