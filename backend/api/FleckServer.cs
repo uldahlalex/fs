@@ -29,27 +29,10 @@ public class FleckServer(
 
     public void Start()
     {
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateLogger();
-
         try
         {
-            // Your program here...
-            const string name = "Serilog";
-            Log.Information("Hello, {Name}!", name);
-            throw new InvalidOperationException("Oops...");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Unhandled exception");
-        }
-        finally
-        {
-             Log.CloseAndFlush(); // ensure all logs written before app exits
-        }
-        try
-        {
+            List<int> a = [];
+            var s = a[1];
             var server = new WebSocketServer("ws://127.0.0.1:8181");
             server.RestartAfterListenError = true;
             server.Start(socket =>
@@ -72,7 +55,11 @@ public class FleckServer(
         }
         catch (Exception e)
         {
-            logger.Log(LogLevel.Critical, e, "FleckServer");
+            Log.Information(e, "FleckServer");
+            Log.Error(e, "FleckServer");
+            Log.Fatal(e, "FleckServer");
+            Log.Warning(e, "FleckServer");
+            Log.Debug(e, "FleckServer");
         }
     }
 
