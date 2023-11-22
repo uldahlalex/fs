@@ -8,14 +8,9 @@ export class WebsockSocketClient {
 
   state = inject(State);
   constructor() {
-    this.state.socketConnection.onopen = () => console.log("connection established");
-    //TRIGGERED ON ANY DOWNSTREAM MESSAGE
+    this.state.socketConnection.onopen = () => console.info("connection established");
     this.state.socketConnection.onmessage = (event) => {
-      //console.log(event)
       var data = JSON.parse(event.data) as BaseTransferObject;
-
-      //todo pt er det en json med en string som json - kan jeg få dette ændret?
-      console.log(data)
       switch (data.eventType) {
         case "ServerLetsClientEnterRoom":
           this.ServerLetsClientEnterRoom( data as ServerLetsClientEnterRoom);

@@ -1,14 +1,15 @@
-import {Component, inject} from "@angular/core";
+import {Component, inject, signal} from "@angular/core";
 import {Router} from "@angular/router";
 import {State} from "../services/service.state";
 import {NgForOf} from "@angular/common";
 
 @Component({
   template: `
-      <h3>Controls</h3>
+      <h5>Controls</h5>
 
 
-      <div style="display: flex; flex-direction: row; position: relative;">
+      <div style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+          <button style="background-color: transparent; color: black" (click)="goToLoginPage()">Go to log in</button>
           <button (click)="toggleDialog()">{{ dialogText }}</button>
           <dialog (click)="toggleDialog()"
                   [open]="isOpen"
@@ -34,6 +35,7 @@ export class ComponentSidebar {
 
   isOpen: boolean = false;
   dialogText: string = "Open Dialog";
+
   toggleDialog() {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
@@ -45,5 +47,9 @@ export class ComponentSidebar {
 
   GoToRoom(roomId: any) {
     this.router.navigate(['/room/'+roomId]);
+  }
+
+  goToLoginPage() {
+    this.router.navigate(['/login']);
   }
 }
