@@ -1,24 +1,20 @@
-import {Injectable} from "@angular/core";
-import {Message, Room} from "./models/entities";
-import {BaseTransferObject} from "./models/baseTransferObject";
-import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "./models/RoomTransferObjects";
-@Injectable({
-  providedIn: 'root'
-})
-export class DataContainer {
+import {inject, Injectable} from "@angular/core";
+import {BaseTransferObject} from "../models/baseTransferObject";
+import {State} from "./service.state";
+import {ClientWantsToEnterRoom} from "../models/RoomTransferObjects";
 
-  input: string = "";
-  socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
-  roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
-  rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {id: 3, title: "Sports"}];
+@Injectable({providedIn: 'root'})
+export class WebsockSocketClient {
 
+  state = inject(State);
   constructor() {
-    this.rooms.forEach(room => this.roomsWithMessages.set(room.id, []));
-    this.socketConnection.onopen = () => console.log("connection established");
+    this.state.socketConnection.onopen = () => console.log("connection established");
     //TRIGGERED ON ANY DOWNSTREAM MESSAGE
-    this.socketConnection.onmessage = (event) => {
+    this.state.socketConnection.onmessage = (event) => {
       //console.log(event)
       var data = JSON.parse(event.data) as BaseTransferObject;
+
+      //todo pt er det en json med en string som json - kan jeg få dette ændret?
       console.log(data)
       switch (data.eventType) {
         case "ServerLetsClientEnterRoom":
@@ -33,10 +29,8 @@ export class DataContainer {
     }
   }
 
-
   DownstreamSendPastMessagesForRoom(obj: any) {
-    this.roomsWithMessages.set(obj.roomId, obj.recentMessages);
-    console.log(this.roomsWithMessages)
+    this.state.roomsWithMessages.set(obj.roomId, obj.recentMessages);
   }
 
   upstreamSendMessageToRoom(roomId: any) {
@@ -46,7 +40,7 @@ export class DataContainer {
   async clientWantsToEnterRoom(roomId: any) {
     try {
       let o : ClientWantsToEnterRoom = new ClientWantsToEnterRoom(roomId);
-      this.socketConnection!.send(JSON.stringify(o));
+      this.state.socketConnection!.send(JSON.stringify(o));
     } catch (e) {
       console.log("connection not established, retrying in 1 second")
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -55,4 +49,3 @@ export class DataContainer {
 
   }
 }
-

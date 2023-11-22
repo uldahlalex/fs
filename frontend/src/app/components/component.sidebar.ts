@@ -1,6 +1,6 @@
 import {Component, inject} from "@angular/core";
 import {Router} from "@angular/router";
-import {DataContainer} from "./service.datacontainer";
+import {State} from "../services/service.state";
 import {NgForOf} from "@angular/common";
 
 @Component({
@@ -29,7 +29,7 @@ import {NgForOf} from "@angular/common";
 })
 export class ComponentSidebar {
 
-  service: DataContainer = inject(DataContainer);
+  service: State = inject(State);
   router: Router = inject(Router);
 
   isOpen: boolean = false;

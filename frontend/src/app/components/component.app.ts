@@ -2,10 +2,10 @@ import {APP_INITIALIZER, Component, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
-import {DataContainer} from "./service.datacontainer";
+import {State} from "../services/service.state";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpClientModule, HttpSentEvent} from "@angular/common/http";
-import {Room} from "./models/entities";
+import {Room} from "../models/entities";
 import {ComponentSidebar} from "./component.sidebar";
 
 
@@ -24,9 +24,6 @@ import {ComponentSidebar} from "./component.sidebar";
       </div>
   `
 })
-export class ComponentApp {
-  service = inject(DataContainer);
-
-}
+export class ComponentApp {}
 
 

@@ -1,7 +1,7 @@
 import {bootstrapApplication} from '@angular/platform-browser';
-import {ComponentApp} from './app/component.app';
+import {ComponentApp} from './app/components/component.app';
 import {provideRouter} from "@angular/router";
-import {ComponentRoom} from "./app/component.room";
+import {ComponentRoom} from "./app/components/component.room";
 
 bootstrapApplication(ComponentApp, {
   providers: [provideRouter(
