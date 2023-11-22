@@ -1,7 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Message, Room} from "../models/entities";
-import {BaseTransferObject} from "../models/baseTransferObject";
-import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/RoomTransferObjects";
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,7 +14,6 @@ export class State {
   constructor() {
     this.rooms.forEach(room => this.roomsWithMessages.set(room.id, []));
   }
-
 
 
 }

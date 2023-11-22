@@ -1,6 +1,5 @@
 export class BaseTransferObject {
-  eventType: string;
-
+  eventType?: string;
   constructor() {
     this.eventType = this.constructor.name;
   }

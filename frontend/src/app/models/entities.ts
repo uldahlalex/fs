@@ -11,9 +11,9 @@ export class Message {
     this.id = id;
     this.messageContent = messageContent;
   }
-  deserialize(input: any): Message {
+ /* deserialize(input: any): Message {
     return Object.assign(this, input);
-  }
+  }*/
 }
 export type Room = {
   id: number;

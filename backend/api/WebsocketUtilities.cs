@@ -34,11 +34,12 @@ public class WebsocketUtilities(State state)
             state.AllSockets.Remove(socket.ConnectionInfo.Id, out _);
     }
 
-    public void EventNotFound(IWebSocketConnection socket)
+    public void EventNotFound(IWebSocketConnection socket, string eventType)
     {
         var response = new ServerSendsErrorMessageToClient()
         {
-            errorMessage = "Unknown event!"
+            errorMessage = "Unknown event!",
+            receivedEventType = eventType
         };
         socket.Send(JsonConvert.SerializeObject(response));
     }

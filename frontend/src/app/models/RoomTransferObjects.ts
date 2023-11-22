@@ -2,24 +2,21 @@ import {BaseTransferObject} from "./baseTransferObject";
 import {Message} from "./entities";
 
 export class ClientWantsToEnterRoom extends BaseTransferObject {
-  roomId: number;
+  roomId?: number;
 
-  constructor(roomId: number) {
+  constructor(init?: Partial<ClientWantsToEnterRoom>) {
     super();
-    this.roomId = roomId;
+    // copy all properties from init to this
+    Object.assign(this, init);
   }
+
 }
 
 export class ServerLetsClientEnterRoom extends BaseTransferObject {
-  roomId: number;
-  recentMessages: Message[];
-  constructor(recentMessages: Message[], roomId: number) {
+  roomId?: number;
+  recentMessages?: Message[];
+  constructor() {
     super();
-    this.roomId = roomId;
-    this.recentMessages = recentMessages;
   }
 
-  static deserialize(input: any): ServerLetsClientEnterRoom {
-    return Object.assign(this, input);
-  }
 }

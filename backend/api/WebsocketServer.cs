@@ -7,7 +7,7 @@ namespace api;
 
 public class WebsocketServer(
     State state,
-    Events events,
+    ClientInducedEvents clientInducedEvents,
     WebsocketUtilities websocketUtilities)
 {
     public void StartWebsocketServer()
@@ -49,15 +49,15 @@ public class WebsocketServer(
             switch (eventType)
             {
                 case "ClientWantsToEnterRoom":
-                    events.ClientWantsToEnterRoom(socket,
+                    clientInducedEvents.ClientWantsToEnterRoom(socket,
                         Deserializer<ClientWantsToEnterRoom>.DeserializeAndValidate(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToSendMessageToRoom":
-                    events.ClientWantsToSendMessageToRoom(socket,
+                    clientInducedEvents.ClientWantsToSendMessageToRoom(socket,
                         Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToLeaveRoom":
-                    events.ClientWantsToLeaveRoom(socket,
+                    clientInducedEvents.ClientWantsToLeaveRoom(socket,
                         Deserializer<ClientWantsToLeaveRoom>.Deserialize(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToRegister":
@@ -67,7 +67,7 @@ public class WebsocketServer(
                     //todo
                     break;
                 default: 
-                    websocketUtilities.EventNotFound(socket);
+                    websocketUtilities.EventNotFound(socket, eventType);
                     break;
             } 
         }

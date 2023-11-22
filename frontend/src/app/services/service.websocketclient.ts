@@ -1,7 +1,7 @@
 import {inject, Injectable} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {State} from "./service.state";
-import {ClientWantsToEnterRoom} from "../models/RoomTransferObjects";
+import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/RoomTransferObjects";
 
 @Injectable({providedIn: 'root'})
 export class WebsockSocketClient {
@@ -18,7 +18,7 @@ export class WebsockSocketClient {
       console.log(data)
       switch (data.eventType) {
         case "ServerLetsClientEnterRoom":
-          this.DownstreamSendPastMessagesForRoom(data);
+          this.ServerLetsClientEnterRoom( data as ServerLetsClientEnterRoom);
           //let o = dataFromServer as ClientWantsToEnterRoom;
           //this.DownstreamSendPastMessagesForRoom(o.roomId, dataFromServer.data.messages)
           break;
@@ -29,8 +29,9 @@ export class WebsockSocketClient {
     }
   }
 
-  DownstreamSendPastMessagesForRoom(obj: any) {
-    this.state.roomsWithMessages.set(obj.roomId, obj.recentMessages);
+  ServerLetsClientEnterRoom(serverLetsClientEnterRoom: ServerLetsClientEnterRoom) {
+    console.log(serverLetsClientEnterRoom);
+    this.state.roomsWithMessages.set(serverLetsClientEnterRoom.roomId!, serverLetsClientEnterRoom.recentMessages!);
   }
 
   upstreamSendMessageToRoom(roomId: any) {
@@ -39,8 +40,8 @@ export class WebsockSocketClient {
 
   async clientWantsToEnterRoom(roomId: any) {
     try {
-      let o : ClientWantsToEnterRoom = new ClientWantsToEnterRoom(roomId);
-      this.state.socketConnection!.send(JSON.stringify(o));
+      let clientWantsToEnterRoom =  new ClientWantsToEnterRoom({roomId: roomId});
+      this.state.socketConnection!.send(JSON.stringify(clientWantsToEnterRoom));
     } catch (e) {
       console.log("connection not established, retrying in 1 second")
       await new Promise(resolve => setTimeout(resolve, 1000));

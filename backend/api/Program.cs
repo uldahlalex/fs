@@ -11,7 +11,7 @@ builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString
 builder.Services.AddSingleton<State>();
 builder.Services.AddSingleton<AuthUtilities>();
 builder.Services.AddSingleton<WebsocketUtilities>();
-builder.Services.AddSingleton<Events>();
+builder.Services.AddSingleton<ClientInducedEvents>();
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 var app = builder.Build();

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace api;
 
-public class Events(ChatRepository chatRepository, State state, WebsocketUtilities websocketUtilities)
+public class ClientInducedEvents(ChatRepository chatRepository, State state, WebsocketUtilities websocketUtilities)
 {
     
     public void ClientWantsToSendMessageToRoom(IWebSocketConnection socket,
