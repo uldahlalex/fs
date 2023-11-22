@@ -11,6 +11,7 @@ public static class WebsocketExtensions
 
     public static void Authenticate(this IWebSocketConnection connection)
     {
+        
         if (!AuthenticationStatus.TryAdd(connection, false))
             AuthenticationStatus[connection] = true;
     }

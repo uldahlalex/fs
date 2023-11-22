@@ -61,7 +61,8 @@ public class WebsocketServer(
                         Deserializer<ClientWantsToLeaveRoom>.Deserialize(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToRegister":
-                    //todo
+                    clientInducedEvents.ClientWantsToRegister(socket,
+                        Deserializer<ClientWantsToRegister>.Deserialize(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToAuthenticate":
                     //todo

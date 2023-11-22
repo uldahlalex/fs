@@ -2,10 +2,15 @@ using core;
 using Fleck;
 using Infrastructure;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace api;
 
-public class ClientInducedEvents(ChatRepository chatRepository, State state, WebsocketUtilities websocketUtilities)
+public class ClientInducedEvents(
+    ChatRepository chatRepository,
+    State state,
+    WebsocketUtilities websocketUtilities,
+    AuthUtilities authUtilities)
 {
     
     public void ClientWantsToSendMessageToRoom(IWebSocketConnection socket,
@@ -55,5 +60,18 @@ public class ClientInducedEvents(ChatRepository chatRepository, State state, Web
             roomId = clientWantsToLeaveRoom.roomId
         });
         
+    }
+    
+    public void ClientWantsToRegister(IWebSocketConnection socket, ClientWantsToRegister clientWantsToRegister)
+    {
+        var jwt = authUtilities.IssueJwt("1234", new Dictionary<string, object>()
+        {
+            {"email", clientWantsToRegister.email}
+        });
+        Log.Information(jwt);
+        var result = authUtilities.IsJwtValid(jwt, "1234");
+        Log.Information(result.ToString());
+        socket.Authenticate();
+        socket.Send(jwt);
     }
 }
