@@ -17,14 +17,15 @@ import {ComponentSidebar} from "./component.sidebar";
       <div style="display: flex; height: 100vh;">
           <div style="flex: 0 0 20%; background: #f8f9fa; margin-right: 10px;">
               <app-sidebar></app-sidebar>
-              <div style="flex: 1; border-left: black;">
-                  <router-outlet></router-outlet>
-              </div>
+          </div>
+          <div style="flex: 3; border-left: black;">
+              <router-outlet></router-outlet>
           </div>
       </div>
   `
 })
 export class ComponentApp {
+  service = inject(DataContainer);
 
 }
 

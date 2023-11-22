@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {Message, Room} from "./models/entities";
 import {BaseTransferObject} from "./models/baseTransferObject";
-import {ClientWantsToEnterRoom} from "./models/RoomTransferObjects";
+import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "./models/RoomTransferObjects";
 @Injectable({
   providedIn: 'root'
 })
@@ -17,9 +17,12 @@ export class DataContainer {
     this.socketConnection.onopen = () => console.log("connection established");
     //TRIGGERED ON ANY DOWNSTREAM MESSAGE
     this.socketConnection.onmessage = (event) => {
-      const dataFromServer = JSON.parse(event.data.eventType) as BaseTransferObject;
-      switch (dataFromServer.eventType) {
-        case "DownstreamSendPastMessagesForRoom":
+      //console.log(event)
+      var data = JSON.parse(event.data) as BaseTransferObject;
+      console.log(data)
+      switch (data.eventType) {
+        case "ServerLetsClientEnterRoom":
+          this.DownstreamSendPastMessagesForRoom(data);
           //let o = dataFromServer as ClientWantsToEnterRoom;
           //this.DownstreamSendPastMessagesForRoom(o.roomId, dataFromServer.data.messages)
           break;
@@ -31,8 +34,9 @@ export class DataContainer {
   }
 
 
-  DownstreamSendPastMessagesForRoom(roomId: number, messages: Message[]) {
-    this.roomsWithMessages.set(roomId, messages);
+  DownstreamSendPastMessagesForRoom(obj: any) {
+    this.roomsWithMessages.set(obj.roomId, obj.recentMessages);
+    console.log(this.roomsWithMessages)
   }
 
   upstreamSendMessageToRoom(roomId: any) {
