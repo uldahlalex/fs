@@ -2,9 +2,10 @@ import {inject, Injectable} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {State} from "./service.state";
 import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/EnterRoom";
+import {ClientWantsToLogIn, ClientWantsToRegister} from "../models/authTransferObjects";
 
 @Injectable({providedIn: 'root'})
-export class WebsockSocketClient {
+export class WebSocketClientService {
 
   state = inject(State);
   constructor() {
@@ -40,5 +41,13 @@ export class WebsockSocketClient {
       this.clientWantsToEnterRoom(roomId);
     }
 
+  }
+
+  clientWantsToLogIn(clientWantsToLogIn: ClientWantsToLogIn) {
+    console.log(clientWantsToLogIn)
+  }
+
+  clientWantsToRegister(clientWantsToRegister: ClientWantsToRegister) {
+    console.log(clientWantsToRegister)
   }
 }

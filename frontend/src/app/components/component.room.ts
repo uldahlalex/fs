@@ -3,7 +3,7 @@ import {State} from "../services/service.state";
 import {JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {FormsModule} from "@angular/forms";
-import {WebsockSocketClient} from "../services/service.websocketclient";
+import {WebSocketClientService} from "../services/service.websocketclient";
 
 
 @Component({
@@ -21,7 +21,8 @@ import {WebsockSocketClient} from "../services/service.websocketclient";
       flex-direction: column;
 ">
           <div *ngIf="roomId">
-              <div *ngFor="let k of state.roomsWithMessages.get(roomId)">UID: {{ k.sender }}
+              <div *ngFor="let k of state.roomsWithMessages.get(roomId)">
+                  UID: {{ k.sender }}
                   said {{ k.messageContent }}
                   at {{ k.timestamp }}
               </div>
@@ -43,14 +44,14 @@ export class ComponentRoom {
   roomId: number | undefined;
   state = inject(State);
   route = inject(ActivatedRoute);
-  websocketClient = inject(WebsockSocketClient);
+  websocketClient = inject(WebSocketClientService);
 
   constructor() {
     this.route.paramMap.subscribe(params => this.enter(Number.parseInt(params.get('id')!)));
 
   }
 
-
+  
   private enter(id: number) {
     this.roomId = id;
     this.websocketClient.clientWantsToEnterRoom(id)
