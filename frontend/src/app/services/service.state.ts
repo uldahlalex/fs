@@ -12,7 +12,7 @@ export class State {
   rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {id: 3, title: "Sports"}];
 
   constructor() {
-    this.rooms.forEach(room => this.roomsWithMessages.set(room.id, []));
+    this.rooms.forEach(room => this.roomsWithMessages.set(room.id!, []));
   }
 
 

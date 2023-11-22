@@ -6,7 +6,6 @@ export class ClientWantsToEnterRoom extends BaseTransferObject {
 
   constructor(init?: Partial<ClientWantsToEnterRoom>) {
     super();
-    // copy all properties from init to this
     Object.assign(this, init);
   }
 
@@ -15,8 +14,9 @@ export class ClientWantsToEnterRoom extends BaseTransferObject {
 export class ServerLetsClientEnterRoom extends BaseTransferObject {
   roomId?: number;
   recentMessages?: Message[];
-  constructor() {
+  constructor(init?: Partial<ServerLetsClientEnterRoom>) {
     super();
+    Object.assign(this, init);
   }
 
 }

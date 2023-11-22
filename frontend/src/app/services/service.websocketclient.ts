@@ -1,7 +1,7 @@
 import {inject, Injectable} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {State} from "./service.state";
-import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/RoomTransferObjects";
+import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/EnterRoom";
 
 @Injectable({providedIn: 'root'})
 export class WebsockSocketClient {
@@ -19,8 +19,6 @@ export class WebsockSocketClient {
       switch (data.eventType) {
         case "ServerLetsClientEnterRoom":
           this.ServerLetsClientEnterRoom( data as ServerLetsClientEnterRoom);
-          //let o = dataFromServer as ClientWantsToEnterRoom;
-          //this.DownstreamSendPastMessagesForRoom(o.roomId, dataFromServer.data.messages)
           break;
         case "DownstreamBroadcastMessageToRoom":
           // here a new message is added and appended to the list of messages
