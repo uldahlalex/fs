@@ -10,14 +10,14 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^17.0.3",
-    "@angular/common": "^17.0.3",
-    "@angular/compiler": "^17.0.3",
-    "@angular/core": "^17.0.3",
-    "@angular/forms": "^17.0.3",
-    "@angular/platform-browser": "^17.0.3",
-    "@angular/platform-browser-dynamic": "^17.0.3",
-    "@angular/router": "^17.0.3",
+    "@angular/animations": "^17.0.4",
+    "@angular/common": "^17.0.4",
+    "@angular/compiler": "^17.0.4",
+    "@angular/core": "^17.0.4",
+    "@angular/forms": "^17.0.4",
+    "@angular/platform-browser": "^17.0.4",
+    "@angular/platform-browser-dynamic": "^17.0.4",
+    "@angular/router": "^17.0.4",
     "normalize.css": "^8.0.1",
     "rxjs": "~7.8.1",
     "sakura.css": "^1.5.0",
@@ -26,10 +26,10 @@
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.0.1",
-    "@angular/cli": "^17.0.1",
-    "@angular/compiler-cli": "^17.0.3",
-    "@types/jasmine": "~5.1.2",
+    "@angular-devkit/build-angular": "^17.0.3",
+    "@angular/cli": "^17.0.3",
+    "@angular/compiler-cli": "^17.0.4",
+    "@types/jasmine": "~5.1.4",
     "autoprefixer": "^10.4.16",
     "typescript": "~5.2.2"
   }

@@ -16,14 +16,13 @@ export class WebsockSocketClient {
           this.ServerLetsClientEnterRoom( data as ServerLetsClientEnterRoom);
           break;
         case "DownstreamBroadcastMessageToRoom":
-          // here a new message is added and appended to the list of messages
+          //todo finish server induced events
           break;
       }
     }
   }
 
   ServerLetsClientEnterRoom(serverLetsClientEnterRoom: ServerLetsClientEnterRoom) {
-    console.log(serverLetsClientEnterRoom);
     this.state.roomsWithMessages.set(serverLetsClientEnterRoom.roomId!, serverLetsClientEnterRoom.recentMessages!);
   }
 
