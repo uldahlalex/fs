@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
-import {Message, Room, TransferObject} from "./types";
-
+import {Message, Room} from "./models/entities";
+import {BaseTransferObject} from "./models/baseTransferObject";
+import {ClientWantsToEnterRoom} from "./models/RoomTransferObjects";
 @Injectable({
   providedIn: 'root'
 })
@@ -16,10 +17,11 @@ export class DataContainer {
     this.socketConnection.onopen = () => console.log("connection established");
     //TRIGGERED ON ANY DOWNSTREAM MESSAGE
     this.socketConnection.onmessage = (event) => {
-      const dataFromServer = JSON.parse(event.data.eventType) as TransferObject<any>;
+      const dataFromServer = JSON.parse(event.data.eventType) as BaseTransferObject;
       switch (dataFromServer.eventType) {
         case "DownstreamSendPastMessagesForRoom":
-          this.DownstreamSendPastMessagesForRoom(dataFromServer.data.roomId, dataFromServer.data.messages)
+          //let o = dataFromServer as ClientWantsToEnterRoom;
+          //this.DownstreamSendPastMessagesForRoom(o.roomId, dataFromServer.data.messages)
           break;
         case "DownstreamBroadcastMessageToRoom":
           // here a new message is added and appended to the list of messages
@@ -37,13 +39,14 @@ export class DataContainer {
 
   }
 
-  async upstreamEnterRoom(roomId: any) {
+  async clientWantsToEnterRoom(roomId: any) {
     try {
-      this.socketConnection!.send(JSON.stringify({eventType: "UpstreamEnterRoom", data: {roomId: roomId}}));
+      let o : ClientWantsToEnterRoom = new ClientWantsToEnterRoom(roomId);
+      this.socketConnection!.send(JSON.stringify(o));
     } catch (e) {
       console.log("connection not established, retrying in 1 second")
       await new Promise(resolve => setTimeout(resolve, 1000));
-      this.upstreamEnterRoom(roomId);
+      this.clientWantsToEnterRoom(roomId);
     }
 
   }

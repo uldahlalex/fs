@@ -9,3 +9,5 @@ public class BaseTransferObject
         eventType = GetType().Name;
     }
 }
+
+

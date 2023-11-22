@@ -49,7 +49,7 @@ export class ComponentRoom {
 
   private enter(id: number) {
     this.roomId = id;
-    this.service.upstreamEnterRoom(id)
+    this.service.clientWantsToEnterRoom(id)
   }
 
 }

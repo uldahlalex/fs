@@ -5,7 +5,7 @@ import {FormsModule} from "@angular/forms";
 import {DataContainer} from "./service.datacontainer";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpClientModule, HttpSentEvent} from "@angular/common/http";
-import {Room} from "./types";
+import {Room} from "./models/entities";
 import {ComponentSidebar} from "./component.sidebar";
 
 
