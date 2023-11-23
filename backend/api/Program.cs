@@ -15,7 +15,7 @@ builder.Services.AddSingleton<ClientInducedEvents>();
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
+//here you can also add an mqtt server
 var app = builder.Build();
-app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
-await new MqttClient().Handle_Received_Application_Message();
-app.Run();
+await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+await app.RunAsync();
