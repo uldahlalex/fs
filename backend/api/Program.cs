@@ -1,9 +1,13 @@
 using api;
 using api.Mqtt;
 using api.Websocket;
+using core;
+using core.Models;
 using core.SecurityUtilities;
 using Infrastructure;
 using Serilog;
+
+EnforceNameCheck.CheckPropertyNames<EndUser>();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
@@ -19,5 +23,5 @@ builder.Services.AddSingleton<MqttClient>();
 //here you can also add an mqtt server
 var app = builder.Build();
 app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
-await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+//await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
 await app.RunAsync();

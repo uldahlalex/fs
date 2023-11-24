@@ -1,4 +1,5 @@
 namespace core.Models;
+using System;
 
 public class Message
 {
@@ -9,8 +10,19 @@ public class Message
     public int room { get; set; }
 }
 
-public class EndUser
+[AttributeUsage(AttributeTargets.Property)]
+public class EnforceNameAttribute : Attribute
 {
+    public string Name { get; }
+
+    public EnforceNameAttribute(string name)
+    {
+        Name = name;
+    }
+}
+public class EndUser
+{    
+    [EnforceName("id")]
     public int id { get; set; }
     public string? email { get; set; }
     public string? hash { get; set; }

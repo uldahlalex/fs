@@ -1,6 +1,8 @@
 ﻿namespace Infrastructure;
 public class Utilities
 {
+    
+    //todo tyk til shared
     private static readonly Uri Uri = new Uri(Environment.GetEnvironmentVariable("pgconn")!);
 
     public static readonly string
