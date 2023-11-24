@@ -1,4 +1,5 @@
 using core;
+using core.Models;
 using FluentAssertions;
 using NUnit.Framework;
 using Websocket.Client;
@@ -9,6 +10,8 @@ namespace Tests;
 
 public class Tests
 {
+    //todo rewrite
+    
     private const string WebSocketServerUri = "ws://localhost:8181/1";
 
     [TestCase("Hello, server!")]

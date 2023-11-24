@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
-namespace core;
+namespace core.Models.WebsocketTransferObjects;
 
 public class ClientWantsToEnterRoom : BaseTransferObject
 {
@@ -14,6 +13,6 @@ public class ServerLetsClientEnterRoom : BaseTransferObject
 {
 
     public int roomId { get; set; }
-    public IEnumerable<Message> recentMessages { get; set; }
+    public IEnumerable<Message>? recentMessages { get; set; }
 }
 

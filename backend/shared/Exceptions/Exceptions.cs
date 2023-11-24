@@ -1,4 +1,4 @@
-namespace api;
+namespace core.Exceptions;
 
 public class DeserializationException : Exception
 {

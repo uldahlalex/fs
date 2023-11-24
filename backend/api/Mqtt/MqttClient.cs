@@ -20,7 +20,10 @@ public class MqttClient
 
             mqttClient.ApplicationMessageReceivedAsync += async e =>
             {
-                Log.Information(e.ApplicationMessage.ConvertPayloadToString());
+                var message = e.ApplicationMessage.ConvertPayloadToString();
+                Log.Information(message);
+                
+                //persist and pass on to websocket broadcaster
 
                 // Create the PONG message
                var pongMessage = new MqttApplicationMessageBuilder()

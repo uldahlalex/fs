@@ -1,12 +1,8 @@
-using System.Security.Claims;
-using System.Text;
-using Fleck;
 using JWT;
 using JWT.Algorithms;
-using JWT.Builder;
 using JWT.Serializers;
 
-namespace api;
+namespace core.AuthenticationUtilities;
 
 public class AuthUtilities
 {
@@ -20,7 +16,7 @@ public class AuthUtilities
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
         
-            var json = decoder.Decode(jwt, secret, verify: true); //throws if invalid
+            var json = decoder.Decode(jwt, secret, verify: true); 
             return true;
         }
         catch
@@ -28,7 +24,7 @@ public class AuthUtilities
             return false;
         }
     }
-    public string IssueJwt(string secret, Dictionary<string, object> claimsPayload)
+    public string IssueJwt(string secret, Dictionary<string, object?> claimsPayload)
     {
         IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
         IJsonSerializer serializer = new JsonNetSerializer();

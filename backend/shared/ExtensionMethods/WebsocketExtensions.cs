@@ -1,7 +1,7 @@
 
 using Fleck;
 
-namespace api;
+namespace core.ExtensionMethods;
 
 
 public static class WebsocketExtensions
