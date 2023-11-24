@@ -1,14 +1,10 @@
-using System.ComponentModel.DataAnnotations;
-using core;
-using Fleck;
-using Newtonsoft.Json;
-using System.Text.Json;
 using core.ExtensionMethods;
 using core.Models.WebsocketTransferObjects;
+using Fleck;
+using Newtonsoft.Json;
 using Serilog;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace api;
+namespace api.Websocket;
 
 public class WebsocketUtilities(WebsocketLiveConnections websocketLiveConnections)
 {

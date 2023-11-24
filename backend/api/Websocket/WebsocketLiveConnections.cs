@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Fleck;
 
-namespace api;
+namespace api.Websocket;
 
 public class WebsocketLiveConnections
 { 

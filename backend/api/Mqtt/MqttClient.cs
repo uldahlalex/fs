@@ -1,10 +1,9 @@
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
-using MQTTnet.Protocol;
 using Serilog;
 
-namespace api;
+namespace api.Mqtt;
 
 public class MqttClient
 {

@@ -1,5 +1,7 @@
 using api;
-using core.AuthenticationUtilities;
+using api.Mqtt;
+using api.Websocket;
+using core.SecurityUtilities;
 using Infrastructure;
 using Serilog;
 
@@ -10,7 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
 builder.Services.AddSingleton<WebsocketLiveConnections>();
-builder.Services.AddSingleton<AuthUtilities>();
 builder.Services.AddSingleton<WebsocketUtilities>();
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<WebsocketServer>();

@@ -1,19 +1,18 @@
-using core;
-using core.AuthenticationUtilities;
+using System.Security.Authentication;
 using core.ExtensionMethods;
 using core.Models;
 using core.Models.WebsocketTransferObjects;
+using core.SecurityUtilities;
 using core.TextTools;
 using Fleck;
 using Infrastructure;
 using Newtonsoft.Json;
 using Serilog;
 
-namespace api;
+namespace api.Websocket;
 
 public class WebsocketServer(
     WebsocketLiveConnections websocketLiveConnections,
-    AuthUtilities authUtilities,
     ChatRepository chatRepository,
     WebsocketUtilities websocketUtilities)
 {
@@ -72,7 +71,8 @@ public class WebsocketServer(
                         Deserializer<ClientWantsToRegister>.Deserialize(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToAuthenticate":
-                    //todo
+                    ClientWantsToAuthenticate(socket,
+                        Deserializer<ClientWantsToAuthenticate>.Deserialize(incomingClientMessagePayload));
                     break;
                 default: 
                     websocketUtilities.EventNotFound(socket, eventType);
@@ -89,8 +89,8 @@ public class WebsocketServer(
             socket.Send(response);
         }
     }
-    
-     public void ClientWantsToSendMessageToRoom(IWebSocketConnection socket,
+
+    private void ClientWantsToSendMessageToRoom(IWebSocketConnection socket,
         ClientSendsMessageToRoom clientSendsMessageToRoom)
     {
         Message messageToInsert = new Message()
@@ -110,7 +110,7 @@ public class WebsocketServer(
     }
 
 
-    public void ClientWantsToEnterRoom(IWebSocketConnection socket, ClientWantsToEnterRoom clientWantsToEnterRoom)
+    private void ClientWantsToEnterRoom(IWebSocketConnection socket, ClientWantsToEnterRoom clientWantsToEnterRoom)
     {
         if (!websocketLiveConnections.SocketState.ContainsKey(socket.ConnectionInfo.Id))
             return;
@@ -127,8 +127,8 @@ public class WebsocketServer(
             message = "A new user has entered the room!"
         });
     }
-    
-    public void ClientWantsToLeaveRoom(IWebSocketConnection socket, ClientWantsToLeaveRoom clientWantsToLeaveRoom)
+
+    private void ClientWantsToLeaveRoom(IWebSocketConnection socket, ClientWantsToLeaveRoom clientWantsToLeaveRoom)
     {
         socket.RemoveFromRoom(clientWantsToLeaveRoom.roomId);
         websocketUtilities.BroadcastMessageToRoom(clientWantsToLeaveRoom.roomId, new ServerNotifiesClientsInRoom
@@ -138,17 +138,35 @@ public class WebsocketServer(
         });
         
     }
-    
-    public void ClientWantsToRegister(IWebSocketConnection socket, ClientWantsToRegister clientWantsToRegister)
+
+    private void ClientWantsToRegister(IWebSocketConnection socket, ClientWantsToRegister clientWantsToRegister)
     {
-        var jwt = authUtilities.IssueJwt("1234", new Dictionary<string, object?>()
-        {
-            {"email", clientWantsToRegister.email}
-        });
-        Log.Information(jwt);
-        var result = authUtilities.IsJwtValid(jwt, "1234");
-        Log.Information(result.ToString());
+        if (chatRepository.UserExists(clientWantsToRegister.email)) throw new Exception("User already exists!");
+        var salt = SecurityUtilities.GenerateSalt();
+        var hash = SecurityUtilities.Hash(clientWantsToRegister.password!, salt);
+        EndUser user = chatRepository.InsertUser(clientWantsToRegister.email!, hash, salt);
+        var jwt = SecurityUtilities.IssueJwt(
+            new Dictionary<string, object?>() { {"email", user.email} });
         socket.Authenticate();
-        socket.Send(jwt);
+        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser{jwt = jwt}));
+    }
+
+    private void ClientWantsToAuthenticate(IWebSocketConnection socket, ClientWantsToAuthenticate clientWantsToAuthenticate)
+    {
+        EndUser user;
+        try
+        {
+            user = chatRepository.GetUser(clientWantsToAuthenticate.email!);
+        } catch (Exception e)
+        {
+            Log.Error(e, "WebsocketServer");
+            throw new AuthenticationException("User does not exist!");
+        }
+        
+        var expectedHash = SecurityUtilities.Hash(clientWantsToAuthenticate.password!, user.salt!);
+        if(!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
+        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>() { {"email", user.email} });
+        socket.Authenticate();
+        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser{jwt = jwt}));
     }
 }
