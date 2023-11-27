@@ -1,13 +1,14 @@
-using api;
 using api.Mqtt;
 using api.Websocket;
-using core;
+using core.Attributes;
 using core.Models;
-using core.SecurityUtilities;
 using Infrastructure;
 using Serilog;
 
 EnforceNameCheck.CheckPropertyNames<EndUser>();
+EnforceNameCheck.CheckPropertyNames<Message>();
+EnforceNameCheck.CheckPropertyNames<Room>();
+EnforceNameCheck.CheckPropertyNames<UserRoomJunctions>();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")

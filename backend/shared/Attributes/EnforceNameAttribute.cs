@@ -1,7 +1,18 @@
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using core.Models;
 
-namespace core;
+namespace core.Attributes;
+
+[AttributeUsage(AttributeTargets.Property)]
+public class EnforceNameAttribute : ValidationAttribute
+{
+    public EnforceNameAttribute(string name)
+    {
+        Name = name;
+    }
+
+    public string Name { get; }
+}
 
 public static class EnforceNameCheck
 {
@@ -13,9 +24,9 @@ public static class EnforceNameCheck
             var enforceNameAttribute = propertyInfo.GetCustomAttribute<EnforceNameAttribute>();
             if (enforceNameAttribute != null && enforceNameAttribute.Name != propertyInfo.Name)
             {
-                throw new Exception($"Property named '{propertyInfo.Name}' violated the naming rule. It should be named '{enforceNameAttribute.Name}'.");
+                throw new Exception(
+                    $"Property named '{propertyInfo.Name}' violated the naming rule. It should be named '{enforceNameAttribute.Name}'.");
             }
         }
     }
-    
 }

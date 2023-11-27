@@ -1,8 +1,6 @@
-
 using Fleck;
 
 namespace core.ExtensionMethods;
-
 
 public static class WebsocketExtensions
 {
@@ -11,7 +9,6 @@ public static class WebsocketExtensions
 
     public static void Authenticate(this IWebSocketConnection connection)
     {
-        
         if (!AuthenticationStatus.TryAdd(connection, false))
             AuthenticationStatus[connection] = true;
     }
@@ -34,11 +31,12 @@ public static class WebsocketExtensions
 
     public static List<int> GetConnectedRooms(this IWebSocketConnection connection)
     {
-        if (!ConnectedRooms.ContainsKey(connection)) 
-            return new List<int>();  // default to an empty list when not present
-            
-        return ConnectedRooms[connection];    
+        if (!ConnectedRooms.ContainsKey(connection))
+            return new List<int>(); // default to an empty list when not present
+
+        return ConnectedRooms[connection];
     }
+
     public static void RemoveFromRoom(this IWebSocketConnection connection, int roomId)
     {
         if (!ConnectedRooms.ContainsKey(connection))

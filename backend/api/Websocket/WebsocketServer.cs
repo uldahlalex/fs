@@ -25,7 +25,10 @@ public class WebsocketServer(
             server.Start(socket =>
             {
                 socket.OnMessage = message => HandleClientMessage(socket, message);
-                socket.OnOpen = () => { websocketLiveConnections.SocketState.TryAdd(socket.ConnectionInfo.Id, socket); };
+                socket.OnOpen = () =>
+                {
+                    websocketLiveConnections.SocketState.TryAdd(socket.ConnectionInfo.Id, socket);
+                };
                 socket.OnClose = () => { websocketUtilities.PurgeClient(socket); };
                 socket.OnError = exception =>
                 {
@@ -56,28 +59,33 @@ public class WebsocketServer(
             {
                 case "ClientWantsToEnterRoom":
                     ClientWantsToEnterRoom(socket,
-                        Deserializer<ClientWantsToEnterRoom>.DeserializeAndValidate(incomingClientMessagePayload));
+                        Deserializer<ClientWantsToEnterRoom>
+                            .DeserializeToModelAndValidate(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToSendMessageToRoom":
                     ClientWantsToSendMessageToRoom(socket,
-                        Deserializer<ClientSendsMessageToRoom>.Deserialize(incomingClientMessagePayload));
+                        Deserializer<ClientSendsMessageToRoom>.DeserializeToModelAndValidate(
+                            incomingClientMessagePayload));
                     break;
                 case "ClientWantsToLeaveRoom":
                     ClientWantsToLeaveRoom(socket,
-                        Deserializer<ClientWantsToLeaveRoom>.Deserialize(incomingClientMessagePayload));
+                        Deserializer<ClientWantsToLeaveRoom>
+                            .DeserializeToModelAndValidate(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToRegister":
                     ClientWantsToRegister(socket,
-                        Deserializer<ClientWantsToRegister>.Deserialize(incomingClientMessagePayload));
+                        Deserializer<ClientWantsToRegister>
+                            .DeserializeToModelAndValidate(incomingClientMessagePayload));
                     break;
                 case "ClientWantsToAuthenticate":
                     ClientWantsToAuthenticate(socket,
-                        Deserializer<ClientWantsToAuthenticate>.Deserialize(incomingClientMessagePayload));
+                        Deserializer<ClientWantsToAuthenticate>.DeserializeToModelAndValidate(
+                            incomingClientMessagePayload));
                     break;
-                default: 
+                default:
                     websocketUtilities.EventNotFound(socket, eventType);
                     break;
-            } 
+            }
         }
         catch (Exception e)
         {
@@ -136,7 +144,6 @@ public class WebsocketServer(
             message = "A user has left the room!",
             roomId = clientWantsToLeaveRoom.roomId
         });
-        
     }
 
     private void ClientWantsToRegister(IWebSocketConnection socket, ClientWantsToRegister clientWantsToRegister)
@@ -146,27 +153,29 @@ public class WebsocketServer(
         var hash = SecurityUtilities.Hash(clientWantsToRegister.password!, salt);
         EndUser user = chatRepository.InsertUser(clientWantsToRegister.email!, hash, salt);
         var jwt = SecurityUtilities.IssueJwt(
-            new Dictionary<string, object?>() { {"email", user.email} });
+            new Dictionary<string, object?>() { { "email", user.email } });
         socket.Authenticate();
-        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser{jwt = jwt}));
+        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser { jwt = jwt }));
     }
 
-    private void ClientWantsToAuthenticate(IWebSocketConnection socket, ClientWantsToAuthenticate clientWantsToAuthenticate)
+    private void ClientWantsToAuthenticate(IWebSocketConnection socket,
+        ClientWantsToAuthenticate clientWantsToAuthenticate)
     {
         EndUser user;
         try
         {
             user = chatRepository.GetUser(clientWantsToAuthenticate.email!);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             Log.Error(e, "WebsocketServer");
             throw new AuthenticationException("User does not exist!");
         }
-        
+
         var expectedHash = SecurityUtilities.Hash(clientWantsToAuthenticate.password!, user.salt!);
-        if(!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
-        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>() { {"email", user.email} });
+        if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
+        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>() { { "email", user.email } });
         socket.Authenticate();
-        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser{jwt = jwt}));
+        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser { jwt = jwt }));
     }
 }

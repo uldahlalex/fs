@@ -13,7 +13,7 @@ public static class Deserializer<T>
                ?? throw new DeserializationException($"Failed to deserialize message: {message}");
     }
 
-    public static T DeserializeAndValidate(string message)
+    public static T DeserializeToModelAndValidate(string message)
     {
         T deserialized = Deserialize(message)!;
         var context = new ValidationContext(deserialized, serviceProvider: null, items: null);

@@ -1,4 +1,4 @@
-using core;
+using System.Net.Http.Headers;
 using core.Models;
 using FluentAssertions;
 using NUnit.Framework;
@@ -11,8 +11,9 @@ namespace Tests;
 public class Tests
 {
     //todo rewrite
-    
+
     private const string WebSocketServerUri = "ws://localhost:8181/1";
+
 
     [TestCase("Hello, server!")]
     public async Task TwoClientsCanConnectAndSendMessage(string message)
@@ -36,5 +37,12 @@ public class Tests
             await Task.Delay(TimeSpan.FromSeconds(1));
             receivedResponses[0][1].messageContent.Should().Be(message);
         }
+    }
+
+    public void test()
+    {
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", Environment.GetEnvironmentVariable("token"));
     }
 }
