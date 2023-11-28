@@ -32,7 +32,7 @@ public static class WebsocketExtensions
     public static List<int> GetConnectedRooms(this IWebSocketConnection connection)
     {
         if (!ConnectedRooms.ContainsKey(connection))
-            return new List<int>(); // default to an empty list when not present
+            return new List<int>();
 
         return ConnectedRooms[connection];
     }

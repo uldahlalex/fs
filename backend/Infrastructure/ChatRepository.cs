@@ -7,15 +7,15 @@ namespace Infrastructure;
 
 public class ChatRepository(NpgsqlDataSource dataSource)
 {
-    public IEnumerable<Message> GetPastMessages()
+    public IEnumerable<Message> GetPastMessages(int room, int lastMessageId = 0)
     {
         var sql = $@"
-SELECT * FROM chat.messages ORDER BY timestamp DESC LIMIT 5;
+SELECT * FROM chat.messages where id>@lastMessageId and room=@room ORDER BY timestamp DESC LIMIT 5;;
 ";
 
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.Query<Message>(sql);
+            return conn.Query<Message>(sql, new {lastMessageId, room});
         }
     }
 

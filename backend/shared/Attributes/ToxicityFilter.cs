@@ -17,6 +17,6 @@ public class ToxicityFilter : ValidationAttribute
 
     public bool IsToxic(string message)
     {
-        return true;
+        return false;
     }
 }

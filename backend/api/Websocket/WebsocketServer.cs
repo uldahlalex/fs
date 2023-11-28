@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using JetBrains.Annotations;
+using System.Reflection;
 using System.Security.Authentication;
 using core.ExtensionMethods;
 using core.Models;
@@ -11,11 +14,9 @@ using Serilog;
 
 namespace api.Websocket;
 
-public class WebsocketServer(
-    WebsocketLiveConnections websocketLiveConnections,
-    ChatRepository chatRepository,
-    WebsocketUtilities websocketUtilities)
+public class WebsocketServer(ChatRepository chatRepository)
 {
+    private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _liveSocketConnections = new(); 
     public void StartWebsocketServer()
     {
         try
@@ -24,12 +25,21 @@ public class WebsocketServer(
             server.RestartAfterListenError = true;
             server.Start(socket =>
             {
-                socket.OnMessage = message => HandleClientMessage(socket, message);
+                socket.OnMessage = message =>
+                {
+                    var eventType = Deserializer<BaseTransferObject>
+                        .Deserialize(message)
+                        .eventType;
+                    
+                    GetType().GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
+                        .Invoke(this, new object[] { socket, message });
+
+                };
                 socket.OnOpen = () =>
                 {
-                    websocketLiveConnections.SocketState.TryAdd(socket.ConnectionInfo.Id, socket);
+                    _liveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket);
                 };
-                socket.OnClose = () => { websocketUtilities.PurgeClient(socket); };
+                socket.OnClose = () => { RemoveClientFromConnections(socket); };
                 socket.OnError = exception =>
                 {
                     Log.Error(exception, "WebsocketServer");
@@ -47,124 +57,100 @@ public class WebsocketServer(
         }
     }
 
-
-    private void HandleClientMessage(IWebSocketConnection socket, string incomingClientMessagePayload)
+    #region Events
+    
+    [UsedImplicitly]
+    private void ClientWantsToLoadOlderMessagesEvent(IWebSocketConnection socket, string dto)
     {
-        try
-        {
-            string eventType = Deserializer<BaseTransferObject>
-                .Deserialize(incomingClientMessagePayload)
-                .eventType;
-            switch (eventType)
-            {
-                case "ClientWantsToEnterRoom":
-                    ClientWantsToEnterRoom(socket,
-                        Deserializer<ClientWantsToEnterRoom>
-                            .DeserializeToModelAndValidate(incomingClientMessagePayload));
-                    break;
-                case "ClientWantsToSendMessageToRoom":
-                    ClientWantsToSendMessageToRoom(socket,
-                        Deserializer<ClientSendsMessageToRoom>.DeserializeToModelAndValidate(
-                            incomingClientMessagePayload));
-                    break;
-                case "ClientWantsToLeaveRoom":
-                    ClientWantsToLeaveRoom(socket,
-                        Deserializer<ClientWantsToLeaveRoom>
-                            .DeserializeToModelAndValidate(incomingClientMessagePayload));
-                    break;
-                case "ClientWantsToRegister":
-                    ClientWantsToRegister(socket,
-                        Deserializer<ClientWantsToRegister>
-                            .DeserializeToModelAndValidate(incomingClientMessagePayload));
-                    break;
-                case "ClientWantsToAuthenticate":
-                    ClientWantsToAuthenticate(socket,
-                        Deserializer<ClientWantsToAuthenticate>.DeserializeToModelAndValidate(
-                            incomingClientMessagePayload));
-                    break;
-                default:
-                    websocketUtilities.EventNotFound(socket, eventType);
-                    break;
-            }
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "WebsocketServer");
-            var response = JsonConvert.SerializeObject(new ServerSendsErrorMessageToClient
-            {
-                errorMessage = e.Message
-            });
-            socket.Send(response);
-        }
+        var request =
+            Deserializer<ClientWantsToLoadOlderMessages>.DeserializeToModelAndValidate(dto);
+        var messages = chatRepository.GetPastMessages(
+            request.roomId,
+            request.lastMessageId);
+        var resp = new ServerSendsOlderMessagesToClient()
+            { messages = messages, roomId = request.roomId };
+        socket.Send(JsonConvert.SerializeObject(resp));
     }
 
-    private void ClientWantsToSendMessageToRoom(IWebSocketConnection socket,
-        ClientSendsMessageToRoom clientSendsMessageToRoom)
+    [UsedImplicitly]
+    public void ClientWantsToSendMessageToRoom(IWebSocketConnection socket, string dto)
     {
+        var request =
+            Deserializer<ClientWantsToSendMessageToRoom>.DeserializeToModelAndValidate(dto);
         Message messageToInsert = new Message()
         {
-            messageContent = clientSendsMessageToRoom.messageContent,
-            room = clientSendsMessageToRoom.roomId,
+            messageContent = request.messageContent,
+            room = request.roomId,
             sender = 1, //todo refactor til at tage fra jwt
             timestamp = DateTimeOffset.UtcNow
         };
         var insertionResponse = chatRepository.InsertMessage(messageToInsert);
-        var response = new ServerBroadcastsMessageToClients()
+        var response = new ServerBroadcastsMessageToClientsInRoom()
         {
-            message = insertionResponse
+            message = insertionResponse,
+            roomId = request.roomId
         };
 
-        websocketUtilities.BroadcastMessageToRoom(clientSendsMessageToRoom.roomId, response);
+        BroadcastMessageToRoom(request.roomId, response);
     }
 
 
-    private void ClientWantsToEnterRoom(IWebSocketConnection socket, ClientWantsToEnterRoom clientWantsToEnterRoom)
+    [UsedImplicitly]
+    public void ClientWantsToEnterRoom(IWebSocketConnection socket, string dto)
     {
-        if (!websocketLiveConnections.SocketState.ContainsKey(socket.ConnectionInfo.Id))
+        var request = Deserializer<ClientWantsToEnterRoom>.DeserializeToModelAndValidate(dto);
+        if (!_liveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
             return;
-        socket.JoinRoom(clientWantsToEnterRoom.roomId);
-        var data = new ServerLetsClientEnterRoom()
+        socket.JoinRoom(request.roomId);
+        var data = new ServerAddsClientToRoom()
         {
-            recentMessages = chatRepository.GetPastMessages(),
-            roomId = clientWantsToEnterRoom.roomId,
+            recentMessages = chatRepository.GetPastMessages(request.roomId),
+            roomId = request.roomId,
         };
         socket.Send(JsonConvert.SerializeObject(data));
-        websocketUtilities.BroadcastMessageToRoom(clientWantsToEnterRoom.roomId, new ServerNotifiesClientsInRoom()
+        BroadcastMessageToRoom(request.roomId, new ServerNotifiesClientsInRoom()
         {
-            roomId = clientWantsToEnterRoom.roomId,
+            roomId = request.roomId,
             message = "A new user has entered the room!"
         });
     }
 
-    private void ClientWantsToLeaveRoom(IWebSocketConnection socket, ClientWantsToLeaveRoom clientWantsToLeaveRoom)
+    [UsedImplicitly]
+    public void ClientWantsToLeaveRoom(IWebSocketConnection socket, string transferObject)
     {
-        socket.RemoveFromRoom(clientWantsToLeaveRoom.roomId);
-        websocketUtilities.BroadcastMessageToRoom(clientWantsToLeaveRoom.roomId, new ServerNotifiesClientsInRoom
+        var request = Deserializer<ClientWantsToLeaveRoom>.DeserializeToModelAndValidate(transferObject);
+
+        socket.RemoveFromRoom(request.roomId);
+        BroadcastMessageToRoom(request.roomId, new ServerNotifiesClientsInRoom
         {
             message = "A user has left the room!",
-            roomId = clientWantsToLeaveRoom.roomId
+            roomId = request.roomId
         });
     }
 
-    private void ClientWantsToRegister(IWebSocketConnection socket, ClientWantsToRegister clientWantsToRegister)
+    [UsedImplicitly]
+    public void ClientWantsToRegister(IWebSocketConnection socket, string dto)
     {
-        if (chatRepository.UserExists(clientWantsToRegister.email)) throw new Exception("User already exists!");
+        var request = Deserializer<ClientWantsToRegister>.DeserializeToModelAndValidate(dto);
+        if (chatRepository.UserExists(request.email)) throw new Exception("User already exists!");
         var salt = SecurityUtilities.GenerateSalt();
-        var hash = SecurityUtilities.Hash(clientWantsToRegister.password!, salt);
-        EndUser user = chatRepository.InsertUser(clientWantsToRegister.email!, hash, salt);
+        var hash = SecurityUtilities.Hash(request.password!, salt);
+        EndUser user = chatRepository.InsertUser(request.email!, hash, salt);
         var jwt = SecurityUtilities.IssueJwt(
             new Dictionary<string, object?>() { { "email", user.email } });
         socket.Authenticate();
-        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser { jwt = jwt }));
+        socket.Send(JsonConvert.SerializeObject(new ServerAuthenticatesUser { jwt = jwt }));
     }
 
-    private void ClientWantsToAuthenticate(IWebSocketConnection socket,
-        ClientWantsToAuthenticate clientWantsToAuthenticate)
+    [UsedImplicitly]
+    public void ClientWantsToAuthenticate(IWebSocketConnection socket, string dto)
     {
+        var request =
+            Deserializer<ClientWantsToAuthenticate>.DeserializeToModelAndValidate(dto);
         EndUser user;
         try
         {
-            user = chatRepository.GetUser(clientWantsToAuthenticate.email!);
+            user = chatRepository.GetUser(request.email!);
         }
         catch (Exception e)
         {
@@ -172,10 +158,39 @@ public class WebsocketServer(
             throw new AuthenticationException("User does not exist!");
         }
 
-        var expectedHash = SecurityUtilities.Hash(clientWantsToAuthenticate.password!, user.salt!);
+        var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>() { { "email", user.email } });
         socket.Authenticate();
-        socket.Send(JsonConvert.SerializeObject(new ServerHasAuthenticatedUser { jwt = jwt }));
+        socket.Send(JsonConvert.SerializeObject(new ServerAuthenticatesUser { jwt = jwt }));
     }
+    #endregion
+
+    #region Helpers
+
+    private void BroadcastMessageToRoom(int roomId, BaseTransferObject transferObject)
+    {
+        foreach (var socketKeyValuePair in _liveSocketConnections)
+        {
+            if (!socketKeyValuePair.Value.GetConnectedRooms().Contains(roomId))
+                throw new KeyNotFoundException("User is not present in the room they are trying to send a message to!");
+            try
+            {
+                var roomMember = _liveSocketConnections.GetValueOrDefault(socketKeyValuePair.Key) ?? throw new Exception("Could not find socket with GUID "+socketKeyValuePair.Key);
+                roomMember.Send(JsonConvert.SerializeObject(transferObject));
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "WebsocketUtilities");
+            }
+        }
+    }
+
+    private void RemoveClientFromConnections(IWebSocketConnection socket)
+    {
+        if (_liveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
+            _liveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
+    }
+
+    #endregion
 }

@@ -1,7 +1,7 @@
 
 export class Message {
   sender?: number;
-  timestamp?: Date
+  timestamp?: string
   id?: number;
   messageContent?: string;
 

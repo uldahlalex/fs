@@ -16,13 +16,10 @@ Log.Logger = new LoggerConfiguration()
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
-builder.Services.AddSingleton<WebsocketLiveConnections>();
-builder.Services.AddSingleton<WebsocketUtilities>();
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
-//here you can also add an mqtt server
 var app = builder.Build();
 app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
-//await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+//await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message(); //if broker aint running it throws
 await app.RunAsync();

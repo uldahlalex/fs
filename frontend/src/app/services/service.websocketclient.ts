@@ -3,6 +3,7 @@ import {BaseTransferObject} from "../models/baseTransferObject";
 import {State} from "./service.state";
 import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/EnterRoom";
 import {ClientWantsToLogIn, ClientWantsToRegister} from "../models/authTransferObjects";
+import {ClientWantsToLoadOlderMessages, ServerSendsOlderMessagesToClient} from "../models/sendMessage";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -16,11 +17,18 @@ export class WebSocketClientService {
         case "ServerLetsClientEnterRoom":
           this.ServerLetsClientEnterRoom( data as ServerLetsClientEnterRoom);
           break;
-        case "DownstreamBroadcastMessageToRoom":
+        case "ServerBroadcastsMessageToRoom":
           //todo finish server induced events
+        case "ServerSendsOlderMessagesToClient":
+          this.ServerSendsOlderMessagesToClient(data as ServerSendsOlderMessagesToClient);
           break;
       }
     }
+  }
+
+  private ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
+    this.state.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!.push(...serverSendsOlderMessagesToClient.messages!);
+
   }
 
   ServerLetsClientEnterRoom(serverLetsClientEnterRoom: ServerLetsClientEnterRoom) {
@@ -49,5 +57,9 @@ export class WebSocketClientService {
 
   clientWantsToRegister(clientWantsToRegister: ClientWantsToRegister) {
     console.log(clientWantsToRegister)
+  }
+
+  clientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages) {
+    this.state.socketConnection.send(JSON.stringify(clientWantsToLoadOlderMessages));
   }
 }
