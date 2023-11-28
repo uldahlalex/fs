@@ -16,16 +16,9 @@ export class WebSocketClientService {
     this.state.socketConnection.onopen = () => console.info("connection established");
     this.state.socketConnection.onmessage = (event) => {
       var data = JSON.parse(event.data) as BaseTransferObject<any>;
-      switch (data.eventType) {
-        case "ServerAddsClientToRoom":
-          this.ServerAddsClientToRoom( data as ServerAddsClientToRoom);
-          break;
-        case "ServerBroadcastsMessageToRoom":
-          //todo finish server induced events
-        case "ServerSendsOlderMessagesToClient":
-          this.ServerSendsOlderMessagesToClient(data as ServerSendsOlderMessagesToClient);
-          break;
-      }
+
+      //@ts-ignore
+        this[data.eventType].call(this, data);
     }
   }
 

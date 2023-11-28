@@ -1,5 +1,5 @@
 export class BaseTransferObject<T> {
-  eventType?: string;
+  eventType: string;
 
   constructor(init?: Partial<T>) {
     this.eventType = this.constructor.name;
