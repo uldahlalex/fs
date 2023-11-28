@@ -2,7 +2,8 @@ import {Component, inject, signal} from "@angular/core";
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {NgIf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
-import {ClientWantsToLogIn, ClientWantsToRegister} from "../models/authTransferObjects";
+import {ClientWantsToRegister} from "../models/clientWantsToRegister";
+import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
 
 @Component({
   standalone: true,
@@ -64,7 +65,7 @@ export class ComponentLogin {
     this.showLogin = !this.showLogin;
   }
   login() {
-    this.websocketClientService.clientWantsToLogIn(new ClientWantsToLogIn(this.loginForm.value as ClientWantsToLogIn));
+    this.websocketClientService.clientWantsToLogIn(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate));
   }
 
   register() {

@@ -1,9 +1,12 @@
 import {inject, Injectable} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {State} from "./service.state";
-import {ClientWantsToEnterRoom, ServerLetsClientEnterRoom} from "../models/EnterRoom";
-import {ClientWantsToLogIn, ClientWantsToRegister} from "../models/authTransferObjects";
-import {ClientWantsToLoadOlderMessages, ServerSendsOlderMessagesToClient} from "../models/sendMessage";
+import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
+import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
+import {ClientWantsToRegister} from "../models/clientWantsToRegister";
+import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
+import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
+import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -12,10 +15,10 @@ export class WebSocketClientService {
   constructor() {
     this.state.socketConnection.onopen = () => console.info("connection established");
     this.state.socketConnection.onmessage = (event) => {
-      var data = JSON.parse(event.data) as BaseTransferObject;
+      var data = JSON.parse(event.data) as BaseTransferObject<any>;
       switch (data.eventType) {
-        case "ServerLetsClientEnterRoom":
-          this.ServerLetsClientEnterRoom( data as ServerLetsClientEnterRoom);
+        case "ServerAddsClientToRoom":
+          this.ServerAddsClientToRoom( data as ServerAddsClientToRoom);
           break;
         case "ServerBroadcastsMessageToRoom":
           //todo finish server induced events
@@ -27,12 +30,13 @@ export class WebSocketClientService {
   }
 
   private ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
-    this.state.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!.push(...serverSendsOlderMessagesToClient.messages!);
+    this.state.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
+      .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
 
   }
 
-  ServerLetsClientEnterRoom(serverLetsClientEnterRoom: ServerLetsClientEnterRoom) {
-    this.state.roomsWithMessages.set(serverLetsClientEnterRoom.roomId!, serverLetsClientEnterRoom.recentMessages!);
+  ServerAddsClientToRoom(serverLetsClientEnterRoom: ServerAddsClientToRoom) {
+    this.state.roomsWithMessages.set(serverLetsClientEnterRoom.roomId!, serverLetsClientEnterRoom.messages!);
   }
 
   upstreamSendMessageToRoom(roomId: any) {
@@ -51,7 +55,7 @@ export class WebSocketClientService {
 
   }
 
-  clientWantsToLogIn(clientWantsToLogIn: ClientWantsToLogIn) {
+  clientWantsToLogIn(clientWantsToLogIn: ClientWantsToAuthenticate) {
     console.log(clientWantsToLogIn)
   }
 

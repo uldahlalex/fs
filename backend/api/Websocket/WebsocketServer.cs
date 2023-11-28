@@ -30,9 +30,24 @@ public class WebsocketServer(ChatRepository chatRepository)
                     var eventType = Deserializer<BaseTransferObject>
                         .Deserialize(message)
                         .eventType;
+                    try
+                    {
+                        GetType()
+                            .GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
+                            .Invoke(this, new object[] { socket, message });
+                    }
+                    catch (Exception e)
+                    {
+                        //check that inner exc and stack trace is also logged
+                        Log.Error(e, "WebsocketServer");
+                        var msg = new ServerSendsErrorMessageToClient()
+                        {
+                            receivedEventType = eventType,
+                            errorMessage = "Could not find correct event!"
+                        };
+                        socket.Send(JsonConvert.SerializeObject(msg));
+                    }
                     
-                    GetType().GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
-                        .Invoke(this, new object[] { socket, message });
 
                 };
                 socket.OnOpen = () =>
@@ -60,7 +75,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     #region Events
     
     [UsedImplicitly]
-    private void ClientWantsToLoadOlderMessagesEvent(IWebSocketConnection socket, string dto)
+    public void ClientWantsToLoadOlderMessages(IWebSocketConnection socket, string dto)
     {
         var request =
             Deserializer<ClientWantsToLoadOlderMessages>.DeserializeToModelAndValidate(dto);
@@ -104,7 +119,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         socket.JoinRoom(request.roomId);
         var data = new ServerAddsClientToRoom()
         {
-            recentMessages = chatRepository.GetPastMessages(request.roomId),
+            messages = chatRepository.GetPastMessages(request.roomId),
             roomId = request.roomId,
         };
         socket.Send(JsonConvert.SerializeObject(data));
@@ -116,9 +131,9 @@ public class WebsocketServer(ChatRepository chatRepository)
     }
 
     [UsedImplicitly]
-    public void ClientWantsToLeaveRoom(IWebSocketConnection socket, string transferObject)
+    public void ClientWantsToLeaveRoom(IWebSocketConnection socket, string dto)
     {
-        var request = Deserializer<ClientWantsToLeaveRoom>.DeserializeToModelAndValidate(transferObject);
+        var request = Deserializer<ClientWantsToLeaveRoom>.DeserializeToModelAndValidate(dto);
 
         socket.RemoveFromRoom(request.roomId);
         BroadcastMessageToRoom(request.roomId, new ServerNotifiesClientsInRoom

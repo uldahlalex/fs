@@ -5,7 +5,8 @@ import {ActivatedRoute} from "@angular/router";
 import {FormsModule} from "@angular/forms";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import ago from 's-ago';
-import {ClientWantsToLoadOlderMessages} from "../models/sendMessage";
+
+import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 
 
 @Component({
