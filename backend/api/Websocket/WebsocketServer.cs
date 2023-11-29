@@ -38,6 +38,7 @@ public class WebsocketServer(ChatRepository chatRepository)
                     }
                     catch (Exception e)
                     {
+                        //todo fix at ikke alle exc skal ret her
                         //check that inner exc and stack trace is also logged
                         Log.Error(e, "WebsocketServer");
                         var msg = new ServerSendsErrorMessageToClient()

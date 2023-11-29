@@ -7,6 +7,10 @@ import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
+import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
+import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
+import {ServerNotifiesClientsInRoom} from "../models/serverNotifiesClientsInRoom";
+import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -21,42 +25,30 @@ export class WebSocketClientService {
         this[data.eventType].call(this, data);
     }
   }
+  ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
+    this.state.roomsWithMessages.set(dto.roomId!, dto.messages!);
+  }
 
-  private ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
+  ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
+    localStorage.setItem("jwt", dto.jwt!);
+  }
+
+  ServerBroadcastsMessageMessageToClientsInRoom(dto: ServerBroadcastsMessageToClientsInRoom) {
+    console.log(dto)
+  }
+
+  ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) {
+    console.log(dto)
+  }
+
+  ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
+    console.log(dto)
+  }
+
+
+  ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
     this.state.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
       .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
-
   }
 
-  ServerAddsClientToRoom(serverLetsClientEnterRoom: ServerAddsClientToRoom) {
-    this.state.roomsWithMessages.set(serverLetsClientEnterRoom.roomId!, serverLetsClientEnterRoom.messages!);
-  }
-
-  upstreamSendMessageToRoom(roomId: any) {
-
-  }
-
-  async clientWantsToEnterRoom(roomId: any) {
-    try {
-      let clientWantsToEnterRoom =  new ClientWantsToEnterRoom({roomId: roomId});
-      this.state.socketConnection!.send(JSON.stringify(clientWantsToEnterRoom));
-    } catch (e) {
-      console.log("connection not established, retrying in 1 second")
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      this.clientWantsToEnterRoom(roomId);
-    }
-
-  }
-
-  clientWantsToLogIn(clientWantsToLogIn: ClientWantsToAuthenticate) {
-    console.log(clientWantsToLogIn)
-  }
-
-  clientWantsToRegister(clientWantsToRegister: ClientWantsToRegister) {
-    console.log(clientWantsToRegister)
-  }
-
-  clientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages) {
-    this.state.socketConnection.send(JSON.stringify(clientWantsToLoadOlderMessages));
-  }
 }

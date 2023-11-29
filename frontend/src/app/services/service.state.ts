@@ -14,7 +14,5 @@ export class State {
   constructor() {
     this.rooms.forEach(room => this.roomsWithMessages.set(room.id!, []));
   }
-
-
 }
 

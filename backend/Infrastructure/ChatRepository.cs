@@ -35,7 +35,7 @@ returning *;";
     {
         try
         {
-            var sql = $@"insert into chat.endusers (email, hash, salt) values (@email, @hash, @salt) returning *;";
+            var sql = $@"insert into chat.enduser (email, hash, salt) values (@email, @hash, @salt) returning *;";
             using (var conn = dataSource.OpenConnection())
             {
                 return conn.QueryFirst<EndUser>(sql, new { email, hash, salt });
@@ -49,7 +49,7 @@ returning *;";
     }
     public bool UserExists(string? email)
     {
-        var sql = $@"select count(*) from chat.endusers where email = @email;";
+        var sql = $@"select count(*) from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
             return conn.ExecuteScalar<int>(sql, new { email }) == 1;
@@ -58,7 +58,7 @@ returning *;";
 
     public EndUser GetUser(string email)
     {
-        var sql = $@"select * from chat.endusers where email = @email;";
+        var sql = $@"select * from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
                  return conn.QueryFirst<EndUser>(sql, new { email });

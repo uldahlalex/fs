@@ -4,6 +4,7 @@ import {NgIf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
+import {State} from "../services/service.state";
 
 @Component({
   standalone: true,
@@ -15,7 +16,7 @@ import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
       <div *ngIf="showLogin"
            style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <input [formControl]="loginEmail" placeholder="email">
-          <input [formControl]="loginPassword" placeholder="password">
+          <input type="password" [formControl]="loginPassword" placeholder="password">
           <div style="display: flex; flex-direction: row">
               <button style="background-color: transparent; color: black;" (click)="toggleRegisterLogin()">Not signed
                   up?
@@ -27,8 +28,8 @@ import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
       <div *ngIf="!showLogin"
            style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <input [formControl]="registerEmail" placeholder="email">
-          <input [formControl]="registerPassword" placeholder="password">
-          <input [formControl]="registerPasswordRepeat" placeholder="password">
+          <input type="password" [formControl]="registerPassword" placeholder="password">
+          <input type="password" [formControl]="registerPasswordRepeat" placeholder="password">
           <div style="display: flex; flex-direction: row">
               <button style="background-color: transparent; color: black;" (click)="toggleRegisterLogin()">Already
                   signed up?
@@ -55,21 +56,21 @@ export class ComponentLogin {
   registerForm = new FormGroup({
     email: this.registerEmail,
     password: this.registerPassword,
-    passwordRepeat: this.registerPasswordRepeat
+    //passwordRepeat: this.registerPasswordRepeat
   })
 
   websocketClientService = inject(WebSocketClientService);
+  state = inject(State);
 
   showLogin: boolean = true;
   toggleRegisterLogin() {
     this.showLogin = !this.showLogin;
   }
   login() {
-    this.websocketClientService.clientWantsToLogIn(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate));
+    this.state.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate)));
   }
 
   register() {
-    this.websocketClientService.clientWantsToRegister(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister));
-
+    this.state.socketConnection.send(JSON.stringify(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister)));
   }
 }
