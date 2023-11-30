@@ -20,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\api\api.csproj" />
       <ProjectReference Include="..\shared\shared.csproj" />
     </ItemGroup>
 

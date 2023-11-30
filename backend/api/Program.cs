@@ -1,5 +1,6 @@
 using api.Mqtt;
 using api.Websocket;
+using core;
 using core.Attributes;
 using core.Models;
 using Infrastructure;

@@ -1,8 +1,6 @@
-﻿namespace Infrastructure;
+﻿namespace core;
 public class Utilities
 {
-    
-    //todo tyk til shared
     private static readonly Uri Uri = new Uri(Environment.GetEnvironmentVariable("pgconn")!);
 
     public static readonly string
@@ -13,5 +11,4 @@ public class Utilities
             Uri.UserInfo.Split(':')[0],
             Uri.UserInfo.Split(':')[1],
             Uri.Port > 0 ? Uri.Port : 5432);
-
 }
