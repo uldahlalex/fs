@@ -1,4 +1,4 @@
-using core.Models.MqttTransferObjects;
+using core.Models;
 using Dapper;
 using Npgsql;
 
@@ -14,20 +14,23 @@ public class TimeSeriesRepository
         using (var conn = _dataSource.OpenConnection())
         {
             conn.Execute(@"
+drop schema demo cascade;
 CREATE SCHEMA IF NOT EXISTS demo;
 CREATE TABLE IF NOT EXISTS demo.timeseries
-(id SERIAL PRIMARY KEY, messageContent TEXT, timestamp TIMESTAMP);
+(id int primary key generated always as identity,
+ messageContent TEXT, timestamp TIMESTAMP WITH TIME ZONE);
+
 ");
         }
     }
 
     public TimeSeriesDataPoint PersistTimeSeriesDataPoint(TimeSeriesDataPoint dataPoint)
     {
-        var sql = $@"INSERT INTO demo.timeseries (messageContent, timestamp) RETURNING *;";
+        var sql = $@"INSERT INTO demo.timeseries (messageContent, timestamp) VALUES (@messageContent, @timestamp) RETURNING *;";
 
         using (var conn = _dataSource.OpenConnection())
         {
-            return conn.QueryFirst<TimeSeriesDataPoint>(sql, dataPoint);
+            return conn.QueryFirst<TimeSeriesDataPoint>(sql, new {messageContent = dataPoint.messageContent, timestamp = dataPoint.timestamp});
         }
     }
 }

@@ -6,10 +6,12 @@ using Infrastructure;
 using MQTTnet.Exceptions;
 using Serilog;
 
+
 EnforceNameCheck.CheckPropertyNames<EndUser>();
 EnforceNameCheck.CheckPropertyNames<Message>();
 EnforceNameCheck.CheckPropertyNames<Room>();
 EnforceNameCheck.CheckPropertyNames<UserRoomJunctions>();
+EnforceNameCheck.CheckPropertyNames<TimeSeriesDataPoint>();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")

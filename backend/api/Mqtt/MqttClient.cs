@@ -1,5 +1,5 @@
 using api.Websocket;
-using core.Models.MqttTransferObjects;
+using core.Models;
 using core.Models.WebsocketTransferObjects;
 using core.TextTools;
 using Infrastructure;
@@ -22,16 +22,24 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
             .WithTcpServer("localhost", 1883)
             .WithProtocolVersion(MqttProtocolVersion.V500)
             .Build();
+        
+        await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+
+        var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
+            .WithTopicFilter(f => f.WithTopic("timeseries"))
+            .Build();
+
+        await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
 
         mqttClient.ApplicationMessageReceivedAsync += async e =>
         {
             var message = e.ApplicationMessage.ConvertPayloadToString();
-            Log.Information(message);
             var timeSeriesDataPoint = Deserializer<TimeSeriesDataPoint>.Deserialize(message);
             timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
             var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
             var serializedTimeSeries = JsonConvert.SerializeObject( 
                 new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult });
+            Log.Information(serializedTimeSeries);
             
             foreach (var websocketServerLiveSocketConnection in websocketServer.LiveSocketConnections)
             {
@@ -47,12 +55,6 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
             await mqttClient.PublishAsync(pongMessage, CancellationToken.None);
         };
 
-        await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
-        var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
-            .WithTopicFilter(f => f.WithTopic("timeseries"))
-            .Build();
-
-        await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
     }
 }
