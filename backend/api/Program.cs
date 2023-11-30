@@ -3,6 +3,7 @@ using api.Websocket;
 using core.Attributes;
 using core.Models;
 using Infrastructure;
+using MQTTnet.Exceptions;
 using Serilog;
 
 EnforceNameCheck.CheckPropertyNames<EndUser>();
@@ -17,9 +18,24 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
 builder.Services.AddSingleton<ChatRepository>();
+builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 var app = builder.Build();
-app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
-//await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message(); //if broker aint running it throws
-await app.RunAsync();
+try
+{
+    app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
+    var startBroker = Environment.GetEnvironmentVariable("START_BROKER");
+    Console.WriteLine("START_BROKER env variable is: " + startBroker);
+    if (startBroker is "true")
+        await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+    await app.RunAsync();
+}
+catch (MqttCommunicationException e)
+{
+    Log.Error(e, "MQTT broker not started!");
+}
+catch (Exception e)
+{
+    Log.Error(e, "Failed to start services");
+}

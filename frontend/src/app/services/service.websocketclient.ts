@@ -11,6 +11,7 @@ import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcasts
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {ServerNotifiesClientsInRoom} from "../models/serverNotifiesClientsInRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
+import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -42,6 +43,10 @@ export class WebSocketClientService {
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
+    console.log(dto)
+  }
+
+  ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
     console.log(dto)
   }
 

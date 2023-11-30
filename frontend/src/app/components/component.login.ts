@@ -56,7 +56,6 @@ export class ComponentLogin {
   registerForm = new FormGroup({
     email: this.registerEmail,
     password: this.registerPassword,
-    //passwordRepeat: this.registerPasswordRepeat
   })
 
   websocketClientService = inject(WebSocketClientService);

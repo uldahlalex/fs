@@ -16,65 +16,56 @@ namespace api.Websocket;
 
 public class WebsocketServer(ChatRepository chatRepository)
 {
-    private readonly ConcurrentDictionary<Guid, IWebSocketConnection> _liveSocketConnections = new(); 
+    public readonly ConcurrentDictionary<Guid, IWebSocketConnection> LiveSocketConnections = new();
+
     public void StartWebsocketServer()
     {
-        try
+        var server = new WebSocketServer("ws://127.0.0.1:8181");
+        server.RestartAfterListenError = true;
+        server.Start(socket =>
         {
-            var server = new WebSocketServer("ws://127.0.0.1:8181");
-            server.RestartAfterListenError = true;
-            server.Start(socket =>
+            socket.OnMessage = message =>
             {
-                socket.OnMessage = message =>
+                var eventType = Deserializer<BaseTransferObject>
+                    .Deserialize(message)
+                    .eventType;
+                try
                 {
-                    var eventType = Deserializer<BaseTransferObject>
-                        .Deserialize(message)
-                        .eventType;
-                    try
-                    {
-                        GetType()
-                            .GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
-                            .Invoke(this, new object[] { socket, message });
-                    }
-                    catch (Exception e)
-                    {
-                        //todo fix at ikke alle exc skal ret her
-                        //check that inner exc and stack trace is also logged
-                        Log.Error(e, "WebsocketServer");
-                        var msg = new ServerSendsErrorMessageToClient()
-                        {
-                            receivedEventType = eventType,
-                            errorMessage = "Could not find correct event!"
-                        };
-                        socket.Send(JsonConvert.SerializeObject(msg));
-                    }
-                    
-
-                };
-                socket.OnOpen = () =>
+                    //Invoke client requests based on relection of eventType
+                    GetType()
+                        .GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
+                        .Invoke(this, new object[] { socket, message });
+                }
+                catch (Exception e)
                 {
-                    _liveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket);
-                };
-                socket.OnClose = () => { RemoveClientFromConnections(socket); };
-                socket.OnError = exception =>
-                {
-                    Log.Error(exception, "WebsocketServer");
-                    var data = new ServerSendsErrorMessageToClient()
+                    Log.Error(e, "WebsocketServer");
+                    var msg = new ServerSendsErrorMessageToClient()
                     {
-                        errorMessage = exception.Message
+                        receivedEventType = eventType,
+                        errorMessage =
+                            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Development")
+                                ? e.Message
+                                : "Something went wrong"
                     };
-                    socket.Send(JsonConvert.SerializeObject(data));
+                    socket.Send(JsonConvert.SerializeObject(msg));
+                }
+            };
+            socket.OnOpen = () => { LiveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket); };
+            socket.OnClose = () => { RemoveClientFromConnections(socket); };
+            socket.OnError = exception =>
+            {
+                Log.Error(exception, "WebsocketServer");
+                var data = new ServerSendsErrorMessageToClient()
+                {
+                    errorMessage = exception.Message
                 };
-            });
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "WebsocketServer");
-        }
+                socket.Send(JsonConvert.SerializeObject(data));
+            };
+        });
     }
 
     #region Events
-    
+
     [UsedImplicitly]
     public void ClientWantsToLoadOlderMessages(IWebSocketConnection socket, string dto)
     {
@@ -115,7 +106,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     public void ClientWantsToEnterRoom(IWebSocketConnection socket, string dto)
     {
         var request = Deserializer<ClientWantsToEnterRoom>.DeserializeToModelAndValidate(dto);
-        if (!_liveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
+        if (!LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
             return;
         socket.JoinRoom(request.roomId);
         var data = new ServerAddsClientToRoom()
@@ -180,19 +171,21 @@ public class WebsocketServer(ChatRepository chatRepository)
         socket.Authenticate();
         socket.Send(JsonConvert.SerializeObject(new ServerAuthenticatesUser { jwt = jwt }));
     }
+
     #endregion
 
     #region Helpers
 
     private void BroadcastMessageToRoom(int roomId, BaseTransferObject transferObject)
     {
-        foreach (var socketKeyValuePair in _liveSocketConnections)
+        foreach (var socketKeyValuePair in LiveSocketConnections)
         {
             if (!socketKeyValuePair.Value.GetConnectedRooms().Contains(roomId))
                 throw new KeyNotFoundException("User is not present in the room they are trying to send a message to!");
             try
             {
-                var roomMember = _liveSocketConnections.GetValueOrDefault(socketKeyValuePair.Key) ?? throw new Exception("Could not find socket with GUID "+socketKeyValuePair.Key);
+                var roomMember = LiveSocketConnections.GetValueOrDefault(socketKeyValuePair.Key) ??
+                                 throw new Exception("Could not find socket with GUID " + socketKeyValuePair.Key);
                 roomMember.Send(JsonConvert.SerializeObject(transferObject));
             }
             catch (Exception e)
@@ -204,8 +197,8 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     private void RemoveClientFromConnections(IWebSocketConnection socket)
     {
-        if (_liveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
-            _liveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
+        if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
+            LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
     }
 
     #endregion

@@ -17,3 +17,11 @@ export class Room {
   }
 }
 
+export class TimeSeriesData {
+  timestamp?: string;
+  messageContent?: string;
+  id?: number;
+  constructor(init?: Partial<TimeSeriesData>) {
+    Object.assign(this, init);
+  }
+}
