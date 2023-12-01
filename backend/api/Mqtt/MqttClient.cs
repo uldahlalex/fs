@@ -1,12 +1,11 @@
 using api.Websocket;
+using core.ExtensionMethods;
 using core.Models;
 using core.Models.WebsocketTransferObjects;
-using core.TextTools;
 using Infrastructure;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace api.Mqtt;
@@ -34,11 +33,10 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
         mqttClient.ApplicationMessageReceivedAsync += async e =>
         {
             var message = e.ApplicationMessage.ConvertPayloadToString();
-            var timeSeriesDataPoint = Deserializer<TimeSeriesDataPoint>.Deserialize(message);
+            var timeSeriesDataPoint = message.DeserializeToModelAndValidate<TimeSeriesDataPoint>();
             timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
             var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
-            var serializedTimeSeries = JsonConvert.SerializeObject( 
-                new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult });
+            var serializedTimeSeries = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
             Log.Information(serializedTimeSeries);
             
             foreach (var websocketServerLiveSocketConnection in websocketServer.LiveSocketConnections)
@@ -54,7 +52,5 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
                 .Build();
             await mqttClient.PublishAsync(pongMessage, CancellationToken.None);
         };
-
-
     }
 }

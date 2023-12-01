@@ -34,7 +34,7 @@ try
         await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
     await app.RunAsync();
 }
-catch (MqttCommunicationException e)
+catch (MQTTnet.Exceptions.MqttCommunicationException e)
 {
     Log.Error(e, "MQTT broker not started!");
 }

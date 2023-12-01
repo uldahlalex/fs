@@ -1,4 +1,5 @@
 using Fleck;
+using Serilog;
 
 namespace core.ExtensionMethods;
 
@@ -25,7 +26,7 @@ public static class WebsocketExtensions
     {
         if (!ConnectedRooms.ContainsKey(connection))
             ConnectedRooms[connection] = new List<int>();
-
+        Log.Information("Joining room: "+roomId+" for connection: "+connection.ConnectionInfo.Id+"");
         ConnectedRooms[connection].Add(roomId);
     }
 
@@ -44,4 +45,6 @@ public static class WebsocketExtensions
 
         ConnectedRooms[connection].Remove(roomId);
     }
+    
+    // todo serialize and send as extension method?
 }

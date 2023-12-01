@@ -1,76 +1,84 @@
-using FluentAssertions;
-using NUnit.Framework;
-using Websocket.Client;
-using Newtonsoft.Json;
 using api.Websocket;
 using core;
+using core.ExtensionMethods;
 using core.Models.WebsocketTransferObjects;
-using core.TextTools;
+using FluentAssertions;
 using Infrastructure;
 using Npgsql;
+using NUnit.Framework;
+using Serilog;
+using Websocket.Client;
 
-namespace YourNamespace.Tests;
+namespace Tests;
 
 public class WebsocketServerTests
 {
+    private readonly WebsocketServer _webSocketServer;
+    private Uri _uri = new Uri("ws://localhost:8181");
+
     public WebsocketServerTests()
     {
-        new WebsocketServer(
-                new ChatRepository(
-                    new NpgsqlDataSourceBuilder(
-                            Utilities.ProperlyFormattedConnectionString).Build())).StartWebsocketServer();
+        
+       /*Log.Logger = new LoggerConfiguration() // todo put in shared
+            .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
+            .CreateLogger();
+        _webSocketServer = new WebsocketServer(
+            new ChatRepository(
+                new NpgsqlDataSourceBuilder(
+                    Utilities.ProperlyFormattedConnectionString).Build()));
+        _webSocketServer.StartWebsocketServer();*/
     }
 
     [TestCase(1)]
-    public async Task ShouldHandle_ClientWantsToEnterRoom_MessageCorrectly(int roomId)
+    public async Task ServerBroadcastsSomeDataToSeveralClients(int roomId)
     {
-        var messageReceived = await MessageReceived(roomId);
-        var actual = Deserializer<ServerNotifiesClientsInRoom>.Deserialize(
-            messageReceived.receivedMessage);
-        actual.Should().BeEquivalentTo(new ServerNotifiesClientsInRoom()
-        {
-            roomId = roomId,
-            message = "A new user has entered the room!"
-        });
-    }
-
-    [TestCase(1)]
-    public async Task ShouldHandle_ClientWantsToEnterRoom_MessageCorrectly_GetsResponse(int roomId)
-    {
-        var messageReceived = await MessageReceived(roomId);
-        messageReceived.messageReceived.Should().BeTrue();
-    }
-
-
-    private async Task<(bool messageReceived, string receivedMessage)> MessageReceived(int roomId)
-    {
-        //todo make tests that have X assertions but arrange + act is extracted
-
-        // Arrange
-        var url = new Uri("ws://localhost:8181");
-        using var client = new WebsocketClient(url);
-
-        var enterRoomMessage = new ClientWantsToEnterRoom
+        var messagesSentToClient1 = new List<ServerNotifiesClientsInRoom>();
+        var messagesSentToClient2 = new List<ServerNotifiesClientsInRoom>();
+        var enterRoomEvent = new ClientWantsToEnterRoom
         {
             roomId = roomId
         };
-
-        var messageReceived = false;
-        var receivedMessage = string.Empty;
-
-        client.MessageReceived.Subscribe(message =>
+        var expectedNotification = new ServerNotifiesClientsInRoom()
         {
-            messageReceived = true;
-            receivedMessage = message.Text;
-        });
+            roomId = roomId,
+            message = "A new user has entered the room!"
+            //todo add user to the notification?
+        };
+        using (var client = new WebsocketClient(_uri))
+        using (var client2 = new WebsocketClient(_uri))
+        {
+            client.MessageReceived.Subscribe(message =>
+            {
+                Log.Information("CLIENT 1: GETS: "+message.Text);
+                if (message.Text.Deserialize<BaseTransferObject>().eventType == nameof(ServerNotifiesClientsInRoom))
+                    messagesSentToClient1.Add(message.Text.Deserialize<ServerNotifiesClientsInRoom>());
+            });
 
-        await client.Start();
+            client2.MessageReceived.Subscribe(message =>
+            {
+                Log.Information("CLIENT 2: GETS: "+message.Text);
+                if (message.Text.Deserialize<BaseTransferObject>().eventType == nameof(ServerNotifiesClientsInRoom))
+                    messagesSentToClient2.Add(message.Text.Deserialize<ServerNotifiesClientsInRoom>());
 
-        // Act
-        client.Send(JsonConvert.SerializeObject(enterRoomMessage));
+            });
 
-        // Wait for the message to be received by the client
-        await Task.Delay(TimeSpan.FromSeconds(1));
-        return (messageReceived, receivedMessage);
+            await client.Start();
+            await client2.Start();
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            
+            //the bug has been revealed: exc it thrown by server when
+            //a socket conn is open but another broadcasts to a room the first one is not in
+            //here the behvaior should be: one client shoud ge the message, because only one client is present in the room
+            client.Send(enterRoomEvent.ToJsonString());
+            client2.Send(enterRoomEvent.ToJsonString());
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
+       messagesSentToClient1
+            .Should()
+            .ContainEquivalentOf(expectedNotification);
+        messagesSentToClient2
+            .Should()
+            .ContainEquivalentOf(expectedNotification);
     }
 }

@@ -6,8 +6,8 @@ using core.ExtensionMethods;
 using core.Models;
 using core.Models.WebsocketTransferObjects;
 using core.SecurityUtilities;
-using core.TextTools;
 using Fleck;
+using Force.DeepCloner;
 using Infrastructure;
 using Newtonsoft.Json;
 using Serilog;
@@ -26,8 +26,9 @@ public class WebsocketServer(ChatRepository chatRepository)
         {
             socket.OnMessage = message =>
             {
-                var eventType = Deserializer<BaseTransferObject>
-                    .Deserialize(message)
+                Log.Information(message);
+                var eventType =
+                    message.Deserialize<BaseTransferObject>()
                     .eventType;
                 try
                 {
@@ -50,7 +51,22 @@ public class WebsocketServer(ChatRepository chatRepository)
                     socket.Send(JsonConvert.SerializeObject(msg));
                 }
             };
-            socket.OnOpen = () => { LiveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket); };
+            socket.OnOpen = () =>
+            {
+             /*   var clone = socket.DeepClone();
+                string json = JsonConvert.SerializeObject(clone, new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    Converters = new List<JsonConverter> { new SafeConverter() }
+                });
+                Log.Information(json);*/
+             //todo hvis de er tid lav custom serializer
+             //todo pt bare find ud af hvorfor test klienten ikke bliver føjet til listen,
+             //mens browser klienten gør
+             Log.Information("Starts to connect!");
+                LiveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket);
+                Log.Information("connected: "+socket.ConnectionInfo.Id);
+            };
             socket.OnClose = () => { RemoveClientFromConnections(socket); };
             socket.OnError = exception =>
             {
@@ -69,8 +85,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     [UsedImplicitly]
     public void ClientWantsToLoadOlderMessages(IWebSocketConnection socket, string dto)
     {
-        var request =
-            Deserializer<ClientWantsToLoadOlderMessages>.DeserializeToModelAndValidate(dto);
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToLoadOlderMessages>();
         var messages = chatRepository.GetPastMessages(
             request.roomId,
             request.lastMessageId);
@@ -82,8 +97,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     [UsedImplicitly]
     public void ClientWantsToSendMessageToRoom(IWebSocketConnection socket, string dto)
     {
-        var request =
-            Deserializer<ClientWantsToSendMessageToRoom>.DeserializeToModelAndValidate(dto);
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToSendMessageToRoom>();
         Message messageToInsert = new Message()
         {
             messageContent = request.messageContent,
@@ -105,7 +119,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     [UsedImplicitly]
     public void ClientWantsToEnterRoom(IWebSocketConnection socket, string dto)
     {
-        var request = Deserializer<ClientWantsToEnterRoom>.DeserializeToModelAndValidate(dto);
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
         if (!LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
             return;
         socket.JoinRoom(request.roomId);
@@ -125,7 +139,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     [UsedImplicitly]
     public void ClientWantsToLeaveRoom(IWebSocketConnection socket, string dto)
     {
-        var request = Deserializer<ClientWantsToLeaveRoom>.DeserializeToModelAndValidate(dto);
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
 
         socket.RemoveFromRoom(request.roomId);
         BroadcastMessageToRoom(request.roomId, new ServerNotifiesClientsInRoom
@@ -138,7 +152,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     [UsedImplicitly]
     public void ClientWantsToRegister(IWebSocketConnection socket, string dto)
     {
-        var request = Deserializer<ClientWantsToRegister>.DeserializeToModelAndValidate(dto);
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToRegister>();
         if (chatRepository.UserExists(request.email)) throw new Exception("User already exists!");
         var salt = SecurityUtilities.GenerateSalt();
         var hash = SecurityUtilities.Hash(request.password!, salt);
@@ -152,8 +166,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     [UsedImplicitly]
     public void ClientWantsToAuthenticate(IWebSocketConnection socket, string dto)
     {
-        var request =
-            Deserializer<ClientWantsToAuthenticate>.DeserializeToModelAndValidate(dto);
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToAuthenticate>();
         EndUser user;
         try
         {
@@ -178,10 +191,12 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     private void BroadcastMessageToRoom(int roomId, BaseTransferObject transferObject)
     {
+        //dictionary lookup between room and members would probably be faster
         foreach (var socketKeyValuePair in LiveSocketConnections)
         {
-            if (!socketKeyValuePair.Value.GetConnectedRooms().Contains(roomId))
-                throw new KeyNotFoundException("User is not present in the room they are trying to send a message to!");
+            //todo here is the bug
+            if (socketKeyValuePair.Value.GetConnectedRooms().Contains(roomId))
+                //throw new KeyNotFoundException("User is not present in the room they are trying to send a message to! Socket ID: "+socketKeyValuePair.Key);
             try
             {
                 var roomMember = LiveSocketConnections.GetValueOrDefault(socketKeyValuePair.Key) ??
