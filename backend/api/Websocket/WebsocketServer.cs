@@ -26,10 +26,10 @@ public class WebsocketServer(ChatRepository chatRepository)
         {
             socket.OnMessage = message =>
             {
-                Log.Information(message);
+                Log.Information(message, "Client sent message: ");
                 var eventType =
                     message.Deserialize<BaseTransferObject>()
-                    .eventType;
+                        .eventType;
                 try
                 {
                     //Invoke client requests based on relection of eventType
@@ -53,21 +53,16 @@ public class WebsocketServer(ChatRepository chatRepository)
             };
             socket.OnOpen = () =>
             {
-             /*   var clone = socket.DeepClone();
-                string json = JsonConvert.SerializeObject(clone, new JsonSerializerSettings
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                    Converters = new List<JsonConverter> { new SafeConverter() }
-                });
-                Log.Information(json);*/
-             //todo hvis de er tid lav custom serializer
-             //todo pt bare find ud af hvorfor test klienten ikke bliver føjet til listen,
-             //mens browser klienten gør
-             Log.Information("Starts to connect!");
                 LiveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket);
-                Log.Information("connected: "+socket.ConnectionInfo.Id);
+                Log.Information("Connected: " + socket.ConnectionInfo.Id);
             };
-            socket.OnClose = () => { RemoveClientFromConnections(socket); };
+            socket.OnClose = () =>
+            {
+                if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
+                    LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
+                Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
+
+            };
             socket.OnError = exception =>
             {
                 Log.Error(exception, "WebsocketServer");
@@ -91,7 +86,7 @@ public class WebsocketServer(ChatRepository chatRepository)
             request.lastMessageId);
         var resp = new ServerSendsOlderMessagesToClient()
             { messages = messages, roomId = request.roomId };
-        socket.Send(JsonConvert.SerializeObject(resp));
+        socket.Send(resp.ToJsonString());
     }
 
     [UsedImplicitly]
@@ -128,7 +123,7 @@ public class WebsocketServer(ChatRepository chatRepository)
             messages = chatRepository.GetPastMessages(request.roomId),
             roomId = request.roomId,
         };
-        socket.Send(JsonConvert.SerializeObject(data));
+        socket.Send(data.ToJsonString());
         BroadcastMessageToRoom(request.roomId, new ServerNotifiesClientsInRoom()
         {
             roomId = request.roomId,
@@ -140,7 +135,6 @@ public class WebsocketServer(ChatRepository chatRepository)
     public void ClientWantsToLeaveRoom(IWebSocketConnection socket, string dto)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
-
         socket.RemoveFromRoom(request.roomId);
         BroadcastMessageToRoom(request.roomId, new ServerNotifiesClientsInRoom
         {
@@ -160,7 +154,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         var jwt = SecurityUtilities.IssueJwt(
             new Dictionary<string, object?>() { { "email", user.email } });
         socket.Authenticate();
-        socket.Send(JsonConvert.SerializeObject(new ServerAuthenticatesUser { jwt = jwt }));
+        socket.Send(new ServerAuthenticatesUser { jwt = jwt }.ToJsonString());
     }
 
     [UsedImplicitly]
@@ -182,7 +176,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>() { { "email", user.email } });
         socket.Authenticate();
-        socket.Send(JsonConvert.SerializeObject(new ServerAuthenticatesUser { jwt = jwt }));
+        socket.Send(new ServerAuthenticatesUser { jwt = jwt }.ToJsonString());
     }
 
     #endregion
@@ -191,29 +185,26 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     private void BroadcastMessageToRoom(int roomId, BaseTransferObject transferObject)
     {
-        //dictionary lookup between room and members would probably be faster
-        foreach (var socketKeyValuePair in LiveSocketConnections)
+        try
         {
-            //todo here is the bug
-            if (socketKeyValuePair.Value.GetConnectedRooms().Contains(roomId))
-                //throw new KeyNotFoundException("User is not present in the room they are trying to send a message to! Socket ID: "+socketKeyValuePair.Key);
-            try
+            foreach (var socketKeyValuePair in
+                     LiveSocketConnections) //dictionary lookup between room and members would probably be faster, but whatever
             {
-                var roomMember = LiveSocketConnections.GetValueOrDefault(socketKeyValuePair.Key) ??
-                                 throw new Exception("Could not find socket with GUID " + socketKeyValuePair.Key);
-                roomMember.Send(JsonConvert.SerializeObject(transferObject));
+                if (!socketKeyValuePair.Value.GetConnectedRooms().Contains(roomId)) continue; //continue skips to next iteration
+                LiveSocketConnections
+                    .GetValueOrDefault(socketKeyValuePair.Key)!
+                    .Send(transferObject.ToJsonString());
             }
-            catch (Exception e)
-            {
-                Log.Error(e, "WebsocketUtilities");
-            }
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "WebsocketUtilities");
         }
     }
 
-    private void RemoveClientFromConnections(IWebSocketConnection socket)
+    private void ClientFailsAuthentication(IWebSocketConnection socket)
     {
-        if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
-            LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
+        socket.UnAuthenticate();
     }
 
     #endregion

@@ -3,7 +3,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using core.Exceptions;
-using Json.Net;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -13,43 +12,19 @@ public static class SerializerAndDeserializerExtensions
 {
     public static string ToJsonString(this object obj)
     {
-        return JsonConvert.SerializeObject(obj);
-    }
-
-    public static string ToJsonStringAlternative(this object obj)
-    {
-        return System.Text.Json.JsonSerializer.Serialize(obj);
+        return JsonConvert.SerializeObject(obj, Formatting.Indented, new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        });
     }
     
 
+    /* //newtonsoft implementation
     public static T FromJson<T>(this string json)
     {
         return JsonConvert.DeserializeObject<T>(json);
-    }
-/*
-    public static void Dump(this object o)
-    {
-        ObjectDumper.Dump(o);
     }*/
-
-    public static string DumpNoCircularReferences(this object o)
-    {
-        //var dump = ObjectDumper.Dump(o);
-      /*  var jsonSerializerSettings = new JsonSerializerSettings()
-        {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            
-        };
-
-        return JsonConvert.SerializeObject(o, 
-            Formatting.Indented, 
-            jsonSerializerSettings);*/
-      return JsonNet.Serialize(o);
-    }
     
-    /**
-     * throws DeserializationException
-     */
     public static T Deserialize<T>(this string message)
     {
         return JsonSerializer.Deserialize<T>(message,
