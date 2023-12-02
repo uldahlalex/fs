@@ -204,6 +204,8 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     private void ClientFailsAuthentication(IWebSocketConnection socket)
     {
+        
+        //skal måske bare kaldes hvor den skal bruges i stedet for at have en wrapper metode
         socket.UnAuthenticate();
     }
 
