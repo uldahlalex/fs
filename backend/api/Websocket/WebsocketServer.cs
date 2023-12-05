@@ -32,7 +32,6 @@ public class WebsocketServer(ChatRepository chatRepository)
                         .eventType;
                 try
                 {
-                    //Invoke client requests based on relection of eventType
                     GetType()
                         .GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
                         .Invoke(this, new object[] { socket, message });

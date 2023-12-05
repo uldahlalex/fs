@@ -2,7 +2,6 @@ import {APP_INITIALIZER, Component, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
-import {State} from "../services/service.state";
 import {firstValueFrom} from "rxjs";
 import {HttpClient, HttpClientModule, HttpSentEvent} from "@angular/common/http";
 import {Room} from "../models/entities";

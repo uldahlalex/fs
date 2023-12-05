@@ -1,8 +1,7 @@
 import {Component, inject} from "@angular/core";
-import {State} from "../services/service.state";
 import {JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
-import {FormsModule} from "@angular/forms";
+import {FormControl, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import ago from 's-ago';
 
@@ -25,7 +24,7 @@ import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessage
       flex-direction: column;
 ">
           <div *ngIf="roomId">
-              <div *ngFor="let k of state.roomsWithMessages.get(roomId)"
+              <div *ngFor="let k of websocketService.roomsWithMessages.get(roomId)"
                    style="display: flex; flex-direction: row; justify-content: space-between">
                   <div>
                       UID: {{ k.sender }}
@@ -38,8 +37,9 @@ import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessage
           </div>
 
           <div style="display: flex; flex-direction: row; justify-content: center;">
-              <input [(ngModel)]="state.input" placeholder="Write something interesting" style="height: 100%;">
-              <button (click)="clientWantsToSendMessageToRoom(roomId)" style="height: 100%;">insert
+              <input [formControl]="messageInput" placeholder="Write something interesting"
+                     style="height: 100%;">
+              <button (click)="clientWantsToSendMessageToRoom()" style="height: 100%;">insert
               </button>
           </div>
 
@@ -50,14 +50,16 @@ import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessage
     JsonPipe,
     NgForOf,
     FormsModule,
-    NgIf
+    NgIf,
+    ReactiveFormsModule
   ],
   standalone: true
 })
 export class ComponentRoom {
 
+  messageInput = new FormControl('');
   roomId: number | undefined;
-  state = inject(State);
+  websocketService = inject(WebSocketClientService);
   route = inject(ActivatedRoute);
   websocketClient = inject(WebSocketClientService);
 
@@ -72,7 +74,7 @@ export class ComponentRoom {
    async enterRoom() {
     try {
       let clientWantsToEnterRoom =  new ClientWantsToEnterRoom({roomId: this.roomId});
-      this.state.socketConnection!.send(JSON.stringify(clientWantsToEnterRoom));
+      this.websocketService.socketConnection!.send(JSON.stringify(clientWantsToEnterRoom));
     } catch (e) {
       console.log("connection not established, retrying in 1 second")
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -82,25 +84,24 @@ export class ComponentRoom {
 
 
   timestampThis(timestamp: string | undefined) {
-    var date = new Date(timestamp!);
-    return ago(date);
+      return ago(new Date(timestamp!)  );
   }
 
   fullDate(timestamp: string | undefined) {
-    var date = new Date(timestamp!);
-    return date.toLocaleString();
+    return new Date(timestamp!).toLocaleString()
+
   }
 
   loadOlderMessages() {
     let dto: ClientWantsToLoadOlderMessages = new ClientWantsToLoadOlderMessages({
       roomId: this.roomId,
-      lastMessageId: this.state.roomsWithMessages.get(this.roomId!)![0].id
+      lastMessageId: this.websocketService.roomsWithMessages.get(this.roomId!)![0].id
     })
-    this.state.socketConnection.send(JSON.stringify(dto));
+    this.websocketService.socketConnection.send(JSON.stringify(dto));
   }
 
-  clientWantsToSendMessageToRoom(roomId: number | undefined) {
-    let dto = new ClientWantsToSendMessageToRoom({message: this.state.input, roomId: roomId});
-    this.state.socketConnection.send(JSON.stringify(dto));
+  clientWantsToSendMessageToRoom() {
+    let dto = new ClientWantsToSendMessageToRoom({message: this.messageInput.value!, roomId: this.roomId});
+    this.websocketService.socketConnection.send(JSON.stringify(dto));
   }
 }

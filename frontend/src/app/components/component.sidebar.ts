@@ -1,7 +1,7 @@
 import {Component, inject, signal} from "@angular/core";
 import {Router} from "@angular/router";
-import {State} from "../services/service.state";
 import {NgForOf} from "@angular/common";
+import {WebSocketClientService} from "../services/service.websocketclient";
 
 @Component({
   template: `
@@ -29,8 +29,7 @@ import {NgForOf} from "@angular/common";
   standalone: true
 })
 export class ComponentSidebar {
-
-  service: State = inject(State);
+  service: WebSocketClientService = inject(WebSocketClientService);
   router: Router = inject(Router);
 
   isOpen: boolean = false;

@@ -4,7 +4,6 @@ import {NgIf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
-import {State} from "../services/service.state";
 
 @Component({
   standalone: true,
@@ -58,18 +57,17 @@ export class ComponentLogin {
     password: this.registerPassword,
   })
 
-  websocketClientService = inject(WebSocketClientService);
-  state = inject(State);
+  webSocketService = inject(WebSocketClientService);
 
   showLogin: boolean = true;
   toggleRegisterLogin() {
     this.showLogin = !this.showLogin;
   }
   login() {
-    this.state.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate)));
+    this.webSocketService.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate)));
   }
 
   register() {
-    this.state.socketConnection.send(JSON.stringify(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister)));
+    this.webSocketService.socketConnection.send(JSON.stringify(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister)));
   }
 }
