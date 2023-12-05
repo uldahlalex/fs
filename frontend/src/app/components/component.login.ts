@@ -1,9 +1,11 @@
-import {Component, inject, signal} from "@angular/core";
+import {Component, Inject, inject, signal} from "@angular/core";
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {NgIf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
+import {API_SERVICE_TOKEN} from "../../main";
+import {ApiCallServiceInterface} from "../services/apiCallService.interface";
 
 @Component({
   standalone: true,
@@ -43,6 +45,9 @@ export class ComponentLogin {
   registerEmail = new FormControl('');
   registerPassword = new FormControl('');
   registerPasswordRepeat = new FormControl('');
+  constructor(
+    @Inject(API_SERVICE_TOKEN) private apiCallService: ApiCallServiceInterface
+  ) {}
 
   loginEmail = new FormControl('');
   loginPassword = new FormControl('');
@@ -68,6 +73,6 @@ export class ComponentLogin {
   }
 
   register() {
-    this.webSocketService.socketConnection.send(JSON.stringify(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister)));
+      this.apiCallService.ClientWantsToRegister(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister));
   }
 }
