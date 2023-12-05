@@ -33,14 +33,14 @@ export class ComponentSidebar {
   router: Router = inject(Router);
 
   isOpen: boolean = false;
-  dialogText: string = "Open Dialog";
+  dialogText: string = "Show rooms";
 
   toggleDialog() {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
-      this.dialogText = "Close Dialog";
+      this.dialogText = "Close popover";
     } else {
-      this.dialogText = "Open Dialog";
+      this.dialogText = "Show rooms";
     }
   }
 

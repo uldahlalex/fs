@@ -62,8 +62,16 @@ returning *;";
         using (var conn = dataSource.OpenConnection())
         {
                  return conn.QueryFirst<EndUser>(sql, new { email });
+                 
+        }
+    }
 
-           
+    public bool IsUserBanned(string email)
+    {
+        var sql = @"select isbanned from chat.enduser where email = @email;";
+        using (var conn = dataSource.OpenConnection())
+        {
+            return conn.ExecuteScalar<bool>(sql, new { email = email });
         }
     }
 }

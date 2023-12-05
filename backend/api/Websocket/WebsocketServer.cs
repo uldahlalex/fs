@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using JetBrains.Annotations;
 using System.Reflection;
 using System.Security.Authentication;
+using core.Attributes;
 using core.ExtensionMethods;
 using core.Models;
 using core.Models.WebsocketTransferObjects;
@@ -77,9 +78,27 @@ public class WebsocketServer(ChatRepository chatRepository)
     #region Events
 
     [UsedImplicitly]
+    public void ClientWantsToAuthenticateWithJwt(IWebSocketConnection socket, string dto)
+    {
+        var request = dto.DeserializeToModelAndValidate<ClientWantsToAuthenticateWithJwt>();
+        if (SecurityUtilities.IsJwtValid(request.jwt!) &&
+            !chatRepository.IsUserBanned(SecurityUtilities.ExtractClaims(request.jwt!)["email"]))
+        {
+            socket.Authenticate();
+        }
+        else
+        {
+            socket.UnAuthenticate();
+        }
+
+    }
+
+    [UsedImplicitly]
     public void ClientWantsToLoadOlderMessages(IWebSocketConnection socket, string dto)
     {
+        
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLoadOlderMessages>();
+        ExitIfNotAuthenticated(socket, request.eventType);
         var messages = chatRepository.GetPastMessages(
             request.roomId,
             request.lastMessageId);
@@ -200,12 +219,19 @@ public class WebsocketServer(ChatRepository chatRepository)
             Log.Error(e, "WebsocketUtilities");
         }
     }
-
-    private void ClientFailsAuthentication(IWebSocketConnection socket)
+    
+    public void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
-        
-        //skal måske bare kaldes hvor den skal bruges i stedet for at have en wrapper metode
-        socket.UnAuthenticate();
+        if (!socket.IsAuthenticated())
+        {
+            var response = new ServerSendsErrorMessageToClient
+            {
+                receivedEventType = receivedEventType,
+                errorMessage = "Unauthorized access."
+            };
+            socket!.Send(response.ToJsonString());
+            throw new AuthenticationException("Unauthorized access.");
+        }
     }
 
     #endregion

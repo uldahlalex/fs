@@ -24,6 +24,7 @@ public class EndUser
     [EnforceName("hash")] public string? hash { get; set; }
 
     [EnforceName("salt")] public string? salt { get; set; }
+    [EnforceName("isbanned")] public bool isbanned { get; set; }
 }
 
 public class Room

@@ -12,6 +12,7 @@ import {ServerNotifiesClientsInRoom} from "../models/serverNotifiesClientsInRoom
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room} from "../models/entities";
+import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -23,7 +24,13 @@ export class WebSocketClientService {
   rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {id: 3, title: "Sports"}];
   constructor() {
     this.rooms.forEach(room => this.roomsWithMessages.set(room.id!, []));
-    this.socketConnection.onopen = () => console.info("connection established");
+    this.socketConnection.onopen = () => {
+      let jwt = localStorage.getItem("jwt");
+      if (jwt != '') {
+        this.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticateWithJwt({jwt: jwt!})));
+      }
+      console.info("connection established");
+    }
     this.socketConnection.onmessage = (event) => {
       let data = JSON.parse(event.data) as BaseTransferObject<any>;
 

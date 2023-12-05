@@ -4,6 +4,7 @@ using Fleck;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace core.SecurityUtilities;
@@ -26,6 +27,26 @@ public static class SecurityUtilities
         catch
         {
             return false;
+        }
+    }
+    
+    public static Dictionary<string, string> ExtractClaims(string jwt)
+    {
+        try
+        {
+            IJsonSerializer serializer = new JsonNetSerializer();
+            var provider = new UtcDateTimeProvider();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtValidator validator = new JwtValidator(serializer, provider);
+            IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
+
+            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), verify: true);
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
+        }
+        catch (Exception e)
+        {
+            Log.Error(e, "ExtractClaims");
+            throw;
         }
     }
 
