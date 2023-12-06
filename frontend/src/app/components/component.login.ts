@@ -45,7 +45,7 @@ export class ComponentLogin {
   registerPassword = new FormControl('');
   registerPasswordRepeat = new FormControl('');
   constructor(
-    @Inject(API_SERVICE_TOKEN) private apiCallService: WebSocketClientService
+   private apiCallService: WebSocketClientService
   ) {}
 
   loginEmail = new FormControl('');

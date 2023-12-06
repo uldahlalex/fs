@@ -62,7 +62,7 @@ export class ComponentRoom {
   roomId: number | undefined;
   route = inject(ActivatedRoute);
 
-  constructor(    @Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  constructor(  public webSocketClientService: WebSocketClientService
   ) {
     this.route.paramMap.subscribe(params => {
       this.roomId = Number.parseInt(params.get('id')!)
@@ -72,6 +72,7 @@ export class ComponentRoom {
 
 
    async enterRoom() {
+     console.log("entering")
     try {
       let clientWantsToEnterRoom =  new ClientWantsToEnterRoom({roomId: this.roomId});
       this.webSocketClientService.ClientWantsToEnterRoom(clientWantsToEnterRoom);

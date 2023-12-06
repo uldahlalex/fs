@@ -32,7 +32,7 @@ import {API_SERVICE_TOKEN} from "../../main";
 export class ComponentSidebar {
   router: Router = inject(Router);
 
-  constructor(    @Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  constructor(  public webSocketClientService: WebSocketClientService
   ) {
   }
 

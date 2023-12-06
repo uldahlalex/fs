@@ -9,7 +9,7 @@ import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthentic
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {Injectable} from "@angular/core";
 
-@Injectable()
+//@Injectable()
 export class ApiCallServiceMock implements ApiCallServiceInterface {
     ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister) {
         let expectedServerEvent = new ServerAuthenticatesUser({jwt: "jwt"});

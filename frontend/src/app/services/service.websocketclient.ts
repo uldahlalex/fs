@@ -17,16 +17,25 @@ import {ApiCallServiceInterface} from "./apiCallService.interface";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class WebSocketClientService implements ApiCallServiceInterface {
 
 
+  public showToast = false;
+  public toastMessage = "";
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
   public roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
   public rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {
     id: 3,
     title: "Sports"
   }];
+
+  public presentToast(message: string) {
+    this.toastMessage = message;
+    this.showToast = true;
+
+    setTimeout(() => this.showToast = false, 3000); // Toast will disappear after 3 seconds
+  }
 
   constructor() {
     this.rooms.forEach(room => this.roomsWithMessages.set(room.id!, []));
@@ -39,7 +48,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     }
     this.socketConnection.onmessage = (event) => {
       let data = JSON.parse(event.data) as BaseTransferObject<any>;
-
+      this.presentToast(JSON.stringify(data));
       //@ts-ignore
       this[data.eventType].call(this, data);
     }
@@ -87,6 +96,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   }
 
   ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToEnterRoom));
   }
 
   ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {

@@ -43,7 +43,12 @@ public class WebsocketServer(ChatRepository chatRepository)
                         Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Development")
                             ? e.Message
                             : "Something went wrong";
-                    ServerSendsErrorMessageToClient(socket, errorMessage, eventType);
+                    var dto = new ServerSendsErrorMessageToClient
+                    {
+                        errorMessage = errorMessage,
+                        receivedEventType = eventType
+                    };
+                    ServerSendsErrorMessageToClient(socket, dto);
                 }
             };
             socket.OnOpen = () =>
@@ -56,7 +61,6 @@ public class WebsocketServer(ChatRepository chatRepository)
                 if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
                     LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
-
             };
             socket.OnError = exception =>
             {
@@ -65,12 +69,17 @@ public class WebsocketServer(ChatRepository chatRepository)
                     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Development")
                         ? exception.Message
                         : "Something went wrong";
-                ServerSendsErrorMessageToClient(socket, errorMessage, "No event type");
+                var dto = new ServerSendsErrorMessageToClient
+                {
+                    errorMessage = errorMessage,
+                    receivedEventType = "No event type"
+                };
+                ServerSendsErrorMessageToClient(socket, dto);
             };
         });
     }
 
-    #region ClientWantsTo
+    #region ENTRY POINTS
 
     [UsedImplicitly]
     public void ClientWantsToAuthenticateWithJwt(IWebSocketConnection socket, string dto)
@@ -86,28 +95,37 @@ public class WebsocketServer(ChatRepository chatRepository)
         {
             socket.UnAuthenticate();
         }
-
+        //todo resp or not
     }
 
     [UsedImplicitly]
     public void ClientWantsToLoadOlderMessages(IWebSocketConnection socket, string dto)
     {
-        
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLoadOlderMessages>();
         ExitIfNotAuthenticated(socket, request.eventType);
-        ServerSendsOlderMessagesToClient(socket, request.roomId, request.lastMessageId);
+        var messages = chatRepository.GetPastMessages(
+            request.roomId,
+            request.lastMessageId);
+        var resp = new ServerSendsOlderMessagesToClient()
+            { messages = messages, roomId = request.roomId };
+        ServerSendsOlderMessagesToClient(socket, resp);
     }
-    
+
 
     [UsedImplicitly]
     public void ClientWantsToSendMessageToRoom(IWebSocketConnection socket, string dto)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToSendMessageToRoom>();
         ExitIfNotAuthenticated(socket, request.eventType);
-        Message insertedMessage = chatRepository.InsertMessage(request.roomId, socket.GetUserIdForConnection(), request.messageContent!);
-        ServerBroadcastsMessageToClientsInRoom(insertedMessage, request.roomId);
-    }
+        Message insertedMessage =
+            chatRepository.InsertMessage(request.roomId, socket.GetUserIdForConnection(), request.messageContent!);
 
+        ServerBroadcastsMessageToClientsInRoom(new ServerBroadcastsMessageToClientsInRoom()
+        {
+            message = insertedMessage,
+            roomId = request.roomId
+        });
+    }
 
 
     [UsedImplicitly]
@@ -115,8 +133,18 @@ public class WebsocketServer(ChatRepository chatRepository)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
         ExitIfNotAuthenticated(socket, request.eventType);
-        ServerAddsClientToRoom(socket, request.roomId);
-        ServerNotifiesClientsInRoom( request.roomId, "A new user has entered the room!");
+        socket.JoinRoom(request.roomId);
+        ServerAddsClientToRoom(socket, new ServerAddsClientToRoom()
+        {
+            messages = chatRepository.GetPastMessages(request.roomId),
+            roomId = request.roomId,
+        });
+
+        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom()
+        {
+            message = "Client joined the room!",
+            roomId = request.roomId
+        });
     }
 
     [UsedImplicitly]
@@ -124,7 +152,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
         socket.RemoveFromRoom(request.roomId);
-        ServerNotifiesClientsInRoom(request.roomId, "A user has left the room!");
+        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom() { message = "Client left the room!" });
     }
 
     [UsedImplicitly]
@@ -136,9 +164,12 @@ public class WebsocketServer(ChatRepository chatRepository)
         var hash = SecurityUtilities.Hash(request.password!, salt);
         EndUser user = chatRepository.InsertUser(request.email!, hash, salt);
         var jwt = SecurityUtilities.IssueJwt(
-            new Dictionary<string, object?>() { { "email", user.email }, {"id", user.id} });
+            new Dictionary<string, object?>() { { "email", user.email }, { "id", user.id } });
         socket.Authenticate(user.id);
-        ServerAuthenticatesUser(socket, jwt);
+        ServerAuthenticatesUser(socket, new ServerAuthenticatesUser
+        {
+            jwt = jwt
+        });
     }
 
     [UsedImplicitly]
@@ -158,108 +189,72 @@ public class WebsocketServer(ChatRepository chatRepository)
 
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
-        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>() { { "email", user.email }, {"id", user.id } });
+        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>()
+            { { "email", user.email }, { "id", user.id } });
         socket.Authenticate(user.id);
-        socket.Send(new ServerAuthenticatesUser { jwt = jwt }.ToJsonString());
+        ServerAuthenticatesUser(socket, new ServerAuthenticatesUser(){jwt = jwt});
     }
 
     #endregion
     
-    #region ServerSendsData
-    
-    //pt er disse metoder at tage rå data og sende til klienter. Skal det gøre endnu mere minimalt ved at init objekter ved kalderen eller her?
-    //alt: Lave client "henteren" tynd og store metoder her. Spm til dette:
-    // - Hvordan ser jeg hvilke features der invoker dette?
-    
-    
-    //Hele rationalet i at separere dette: At kunne se præcis hvad der sender data og hvad der opsamler data. Hvis det er svært at vide hvor logikken skal være,
-    //skal der evt være et mellem-lag som tager client DTO -> server DTO? dette kunne være en meget uniform løsning?
-    
-    private void ServerAddsClientToRoom(IWebSocketConnection socket, int roomId)
-    {
-        socket.JoinRoom(roomId);
-        var data = new ServerAddsClientToRoom()
-        {
-            messages = chatRepository.GetPastMessages(roomId),
-            roomId = roomId,
-        };
-        socket.Send(data.ToJsonString());
-    }
-    
-    private void ServerSendsErrorMessageToClient(IWebSocketConnection socket, string errorMessage, string receivedEventType)
-    {
-        var response = new ServerSendsErrorMessageToClient
-        {
-            errorMessage = errorMessage,
-            receivedEventType = receivedEventType
-        };
-        socket.Send(response.ToJsonString());
-    }
-    private void ServerSendsOlderMessagesToClient(IWebSocketConnection socket, int roomId, int lastMessageId)
-    {
-        var messages = chatRepository.GetPastMessages(
-            roomId,
-            lastMessageId);
-        var resp = new ServerSendsOlderMessagesToClient()
-            { messages = messages, roomId = roomId };
-        socket.Send(resp.ToJsonString());
-    }
-    
-    private void ServerBroadcastsMessageToClientsInRoom(Message message, int roomId)
-    {
-        var response = new ServerBroadcastsMessageToClientsInRoom()
-        {
-            message = message,
-            roomId = roomId
-        };
 
-        foreach (var socket in LiveSocketConnections)
+    #region EXIT POINTS
+
+    //Nuværende regel: Alt i client, nedenstående kun til at transmit. En klient kan godt kalde flere transmit funktioner, men en trasnsmit har højst en tramission
+    //note skal broadcast laves om til at have et loop?
+    private void ServerAddsClientToRoom(IWebSocketConnection socket, ServerAddsClientToRoom dto)
+    {
+        socket.Send(dto.ToJsonString());
+    }
+
+    private void ServerAuthenticatesUser(IWebSocketConnection socket, ServerAuthenticatesUser dto)
+    {
+        socket.Send(dto.ToJsonString());
+    }
+
+    private void ServerBroadcastsMessageToClientsInRoom(ServerBroadcastsMessageToClientsInRoom dto)
+    {
+        foreach (var connection in LiveSocketConnections)
         {
-            if (socket.Value.GetConnectedRooms().Contains(roomId))
-                socket.Value.Send(response.ToJsonString());
+            if (connection.Value.GetConnectedRooms().Contains(dto.roomId)) ;
+            connection.Value.Send(dto.ToJsonString());
         }
     }
-    private void ServerNotifiesClientsInRoom(int roomId, string message)
-    {
-        var response = new ServerNotifiesClientsInRoom()
-        {
-            message = message,
-            roomId = roomId
-        };
 
-        foreach (var socket in LiveSocketConnections)
+
+    private void ServerSendsErrorMessageToClient(IWebSocketConnection socket, ServerSendsErrorMessageToClient dto)
+    {
+        socket.Send(dto.ToJsonString());
+    }
+
+    private void ServerSendsOlderMessagesToClient(IWebSocketConnection socket, ServerSendsOlderMessagesToClient dto)
+    {
+        socket.Send(dto.ToJsonString());
+    }
+
+
+    private void ServerNotifiesClientsInRoom(ServerNotifiesClientsInRoom dto)
+    {
+        foreach (var connection in LiveSocketConnections)
         {
-            if (socket.Value.GetConnectedRooms().Contains(roomId))
-                socket.Value.Send(response.ToJsonString());
+            if (connection.Value.GetConnectedRooms().Contains(dto.roomId)) ;
+            connection.Value.Send(dto.ToJsonString());
         }
     }
-    
-    private void ServerAuthenticatesUser(IWebSocketConnection socket, string jwt)
-    {
-        var response = new ServerAuthenticatesUser
-        {
-            jwt = jwt
-        };
-        socket.Send(response.ToJsonString());
-    }
 
-    
     #endregion
 
     #region Helpers
 
-
-    
     private void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
-        if (!socket.IsAuthenticated() && LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id)) 
+        if (!socket.IsAuthenticated() && LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
         {
-            var response = new ServerSendsErrorMessageToClient
+            ServerSendsErrorMessageToClient(socket, new ServerSendsErrorMessageToClient
             {
                 receivedEventType = receivedEventType,
                 errorMessage = "Unauthorized access."
-            };
-            socket!.Send(response.ToJsonString());
+            });
             throw new AuthenticationException("Unauthorized access.");
         }
     }

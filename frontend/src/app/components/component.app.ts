@@ -1,4 +1,4 @@
-import {APP_INITIALIZER, Component, inject} from '@angular/core';
+import {APP_INITIALIZER, Component, Inject, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
@@ -7,6 +7,8 @@ import {HttpClient, HttpClientModule, HttpSentEvent} from "@angular/common/http"
 import {Room} from "../models/entities";
 import {ComponentSidebar} from "./component.sidebar";
 import {environment} from "../../environments/environment";
+import {WebSocketClientService} from "../services/service.websocketclient";
+import {API_SERVICE_TOKEN} from "../../main";
 
 
 @Component({
@@ -27,13 +29,13 @@ import {environment} from "../../environments/environment";
               </dialog>-->
               <app-sidebar></app-sidebar>
           </div>
-          <div id="sidebarContainer" style="flex: 0 0 20%; background: #f8f9fa; margin-right: 10px;">
-              <app-sidebar></app-sidebar>
-          </div>
 
           <div style="flex: 3; border-left: black;">
               <router-outlet></router-outlet>
           </div>
+          <div style="overflow-wrap: break-word; width: 50%;
+           display: flex; flex-direction: column-reverse; bottom: 50px;"
+               *ngIf="webSocketClientService.showToast">{{webSocketClientService.toastMessage}}</div>
       </div>
   `
 })
@@ -41,6 +43,10 @@ export class ComponentApp {
 
   isOpen: boolean = false;
   dialogText: string = "Open Dialog";
+
+  constructor(   public webSocketClientService: WebSocketClientService
+  ) {
+  }
 
   toggleDialog() {
     this.isOpen = !this.isOpen;
