@@ -8,8 +8,11 @@ import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
 import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {Injectable} from "@angular/core";
+import {ToastModule} from "primeng/toast";
+import {MessageModule} from "primeng/message";
+import {MessagesModule} from "primeng/messages";
 
-//@Injectable()
+@Injectable()
 export class ApiCallServiceMock implements ApiCallServiceInterface {
     ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister) {
         let expectedServerEvent = new ServerAuthenticatesUser({jwt: "jwt"});

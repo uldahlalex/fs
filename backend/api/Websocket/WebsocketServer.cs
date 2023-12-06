@@ -58,6 +58,10 @@ public class WebsocketServer(ChatRepository chatRepository)
             };
             socket.OnClose = () =>
             {
+                foreach (var connectedRoom in socket.GetConnectedRooms())
+                {
+                    ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom() {message = "Client left the room!", roomId = connectedRoom});
+                }
                 if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
                     LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
@@ -95,7 +99,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         {
             socket.UnAuthenticate();
         }
-        //todo resp or not
+        socket.Send(new ServerAuthenticatesUser() { jwt = request.jwt }.ToJsonString());
     }
 
     [UsedImplicitly]
@@ -137,6 +141,8 @@ public class WebsocketServer(ChatRepository chatRepository)
         ServerAddsClientToRoom(socket, new ServerAddsClientToRoom()
         {
             messages = chatRepository.GetPastMessages(request.roomId),
+            liveConnections = LiveSocketConnections.Values.Where(x => x.GetConnectedRooms().Contains(request.roomId))
+                .Select(x => x.ConnectionInfo.Id).Count(),
             roomId = request.roomId,
         });
 

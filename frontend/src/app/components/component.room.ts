@@ -18,6 +18,7 @@ import {API_SERVICE_TOKEN} from "../../main";
 
       <div style="display: flex; flex-direction: row; justify-content: center; ">
           <button (click)="loadOlderMessages()" style="height: 100%;">Load older messages...</button>
+          <p>Currently live in room: {{webSocketClientService.roomsWithConnections.get(roomId!)}}</p>
       </div>
 
       <div style="
@@ -47,14 +48,6 @@ import {API_SERVICE_TOKEN} from "../../main";
 
       </div>
   `,
-  imports: [
-    JsonPipe,
-    NgForOf,
-    FormsModule,
-    NgIf,
-    ReactiveFormsModule
-  ],
-  standalone: true
 })
 export class ComponentRoom {
 
@@ -62,11 +55,11 @@ export class ComponentRoom {
   roomId: number | undefined;
   route = inject(ActivatedRoute);
 
-  constructor(  public webSocketClientService: WebSocketClientService
+  constructor( @Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
   ) {
     this.route.paramMap.subscribe(params => {
       this.roomId = Number.parseInt(params.get('id')!)
-      this.enterRoom();
+      if(this.webSocketClientService.roomsWithConnections.get(this.roomId)==0) this.enterRoom();
     } );
   }
 
@@ -102,7 +95,7 @@ export class ComponentRoom {
   }
 
   clientWantsToSendMessageToRoom() {
-    let dto = new ClientWantsToSendMessageToRoom({message: this.messageInput.value!, roomId: this.roomId});
+    let dto = new ClientWantsToSendMessageToRoom({messageContent: this.messageInput.value!, roomId: this.roomId});
     this.webSocketClientService.ClientWantsToSendMessageToRoom(dto);
   }
 }

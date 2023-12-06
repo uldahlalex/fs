@@ -22,8 +22,8 @@ SELECT * FROM chat.messages where id<@lastMessageId and room=@room ORDER BY time
     public Message InsertMessage(int roomId, int sender, string messageContent)
     {
         var sql = $@"
-INSERT INTO chat.messages (timestamp, sender, room, messagecontent) 
-values (@timestamp, @senderId, @room, @messagecontent) 
+INSERT INTO chat.messages (timestamp, sender, room, messageContent) 
+values (@timestamp, @sender, @room, @messageContent) 
 returning *;";
         using (var conn = dataSource.OpenConnection())
         {

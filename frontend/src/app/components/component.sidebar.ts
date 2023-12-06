@@ -10,7 +10,7 @@ import {API_SERVICE_TOKEN} from "../../main";
 
 
       <div style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-          <button style="background-color: transparent; color: black" (click)="goToLoginPage()">Go to log in</button>
+          <button (click)="goToLoginPage()">Go to log in</button>
           <button (click)="toggleDialog()">{{ dialogText }}</button>
           <dialog (click)="toggleDialog()"
                   [open]="isOpen"
@@ -24,15 +24,11 @@ import {API_SERVICE_TOKEN} from "../../main";
       </div>
   `,
   selector: "app-sidebar",
-  imports: [
-    NgForOf
-  ],
-  standalone: true
 })
 export class ComponentSidebar {
   router: Router = inject(Router);
 
-  constructor(  public webSocketClientService: WebSocketClientService
+  constructor(  @Inject(API_SERVICE_TOKEN)public webSocketClientService: WebSocketClientService
   ) {
   }
 

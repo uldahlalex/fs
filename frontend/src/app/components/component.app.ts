@@ -1,4 +1,4 @@
-import {APP_INITIALIZER, Component, Inject, inject} from '@angular/core';
+import {APP_INITIALIZER, Component, Inject, inject, Injectable} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterOutlet} from '@angular/router';
 import {FormsModule} from "@angular/forms";
@@ -9,18 +9,17 @@ import {ComponentSidebar} from "./component.sidebar";
 import {environment} from "../../environments/environment";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {API_SERVICE_TOKEN} from "../../main";
+import {ToastModule} from "primeng/toast";
+import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
+import {BrowserModule} from "@angular/platform-browser";
+import {MessageModule} from "primeng/message";
 
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet, FormsModule, HttpClientModule, ComponentSidebar],
   template: `
-      @if (!environment.production) {
-          <div style="border: red solid 2px;">Running in development</div>
-      }
       <div style="display: flex; height: 100vh;">
-          <div style="flex: 0 0 2%; background: #f8f9fa; margin-right: 10px;">
+          <div style="flex: 0 0 2%; margin-right: 10px;">
               <!--<button>Open</button>
               <button (click)="toggleDialog()">{{ dialogText }}</button>
               <dialog [open]="isOpen"
@@ -32,10 +31,9 @@ import {API_SERVICE_TOKEN} from "../../main";
 
           <div style="flex: 3; border-left: black;">
               <router-outlet></router-outlet>
-          </div>
-          <div style="overflow-wrap: break-word; width: 50%;
-           display: flex; flex-direction: column-reverse; bottom: 50px;"
-               *ngIf="webSocketClientService.showToast">{{webSocketClientService.toastMessage}}</div>
+
+
+          </div>    <p-toast></p-toast>
       </div>
   `
 })
@@ -44,7 +42,7 @@ export class ComponentApp {
   isOpen: boolean = false;
   dialogText: string = "Open Dialog";
 
-  constructor(   public webSocketClientService: WebSocketClientService
+  constructor( @Inject(API_SERVICE_TOKEN)  public webSocketClientService: WebSocketClientService
   ) {
   }
 

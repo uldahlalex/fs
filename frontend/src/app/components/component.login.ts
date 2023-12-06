@@ -7,18 +7,13 @@ import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
 import {API_SERVICE_TOKEN} from "../../main";
 
 @Component({
-  standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    NgIf
-  ],
-  template: `
+template: `
       <div *ngIf="showLogin"
            style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <input [formControl]="loginEmail" placeholder="email">
           <input type="password" [formControl]="loginPassword" placeholder="password">
           <div style="display: flex; flex-direction: row">
-              <button style="background-color: transparent; color: black;" (click)="toggleRegisterLogin()">Not signed
+              <button (click)="toggleRegisterLogin()">Not signed
                   up?
               </button>
               <button (click)="login()">Log in!</button>
@@ -31,7 +26,7 @@ import {API_SERVICE_TOKEN} from "../../main";
           <input type="password" [formControl]="registerPassword" placeholder="password">
           <input type="password" [formControl]="registerPasswordRepeat" placeholder="password">
           <div style="display: flex; flex-direction: row">
-              <button style="background-color: transparent; color: black;" (click)="toggleRegisterLogin()">Already
+              <button (click)="toggleRegisterLogin()">Already
                   signed up?
               </button>
               <button (click)="register()">Register!</button>
@@ -45,7 +40,7 @@ export class ComponentLogin {
   registerPassword = new FormControl('');
   registerPasswordRepeat = new FormControl('');
   constructor(
-   private apiCallService: WebSocketClientService
+    @Inject(API_SERVICE_TOKEN)private apiCallService: WebSocketClientService
   ) {}
 
   loginEmail = new FormControl('');

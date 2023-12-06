@@ -1,14 +1,22 @@
-import {bootstrapApplication} from '@angular/platform-browser';
+import {bootstrapApplication, BrowserModule} from '@angular/platform-browser';
 import {ComponentApp} from './app/components/component.app';
-import {provideRouter} from "@angular/router";
+import {provideRouter, RouterModule} from "@angular/router";
 import {ComponentRoom} from "./app/components/component.room";
 import {ComponentLogin} from "./app/components/component.login";
 import {ApiCallServiceInterface} from "./app/services/apiCallService.interface";
 import {ensureSourceFileVersions} from "@angular-devkit/build-angular/src/tools/esbuild/angular/angular-host";
 import {environment} from "./environments/environment";
 import {ApiCallServiceMock} from "./app/services/apiCallService.mock";
-import {InjectionToken} from "@angular/core";
+import {enableProdMode, InjectionToken, NgModule} from "@angular/core";
 import {WebSocketClientService} from "./app/services/service.websocketclient";
+import {ComponentSidebar} from "./app/components/component.sidebar";
+import {ToastModule} from "primeng/toast";
+import {MessageModule} from "primeng/message";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {CommonModule} from "@angular/common";
+import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
+import {MessageService} from "primeng/api";
 
 export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
@@ -16,18 +24,39 @@ const ApiServiceProvider = {
   provide: API_SERVICE_TOKEN,
   useClass: environment.production ? WebSocketClientService : ApiCallServiceMock,
 };
-
-
-bootstrapApplication(ComponentApp, {
-  providers: [provideRouter(
-    [
+@NgModule({
+  imports: [
+    BrowserModule,
+    CommonModule,
+    ToastModule,
+    MessageModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule.forRoot([
       {
         path: 'room/:id', component: ComponentRoom
       },
       {
         path: 'login', component: ComponentLogin
       }
-    ]
-  ),
-    ApiServiceProvider
-]}).catch((err) => console.error(err));
+    ]),
+  ],
+  declarations: [
+    ComponentApp,
+    ComponentRoom,
+    ComponentSidebar,
+    ComponentLogin
+  ],
+  providers: [ApiServiceProvider, MessageService],
+  bootstrap: [ComponentApp]
+})
+export class AppModule {
+}
+
+if (environment.production) {
+  enableProdMode();
+}
+
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .catch(err => console.log(err));

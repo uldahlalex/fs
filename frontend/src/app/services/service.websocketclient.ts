@@ -16,29 +16,26 @@ import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthentic
 import {ApiCallServiceInterface} from "./apiCallService.interface";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
+import {MessageService} from "primeng/api";
 
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class WebSocketClientService implements ApiCallServiceInterface {
 
 
-  public showToast = false;
-  public toastMessage = "";
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
   public roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
+  public roomsWithConnections: Map<number, number> = new Map<number, number>();
   public rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {
     id: 3,
     title: "Sports"
   }];
 
-  public presentToast(message: string) {
-    this.toastMessage = message;
-    this.showToast = true;
 
-    setTimeout(() => this.showToast = false, 3000); // Toast will disappear after 3 seconds
-  }
 
-  constructor() {
-    this.rooms.forEach(room => this.roomsWithMessages.set(room.id!, []));
+
+
+  constructor(public messageService: MessageService) {
+    this.rooms.forEach(room => {this.roomsWithMessages.set(room.id!, []); this.roomsWithConnections.set(room.id!, 0)} );
     this.socketConnection.onopen = () => {
       let jwt = localStorage.getItem("jwt");
       if (jwt != '') {
@@ -48,34 +45,44 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     }
     this.socketConnection.onmessage = (event) => {
       let data = JSON.parse(event.data) as BaseTransferObject<any>;
-      this.presentToast(JSON.stringify(data));
       //@ts-ignore
       this[data.eventType].call(this, data);
+    }
+    this.socketConnection.onerror = (event) => {
+      this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: 'Connection error!'});
+    }
+    this.socketConnection.onclose = (event) => {
+      this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: 'Connection closed!'});
     }
   }
 
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
-    this.roomsWithMessages.set(dto.roomId!, dto.messages!);
+    this.roomsWithMessages.set(dto.roomId!, dto.messages!.reverse());
+    this.roomsWithConnections.set(dto.roomId!, dto.liveConnections!)
   }
 
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
+    this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
     localStorage.setItem("jwt", dto.jwt!);
+
   }
 
-  ServerBroadcastsMessageMessageToClientsInRoom(dto: ServerBroadcastsMessageToClientsInRoom) {
-    console.log(dto)
+  ServerBroadcastsMessageToClientsInRoom(dto: ServerBroadcastsMessageToClientsInRoom) {
+    this.roomsWithMessages.get(dto.roomId!)!.push(dto.message!);
+    this.messageService.add({life: 2000, summary: '📬', detail: 'New message!'});
   }
 
-  ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) {
-    console.log(dto)
+  ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) { //maybe refactor
+    this.messageService.add({life: 2000, severity: 'warning', summary: '🧨', detail: dto.message});
+    //this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)!+1);
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
-    console.log(dto)
+    this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage});
   }
 
   ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
-    console.log(dto)
+    this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "New time series data!"});
   }
 
 
@@ -85,14 +92,18 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   }
 
 
+  // CLIENT -> SERVER COMMUNICATION
+
   ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister): void {
     this.socketConnection.send(JSON.stringify(clientWantsToRegister));
   }
 
   ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToAuthenticate));
   }
 
   ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToAuthenticateWithJwt));
   }
 
   ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
@@ -100,12 +111,15 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   }
 
   ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToLeaveRoom));
   }
 
   ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToLoadOlderMessages));
   }
 
   ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToSendMessageToRoom));
   }
 
 }
