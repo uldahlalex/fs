@@ -12,15 +12,14 @@ import {API_SERVICE_TOKEN} from "../../main";
       <div style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
           <button (click)="goToLoginPage()">Go to log in</button>
           <button (click)="toggleDialog()">{{ dialogText }}</button>
-          <dialog (click)="toggleDialog()"
-                  [open]="isOpen"
-                  style="box-shadow: 10px 10px 10px lightgray; border: transparent 0px; position: absolute; left: 100px;">
+
+          <p-dialog (click)="toggleDialog()" [(visible)]="isOpen">
               <h3>Rooms</h3>
               <ul>
                   <li (click)="GoToRoom(room.id)" *ngFor="let room of webSocketClientService.rooms">{{ room.title }}👈</li>
               </ul>
+          </p-dialog>
 
-          </dialog>
       </div>
   `,
   selector: "app-sidebar",

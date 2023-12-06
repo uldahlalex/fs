@@ -17,6 +17,7 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 import {MessageService} from "primeng/api";
+import {DialogModule} from "primeng/dialog";
 
 export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
@@ -41,6 +42,8 @@ const ApiServiceProvider = {
         path: 'login', component: ComponentLogin
       }
     ]),
+    DialogModule,
+    DialogModule,
   ],
   declarations: [
     ComponentApp,

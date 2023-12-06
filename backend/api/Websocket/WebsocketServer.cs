@@ -60,8 +60,10 @@ public class WebsocketServer(ChatRepository chatRepository)
             {
                 foreach (var connectedRoom in socket.GetConnectedRooms())
                 {
-                    ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom() {message = "Client left the room!", roomId = connectedRoom});
+                    ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom()
+                        { message = "Client left the room!", roomId = connectedRoom });
                 }
+
                 if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
                     LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
@@ -99,6 +101,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         {
             socket.UnAuthenticate();
         }
+
         socket.Send(new ServerAuthenticatesUser() { jwt = request.jwt }.ToJsonString());
     }
 
@@ -137,6 +140,12 @@ public class WebsocketServer(ChatRepository chatRepository)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
         ExitIfNotAuthenticated(socket, request.eventType);
+
+        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom()
+        {
+            message = "Client joined the room!",
+            roomId = request.roomId
+        });
         socket.JoinRoom(request.roomId);
         ServerAddsClientToRoom(socket, new ServerAddsClientToRoom()
         {
@@ -144,12 +153,6 @@ public class WebsocketServer(ChatRepository chatRepository)
             liveConnections = LiveSocketConnections.Values.Where(x => x.GetConnectedRooms().Contains(request.roomId))
                 .Select(x => x.ConnectionInfo.Id).Count(),
             roomId = request.roomId,
-        });
-
-        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom()
-        {
-            message = "Client joined the room!",
-            roomId = request.roomId
         });
     }
 
@@ -198,11 +201,11 @@ public class WebsocketServer(ChatRepository chatRepository)
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>()
             { { "email", user.email }, { "id", user.id } });
         socket.Authenticate(user.id);
-        ServerAuthenticatesUser(socket, new ServerAuthenticatesUser(){jwt = jwt});
+        ServerAuthenticatesUser(socket, new ServerAuthenticatesUser() { jwt = jwt });
     }
 
     #endregion
-    
+
 
     #region EXIT POINTS
 
