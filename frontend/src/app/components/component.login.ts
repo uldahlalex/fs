@@ -5,7 +5,6 @@ import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
 import {API_SERVICE_TOKEN} from "../../main";
-import {ApiCallServiceInterface} from "../services/apiCallService.interface";
 
 @Component({
   standalone: true,
@@ -46,7 +45,7 @@ export class ComponentLogin {
   registerPassword = new FormControl('');
   registerPasswordRepeat = new FormControl('');
   constructor(
-    @Inject(API_SERVICE_TOKEN) private apiCallService: ApiCallServiceInterface
+    @Inject(API_SERVICE_TOKEN) private apiCallService: WebSocketClientService
   ) {}
 
   loginEmail = new FormControl('');
@@ -62,16 +61,13 @@ export class ComponentLogin {
     password: this.registerPassword,
   })
 
-  webSocketService = inject(WebSocketClientService);
-
   showLogin: boolean = true;
   toggleRegisterLogin() {
     this.showLogin = !this.showLogin;
   }
   login() {
-    this.webSocketService.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate)));
+    this.apiCallService.ClientWantsToAuthenticate(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate));
   }
-
   register() {
       this.apiCallService.ClientWantsToRegister(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister));
   }

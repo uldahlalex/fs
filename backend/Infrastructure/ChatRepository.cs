@@ -19,15 +19,20 @@ SELECT * FROM chat.messages where id<@lastMessageId and room=@room ORDER BY time
         }
     }
 
-    public Message InsertMessage(Message message)
+    public Message InsertMessage(int roomId, int sender, string messageContent)
     {
         var sql = $@"
 INSERT INTO chat.messages (timestamp, sender, room, messagecontent) 
-values (@timestamp, @sender, @room, @messagecontent) 
+values (@timestamp, @senderId, @room, @messagecontent) 
 returning *;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Message>(sql, message);
+            return conn.QueryFirst<Message>(sql, new Message {
+                timestamp = DateTimeOffset.UtcNow,
+                room = roomId,
+                sender = sender,
+                messageContent = messageContent
+            });
         }
     }
 

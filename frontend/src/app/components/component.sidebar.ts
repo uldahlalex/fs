@@ -1,7 +1,8 @@
-import {Component, inject, signal} from "@angular/core";
+import {Component, Inject, inject, signal} from "@angular/core";
 import {Router} from "@angular/router";
 import {NgForOf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
+import {API_SERVICE_TOKEN} from "../../main";
 
 @Component({
   template: `
@@ -16,7 +17,7 @@ import {WebSocketClientService} from "../services/service.websocketclient";
                   style="box-shadow: 10px 10px 10px lightgray; border: transparent 0px; position: absolute; left: 100px;">
               <h3>Rooms</h3>
               <ul>
-                  <li (click)="GoToRoom(room.id)" *ngFor="let room of service.rooms">{{ room.title }}👈</li>
+                  <li (click)="GoToRoom(room.id)" *ngFor="let room of webSocketClientService.rooms">{{ room.title }}👈</li>
               </ul>
 
           </dialog>
@@ -29,8 +30,11 @@ import {WebSocketClientService} from "../services/service.websocketclient";
   standalone: true
 })
 export class ComponentSidebar {
-  service: WebSocketClientService = inject(WebSocketClientService);
   router: Router = inject(Router);
+
+  constructor(    @Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  ) {
+  }
 
   isOpen: boolean = false;
   dialogText: string = "Show rooms";

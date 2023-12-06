@@ -21,7 +21,7 @@ public static class SecurityUtilities
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
 
-            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), verify: true);
+            decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), verify: true);
             return true;
         }
         catch

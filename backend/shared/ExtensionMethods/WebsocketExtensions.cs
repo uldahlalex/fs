@@ -7,10 +7,12 @@ public static class WebsocketExtensions
 {
     private static readonly HashSet<IWebSocketConnection> AuthenticatedConnections = new();
     private static readonly Dictionary<IWebSocketConnection, List<int>> ConnectedRooms = new();
+    private static int _connectionBelongsToUserWithId = -1;
 
-    public static void Authenticate(this IWebSocketConnection connection)
+    public static void Authenticate(this IWebSocketConnection connection, int userId)
     {
         // Add the connection to the HashSet. If it's already authenticated, this will have no effect.
+        _connectionBelongsToUserWithId = userId;
         AuthenticatedConnections.Add(connection);
     }
 
@@ -49,5 +51,10 @@ public static class WebsocketExtensions
             return;
 
         ConnectedRooms[connection].Remove(roomId);
+    }
+    
+    public static int GetUserIdForConnection(this IWebSocketConnection connection)
+    {
+        return _connectionBelongsToUserWithId;
     }
 }

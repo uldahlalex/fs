@@ -1,4 +1,4 @@
-import {Component, inject} from "@angular/core";
+import {Component, Inject, inject} from "@angular/core";
 import {JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
 import {FormControl, FormsModule, ReactiveFormsModule} from "@angular/forms";
@@ -8,6 +8,7 @@ import ago from 's-ago';
 import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
+import {API_SERVICE_TOKEN} from "../../main";
 
 
 @Component({
@@ -24,7 +25,7 @@ import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessage
       flex-direction: column;
 ">
           <div *ngIf="roomId">
-              <div *ngFor="let k of websocketService.roomsWithMessages.get(roomId)"
+              <div *ngFor="let k of webSocketClientService.roomsWithMessages.get(roomId)"
                    style="display: flex; flex-direction: row; justify-content: space-between">
                   <div>
                       UID: {{ k.sender }}
@@ -59,11 +60,10 @@ export class ComponentRoom {
 
   messageInput = new FormControl('');
   roomId: number | undefined;
-  websocketService = inject(WebSocketClientService);
   route = inject(ActivatedRoute);
-  websocketClient = inject(WebSocketClientService);
 
-  constructor() {
+  constructor(    @Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  ) {
     this.route.paramMap.subscribe(params => {
       this.roomId = Number.parseInt(params.get('id')!)
       this.enterRoom();
@@ -74,7 +74,7 @@ export class ComponentRoom {
    async enterRoom() {
     try {
       let clientWantsToEnterRoom =  new ClientWantsToEnterRoom({roomId: this.roomId});
-      this.websocketService.socketConnection!.send(JSON.stringify(clientWantsToEnterRoom));
+      this.webSocketClientService.ClientWantsToEnterRoom(clientWantsToEnterRoom);
     } catch (e) {
       console.log("connection not established, retrying in 1 second")
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -95,13 +95,13 @@ export class ComponentRoom {
   loadOlderMessages() {
     let dto: ClientWantsToLoadOlderMessages = new ClientWantsToLoadOlderMessages({
       roomId: this.roomId,
-      lastMessageId: this.websocketService.roomsWithMessages.get(this.roomId!)![0].id
+      lastMessageId: this.webSocketClientService.roomsWithMessages.get(this.roomId!)![0].id
     })
-    this.websocketService.socketConnection.send(JSON.stringify(dto));
+    this.webSocketClientService.ClientWantsToLoadOlderMessages(dto);
   }
 
   clientWantsToSendMessageToRoom() {
     let dto = new ClientWantsToSendMessageToRoom({message: this.messageInput.value!, roomId: this.roomId});
-    this.websocketService.socketConnection.send(JSON.stringify(dto));
+    this.webSocketClientService.ClientWantsToSendMessageToRoom(dto);
   }
 }

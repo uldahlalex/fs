@@ -1,4 +1,4 @@
-import {inject, Injectable} from "@angular/core";
+import {Injectable} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
@@ -13,15 +13,21 @@ import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessage
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room} from "../models/entities";
 import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
+import {ApiCallServiceInterface} from "./apiCallService.interface";
+import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
+import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 
-@Injectable({providedIn: 'root'})
-export class WebSocketClientService {
+@Injectable()
+export class WebSocketClientService implements ApiCallServiceInterface {
 
 
+  private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
+  public roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
+  public rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {
+    id: 3,
+    title: "Sports"
+  }];
 
-  socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
-  roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
-  rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {id: 3, title: "Sports"}];
   constructor() {
     this.rooms.forEach(room => this.roomsWithMessages.set(room.id!, []));
     this.socketConnection.onopen = () => {
@@ -35,9 +41,10 @@ export class WebSocketClientService {
       let data = JSON.parse(event.data) as BaseTransferObject<any>;
 
       //@ts-ignore
-        this[data.eventType].call(this, data);
+      this[data.eventType].call(this, data);
     }
   }
+
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
     this.roomsWithMessages.set(dto.roomId!, dto.messages!);
   }
@@ -66,6 +73,29 @@ export class WebSocketClientService {
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
     this.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
       .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
+  }
+
+
+  ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister): void {
+    this.socketConnection.send(JSON.stringify(clientWantsToRegister));
+  }
+
+  ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
+  }
+
+  ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
+  }
+
+  ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
+  }
+
+  ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
+  }
+
+  ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
+  }
+
+  ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
   }
 
 }
