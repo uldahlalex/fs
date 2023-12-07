@@ -40,8 +40,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
                 new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
             Log.Information(serializedTimeSeries);
 
-            foreach (var websocketServerLiveSocketConnection in websocketServer.LiveSocketConnections)
-                await websocketServerLiveSocketConnection.Value.Send(serializedTimeSeries);
+            WebsocketExtensions.BroadcastToTopic("Timeseries", serializedTimeSeries);
 
             var pongMessage = new MqttApplicationMessageBuilder()
                 .WithTopic("response_topic")

@@ -53,9 +53,9 @@ public class WebsocketServer(ChatRepository chatRepository)
             };
             socket.OnClose = () =>
             {
-                foreach (var connectedRoom in socket.GetMetadata().connectedRooms)
+                foreach (var connectedRoom in socket.GetMetadata().subscribedToTopics)
                     ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                        { message = "Client left the room!", roomId = connectedRoom });
+                        { message = "Client left the room!", roomId = int.Parse(connectedRoom) });
 
                 socket.RemoveFromConnectionPool();
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
@@ -157,11 +157,11 @@ public class WebsocketServer(ChatRepository chatRepository)
             message = "Client joined the room!",
             roomId = request.roomId
         });
-        socket.JoinRoom(request.roomId);
+        socket.SubscribeToTopic(request.roomId.ToString());
         ServerAddsClientToRoom(socket, new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.roomId),
-            liveConnections = socket.CountUsersInRoom(request.roomId),
+            liveConnections = socket.CountUsersInRoom(request.roomId.ToString()),
             roomId = request.roomId
         });
     }
@@ -170,7 +170,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     public void ClientWantsToLeaveRoom(IWebSocketConnection socket, string dto)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
-        socket.RemoveFromRoom(request.roomId);
+        socket.UnsubscribeFromTopic(request.roomId.ToString());
         ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
             { message = "Client left the room!" });
     }
@@ -248,7 +248,7 @@ public class WebsocketServer(ChatRepository chatRepository)
      */
     private void ServerNotifiesClientsInRoom(ServerNotifiesClientsInRoom dto)
     {
-        WebsocketExtensions.BroadcastToRoom(dto.roomId, dto.message!);
+        WebsocketExtensions.BroadcastToTopic(dto.roomId + ToString(), dto.message!);
     }
 
     /**
@@ -256,7 +256,7 @@ public class WebsocketServer(ChatRepository chatRepository)
      */
     private void ServerBroadcastsMessageToClientsInRoom(ServerBroadcastsMessageToClientsInRoom dto)
     {
-        WebsocketExtensions.BroadcastToRoom(dto.roomId, dto.message!.ToJsonString());
+        WebsocketExtensions.BroadcastToTopic(dto.roomId.ToString(), dto.message!.ToJsonString());
     }
 
     #endregion

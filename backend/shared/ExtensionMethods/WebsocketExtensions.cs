@@ -19,14 +19,14 @@ public static class WebsocketExtensions
         ConnectionPool[connection.ConnectionInfo.Id].isAuthenticated = false;
     }
 
-    public static void JoinRoom(this IWebSocketConnection connection, int roomId)
+    public static void SubscribeToTopic(this IWebSocketConnection connection, string topic)
     {
-        ConnectionPool[connection.ConnectionInfo.Id].connectedRooms.Add(roomId);
+        ConnectionPool[connection.ConnectionInfo.Id].subscribedToTopics.Add(topic);
     }
 
-    public static void RemoveFromRoom(this IWebSocketConnection connection, int roomId)
+    public static void UnsubscribeFromTopic(this IWebSocketConnection connection, string topic)
     {
-        ConnectionPool[connection.ConnectionInfo.Id].connectedRooms.Remove(roomId);
+        ConnectionPool[connection.ConnectionInfo.Id].subscribedToTopics.Remove(topic);
     }
 
     public static WebSocketInfo GetMetadata(this IWebSocketConnection connection)
@@ -46,7 +46,7 @@ public static class WebsocketExtensions
             socket = connection,
             isAuthenticated = false,
             userInfo = new EndUser(),
-            connectedRooms = new HashSet<int>()
+            subscribedToTopics = new HashSet<string>()
         });
     }
 
@@ -55,24 +55,30 @@ public static class WebsocketExtensions
         ConnectionPool.TryRemove(connection.ConnectionInfo.Id, out _);
     }
 
-    public static int CountUsersInRoom(this IWebSocketConnection connection, int roomId)
+    public static int CountUsersInRoom(this IWebSocketConnection connection, string topic)
     {
-        return ConnectionPool.Values.Count(x => x.connectedRooms.Contains(roomId));
+        return ConnectionPool.Values.Count(x => x.subscribedToTopics.Contains(topic));
     }
 
-    public static void BroadcastToRoom(int roomId, string message)
+    public static void BroadcastToTopic(string topic, string message)
     {
-        foreach (var socket in ConnectionPool.Values.Where(x => x.connectedRooms.Contains(roomId)))
-            socket.socket.Send(message);
+        foreach (var socket in ConnectionPool.Values.Where(x => x.subscribedToTopics.Contains(topic)))
+            socket.socket!.Send(message);
+    }
+
+    public static void BroadCastToAllClients(string message)
+    {
+        foreach (var keyValuePair in ConnectionPool)
+        {
+            keyValuePair.Value.socket!.Send(message);
+        }
     }
 }
 
 public class WebSocketInfo
 {
     public IWebSocketConnection? socket { get; set; }
-
     public bool isAuthenticated { get; set; }
-
     public EndUser userInfo { get; set; }
-    public HashSet<int> connectedRooms { get; set; }
+    public HashSet<string> subscribedToTopics { get; set; }
 }
