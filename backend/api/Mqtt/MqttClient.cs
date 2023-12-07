@@ -39,12 +39,9 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
                 var timeSeriesDataPoint = message.Deserialize<TimeSeriesDataPoint>();
                 timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
-                var serializedTimeSeries =
-                    new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
-                Log.Information(serializedTimeSeries);
+                var dto = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult };
 
-                WebsocketExtensions.BroadcastToTopic("ServerBroadcastsTimeSeriesData",
-                    serializedTimeSeries.ToJsonString());
+                WebsocketExtensions.BroadcastObjectToTopicListeners(dto, "TimeSeries");
 
                 var pongMessage = new MqttApplicationMessageBuilder()
                     .WithTopic("response_topic")

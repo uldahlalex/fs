@@ -13,8 +13,6 @@ namespace api.Websocket;
 
 public class WebsocketServer(ChatRepository chatRepository)
 {
-    //public readonly ConcurrentDictionary<Guid, IWebSocketConnection> LiveSocketConnections = new();
-
     public void StartWebsocketServer()
     {
         var server = new WebSocketServer("ws://127.0.0.1:8181");
@@ -38,12 +36,11 @@ public class WebsocketServer(ChatRepository chatRepository)
                         Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Development")
                             ? e.Message
                             : "Something went wrong";
-                    var dto = new ServerSendsErrorMessageToClient
+                    socket.SendDto(new ServerSendsErrorMessageToClient
                     {
                         errorMessage = errorMessage,
                         receivedEventType = eventType
-                    };
-                    ServerSendsErrorMessageToClient(socket, dto);
+                    });
                 }
             };
             socket.OnOpen = () =>
@@ -53,9 +50,13 @@ public class WebsocketServer(ChatRepository chatRepository)
             };
             socket.OnClose = () =>
             {
-                foreach (var connectedRoom in socket.GetMetadata().subscribedToTopics)
-                    ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                        { message = "Client left the room!", roomId = int.Parse(connectedRoom) });
+                foreach (var topic in socket.GetMetadata().subscribedToTopics.ToList())
+                {
+                    WebsocketExtensions.BroadcastObjectToTopicListeners(
+                        new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+                            { message = "Client left the topic!", roomId = int.Parse(topic) }, topic);
+                }
+
 
                 socket.RemoveFromConnectionPool();
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
@@ -67,33 +68,27 @@ public class WebsocketServer(ChatRepository chatRepository)
                     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Development")
                         ? exception.Message
                         : "Something went wrong";
-                var dto = new ServerSendsErrorMessageToClient
+                socket.SendDto(new ServerSendsErrorMessageToClient
                 {
                     errorMessage = errorMessage,
                     receivedEventType = "No event type"
-                };
-                ServerSendsErrorMessageToClient(socket, dto);
+                });
             };
         });
     }
 
-    #region Helpers
-
     private void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
-        if (
-            !socket.IsInConnectionPool() || !socket.GetMetadata().isAuthenticated)
-        {
-            ServerSendsErrorMessageToClient(socket, new ServerSendsErrorMessageToClient
-            {
-                receivedEventType = receivedEventType,
-                errorMessage = "Unauthorized access."
-            });
-            throw new AuthenticationException("Unauthorized access.");
-        }
-    }
+        if (socket.GetMetadata().isAuthenticated && socket.IsInConnectionPool())
+            return;
 
-    #endregion
+        socket.SendDto(new ServerSendsErrorMessageToClient
+        {
+            receivedEventType = receivedEventType,
+            errorMessage = "Unauthorized access."
+        });
+        throw new AuthenticationException("Unauthorized access.");
+    }
 
     #region ENTRY POINTS
 
@@ -125,8 +120,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         var messages = chatRepository.GetPastMessages(
             request.roomId,
             request.lastMessageId);
-        var resp = new ServerSendsOlderMessagesToClient { messages = messages, roomId = request.roomId };
-        ServerSendsOlderMessagesToClient(socket, resp);
+        socket.SendDto(new ServerSendsOlderMessagesToClient { messages = messages, roomId = request.roomId });
     }
 
 
@@ -138,11 +132,11 @@ public class WebsocketServer(ChatRepository chatRepository)
         var insertedMessage =
             chatRepository.InsertMessage(request.roomId, socket.GetMetadata().userInfo.id, request.messageContent!);
 
-        ServerBroadcastsMessageToClientsInRoom(new ServerBroadcastsMessageToClientsInRoom
+        WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
         {
             message = insertedMessage,
             roomId = request.roomId
-        });
+        }, request.roomId.ToString());
     }
 
 
@@ -152,13 +146,13 @@ public class WebsocketServer(ChatRepository chatRepository)
         var request = dto.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
         ExitIfNotAuthenticated(socket, request.eventType);
 
-        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+        WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
             roomId = request.roomId
-        });
+        }, request.roomId.ToString());
         socket.SubscribeToTopic(request.roomId.ToString());
-        ServerAddsClientToRoom(socket, new ServerAddsClientToRoom
+        socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.roomId),
             liveConnections = socket.CountUsersInRoom(request.roomId.ToString()),
@@ -171,8 +165,8 @@ public class WebsocketServer(ChatRepository chatRepository)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
         socket.UnsubscribeFromTopic(request.roomId.ToString());
-        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-            { message = "Client left the room!" });
+        WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+            { message = "Client left room: " + request.roomId }, request.roomId.ToString());
     }
 
     [UsedImplicitly]
@@ -186,7 +180,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         var jwt = SecurityUtilities.IssueJwt(
             new Dictionary<string, object?> { { "email", user.email }, { "id", user.id } });
         socket.Authenticate(user);
-        ServerAuthenticatesUser(socket, new ServerAuthenticatesUser
+        socket.SendDto(new ServerAuthenticatesUser
         {
             jwt = jwt
         });
@@ -212,57 +206,14 @@ public class WebsocketServer(ChatRepository chatRepository)
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>
             { { "email", user.email }, { "id", user.id } });
         socket.Authenticate(user);
-        ServerAuthenticatesUser(socket, new ServerAuthenticatesUser { jwt = jwt });
+        socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
     }
 
     [UsedImplicitly]
     public void ClientWantsToSubscribeToTimeSeriesData(IWebSocketConnection socket, string dto)
     {
-        socket.SubscribeToTopic("ServerBroadcastsTimeSeriesData");
-    }
-
-    #endregion
-
-
-    #region EXIT POINTS
-
-    //Note: everything is very single-purpose. Sometimes lines are duplicated in order to not share logic
-    private void ServerAddsClientToRoom(IWebSocketConnection socket, ServerAddsClientToRoom dto)
-    {
-        socket.Send(dto.ToJsonString());
-    }
-
-    private void ServerAuthenticatesUser(IWebSocketConnection socket, ServerAuthenticatesUser dto)
-    {
-        socket.Send(dto.ToJsonString());
-    }
-
-
-    private void ServerSendsErrorMessageToClient(IWebSocketConnection socket, ServerSendsErrorMessageToClient dto)
-    {
-        socket.Send(dto.ToJsonString());
-    }
-
-    private void ServerSendsOlderMessagesToClient(IWebSocketConnection socket, ServerSendsOlderMessagesToClient dto)
-    {
-        socket.Send(dto.ToJsonString());
-    }
-
-
-    /**
-     * THIS ONE IS MULTI PURPOSE
-     */
-    private void ServerNotifiesClientsInRoom(ServerNotifiesClientsInRoom dto)
-    {
-        WebsocketExtensions.BroadcastToTopic(dto.roomId + ToString(), dto.message!);
-    }
-
-    /**
-     * Combine with above??
-     */
-    private void ServerBroadcastsMessageToClientsInRoom(ServerBroadcastsMessageToClientsInRoom dto)
-    {
-        WebsocketExtensions.BroadcastToTopic(dto.roomId.ToString(), dto.message!.ToJsonString());
+        socket.SubscribeToTopic("TimeSeries");
+        //todo more
     }
 
     #endregion
