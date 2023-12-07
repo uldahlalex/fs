@@ -20,7 +20,7 @@ public static class SecurityUtilities
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
 
-            decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), true);
+            decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"));
             return true;
         }
         catch
@@ -39,7 +39,7 @@ public static class SecurityUtilities
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
 
-            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), true);
+            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"));
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         }
         catch (Exception e)

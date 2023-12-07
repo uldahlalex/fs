@@ -68,10 +68,7 @@ public static class WebsocketExtensions
 
     public static void BroadCastToAllClients(string message)
     {
-        foreach (var keyValuePair in ConnectionPool)
-        {
-            keyValuePair.Value.socket!.Send(message);
-        }
+        foreach (var keyValuePair in ConnectionPool) keyValuePair.Value.socket!.Send(message);
     }
 }
 

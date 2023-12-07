@@ -106,7 +106,7 @@ public class WebsocketServer(ChatRepository chatRepository)
             //unauth
         }
 
-        var email = (SecurityUtilities.ExtractClaims(request.jwt!)["email"]);
+        var email = SecurityUtilities.ExtractClaims(request.jwt!)["email"];
         var user = chatRepository.GetUser(email);
         if (user.isbanned)
         {
