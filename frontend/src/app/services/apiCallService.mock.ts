@@ -8,9 +8,6 @@ import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
 import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {Injectable} from "@angular/core";
-import {ToastModule} from "primeng/toast";
-import {MessageModule} from "primeng/message";
-import {MessagesModule} from "primeng/messages";
 
 @Injectable()
 export class ApiCallServiceMock implements ApiCallServiceInterface {
@@ -19,23 +16,23 @@ export class ApiCallServiceMock implements ApiCallServiceInterface {
         localStorage.setItem("jwt", expectedServerEvent.jwt!);
     }
 
-  ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
-  }
+    ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
+    }
 
-  ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
-  }
+    ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
+    }
 
-  ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
-  }
+    ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
+    }
 
-  ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
-  }
+    ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
+    }
 
-  ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
-  }
+    ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
+    }
 
-  ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
-  }
+    ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
+    }
 
 
 }

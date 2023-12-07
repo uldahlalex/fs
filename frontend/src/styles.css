@@ -1,14 +1,12 @@
-
-
 @import 'primeng/resources/themes/md-dark-deeppurple/theme.css';
 
 body .p-dialog .p-dialog-content {
-  background-color: #333; /* or any dark color you want */
-  color: #fff; /* color of the text */
+    background-color: #333; /* or any dark color you want */
+    color: #fff; /* color of the text */
 }
 
 /* If you need to change title bar color as well */
 body .p-dialog .p-dialog-header {
-  background-color: #444;
-  color: #fff; /* color of the title text */
+    background-color: #444;
+    color: #fff; /* color of the title text */
 }

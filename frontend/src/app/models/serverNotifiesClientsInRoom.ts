@@ -8,4 +8,5 @@ export class ServerNotifiesClientsInRoom extends BaseTransferObject<ServerNotifi
 export class ServerNotifiesClientsInRoomSomeoneHasJoinedRoom extends ServerNotifiesClientsInRoom {
 }
 
-export class ServerNotifiesClientsInRoomSomeoneHasLeftRoom extends ServerNotifiesClientsInRoom {}
+export class ServerNotifiesClientsInRoomSomeoneHasLeftRoom extends ServerNotifiesClientsInRoom {
+}

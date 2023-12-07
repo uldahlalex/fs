@@ -1,10 +1,9 @@
-import {bootstrapApplication, BrowserModule} from '@angular/platform-browser';
+import {BrowserModule} from '@angular/platform-browser';
 import {ComponentApp} from './components/component.app';
-import {provideRouter, RouterModule} from "@angular/router";
+import {RouterModule} from "@angular/router";
 import {ComponentRoom} from "./components/component.room";
 import {ComponentLogin} from "./components/component.login";
 import {ApiCallServiceInterface} from "./services/apiCallService.interface";
-import {ensureSourceFileVersions} from "@angular-devkit/build-angular/src/tools/esbuild/angular/angular-host";
 import {environment} from "../environments/environment";
 import {ApiCallServiceMock} from "./services/apiCallService.mock";
 import {enableProdMode, InjectionToken, NgModule} from "@angular/core";
@@ -22,44 +21,45 @@ import {DialogModule} from "primeng/dialog";
 export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
 const ApiServiceProvider = {
-  provide: API_SERVICE_TOKEN,
-  useClass: environment.production ? WebSocketClientService : ApiCallServiceMock,
+    provide: API_SERVICE_TOKEN,
+    useClass: environment.production ? WebSocketClientService : ApiCallServiceMock,
 };
+
 @NgModule({
-  imports: [
-    BrowserModule,
-    CommonModule,
-    ToastModule,
-    MessageModule,
-    BrowserAnimationsModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RouterModule.forRoot([
-      {
-        path: 'room/:id', component: ComponentRoom
-      },
-      {
-        path: 'login', component: ComponentLogin
-      }
-    ]),
-    DialogModule,
-    DialogModule,
-  ],
-  declarations: [
-    ComponentApp,
-    ComponentRoom,
-    ComponentSidebar,
-    ComponentLogin
-  ],
-  providers: [ApiServiceProvider, MessageService],
-  bootstrap: [ComponentApp]
+    imports: [
+        BrowserModule,
+        CommonModule,
+        ToastModule,
+        MessageModule,
+        BrowserAnimationsModule,
+        ReactiveFormsModule,
+        FormsModule,
+        RouterModule.forRoot([
+            {
+                path: 'room/:id', component: ComponentRoom
+            },
+            {
+                path: 'login', component: ComponentLogin
+            }
+        ]),
+        DialogModule,
+        DialogModule,
+    ],
+    declarations: [
+        ComponentApp,
+        ComponentRoom,
+        ComponentSidebar,
+        ComponentLogin
+    ],
+    providers: [ApiServiceProvider, MessageService],
+    bootstrap: [ComponentApp]
 })
 export class AppModule {
 }
 
 if (environment.production) {
-  enableProdMode();
+    enableProdMode();
 }
 
 platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.log(err));
+    .catch(err => console.log(err));

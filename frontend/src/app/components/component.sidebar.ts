@@ -1,39 +1,39 @@
-import {Component, Inject, inject, signal} from "@angular/core";
+import {Component, Inject, inject} from "@angular/core";
 import {Router} from "@angular/router";
-import {NgForOf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {API_SERVICE_TOKEN} from "../app.module";
 
 @Component({
   template: `
-      <h5>Controls</h5>
+    <h5>Controls</h5>
 
 
-      <div style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-          <button (click)="goToLoginPage()">Go to log in</button>
-          <button (click)="toggleDialog()">{{ dialogText }}</button>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+      <button (click)="goToLoginPage()">Go to log in</button>
+      <button (click)="toggleDialog()">{{ dialogText }}</button>
 
-          <p-dialog (click)="toggleDialog()" [(visible)]="isOpen">
-              <h3>Rooms</h3>
-              <ul>
-                  <li (click)="GoToRoom(room.id)" *ngFor="let room of webSocketClientService.rooms">{{ room.title }}👈</li>
-              </ul>
-          </p-dialog>
-          <button (click)="goToTimeSeriesDashboard()">Show time series data</button>
+      <p-dialog (click)="toggleDialog()" [(visible)]="isOpen">
+        <h3>Rooms</h3>
+        <ul>
+          <li (click)="GoToRoom(room.id)" *ngFor="let room of webSocketClientService.rooms">{{ room.title }}
+            👈
+          </li>
+        </ul>
+      </p-dialog>
+      <button (click)="goToTimeSeriesDashboard()">Show time series data</button>
 
-      </div>
+    </div>
   `,
   selector: "app-sidebar",
 })
 export class ComponentSidebar {
   router: Router = inject(Router);
-
-  constructor(  @Inject(API_SERVICE_TOKEN)public webSocketClientService: WebSocketClientService
-  ) {
-  }
-
   isOpen: boolean = false;
   dialogText: string = "Show rooms";
+
+  constructor(@Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  ) {
+  }
 
   toggleDialog() {
     this.isOpen = !this.isOpen;
@@ -45,7 +45,7 @@ export class ComponentSidebar {
   }
 
   GoToRoom(roomId: any) {
-    this.router.navigate(['/room/'+roomId]);
+    this.router.navigate(['/room/' + roomId]);
   }
 
   goToLoginPage() {

@@ -1,5 +1,3 @@
-
-
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using core.Exceptions;
@@ -17,14 +15,14 @@ public static class SerializerAndDeserializerExtensions
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         });
     }
-    
+
 
     /* //newtonsoft implementation
     public static T FromJson<T>(this string json)
     {
         return JsonConvert.DeserializeObject<T>(json);
     }*/
-    
+
     public static T Deserialize<T>(this string message)
     {
         return JsonSerializer.Deserialize<T>(message,
@@ -35,7 +33,7 @@ public static class SerializerAndDeserializerExtensions
     public static T DeserializeToModelAndValidate<T>(this string message)
     {
         var deserialized = Deserialize<T>(message)!;
-        var context = new ValidationContext(deserialized, serviceProvider: null, items: null);
+        var context = new ValidationContext(deserialized, null, null);
         var validationResults = new List<ValidationResult>();
         var isValid = Validator.TryValidateObject(deserialized, context, validationResults, true);
         if (isValid) return deserialized;
@@ -43,4 +41,3 @@ public static class SerializerAndDeserializerExtensions
         throw new DeserializationException($"Failed to validate message: {message}. Errors: {errors}");
     }
 }
-

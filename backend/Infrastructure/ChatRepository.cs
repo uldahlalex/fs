@@ -1,4 +1,3 @@
-using core;
 using core.Models;
 using Dapper;
 using Npgsql;
@@ -9,25 +8,26 @@ public class ChatRepository(NpgsqlDataSource dataSource)
 {
     public IEnumerable<Message> GetPastMessages(int room, int lastMessageId = int.MaxValue)
     {
-        var sql = $@"
+        var sql = @"
 SELECT * FROM chat.messages where id<@lastMessageId and room=@room ORDER BY timestamp DESC LIMIT 5;
 ";
 
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.Query<Message>(sql, new {lastMessageId, room});
+            return conn.Query<Message>(sql, new { lastMessageId, room });
         }
     }
 
     public Message InsertMessage(int roomId, int sender, string messageContent)
     {
-        var sql = $@"
+        var sql = @"
 INSERT INTO chat.messages (timestamp, sender, room, messageContent) 
 values (@timestamp, @sender, @room, @messageContent) 
 returning *;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirst<Message>(sql, new Message {
+            return conn.QueryFirst<Message>(sql, new Message
+            {
                 timestamp = DateTimeOffset.UtcNow,
                 room = roomId,
                 sender = sender,
@@ -40,7 +40,7 @@ returning *;";
     {
         try
         {
-            var sql = $@"insert into chat.enduser (email, hash, salt) values (@email, @hash, @salt) returning *;";
+            var sql = @"insert into chat.enduser (email, hash, salt) values (@email, @hash, @salt) returning *;";
             using (var conn = dataSource.OpenConnection())
             {
                 return conn.QueryFirst<EndUser>(sql, new { email, hash, salt });
@@ -52,9 +52,10 @@ returning *;";
             throw;
         }
     }
+
     public bool UserExists(string? email)
     {
-        var sql = $@"select count(*) from chat.enduser where email = @email;";
+        var sql = @"select count(*) from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
             return conn.ExecuteScalar<int>(sql, new { email }) == 1;
@@ -63,11 +64,10 @@ returning *;";
 
     public EndUser GetUser(string email)
     {
-        var sql = $@"select * from chat.enduser where email = @email;";
+        var sql = @"select * from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
-                 return conn.QueryFirst<EndUser>(sql, new { email });
-                 
+            return conn.QueryFirst<EndUser>(sql, new { email });
         }
     }
 
@@ -76,7 +76,7 @@ returning *;";
         var sql = @"select isbanned from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.ExecuteScalar<bool>(sql, new { email = email });
+            return conn.ExecuteScalar<bool>(sql, new { email });
         }
     }
 }

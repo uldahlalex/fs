@@ -23,10 +23,8 @@ public static class EnforceNameCheck
         {
             var enforceNameAttribute = propertyInfo.GetCustomAttribute<EnforceNameAttribute>();
             if (enforceNameAttribute != null && enforceNameAttribute.Name != propertyInfo.Name)
-            {
                 throw new Exception(
                     $"Property named '{propertyInfo.Name}' violated the naming rule. It should be named '{enforceNameAttribute.Name}'.");
-            }
         }
     }
 }

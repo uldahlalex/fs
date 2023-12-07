@@ -43,10 +43,9 @@ public class UserRoomJunctions
 
 public class TimeSeriesDataPoint
 {
-    [EnforceName("id")]
-    public int id { get; set; }
-    [EnforceName("messageContent")]
-    public string? messageContent { get; set; }
-    [EnforceName("timestamp")]
-    public DateTimeOffset timestamp { get; set; }
+    [EnforceName("id")] public int id { get; set; }
+
+    [EnforceName("messageContent")] public string? messageContent { get; set; }
+
+    [EnforceName("timestamp")] public DateTimeOffset timestamp { get; set; }
 }

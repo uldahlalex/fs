@@ -21,7 +21,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
             .WithTcpServer("localhost", 1883)
             .WithProtocolVersion(MqttProtocolVersion.V500)
             .Build();
-        
+
         await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
         var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
@@ -36,14 +36,13 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
             var timeSeriesDataPoint = message.DeserializeToModelAndValidate<TimeSeriesDataPoint>();
             timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
             var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
-            var serializedTimeSeries = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
+            var serializedTimeSeries =
+                new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
             Log.Information(serializedTimeSeries);
-            
+
             foreach (var websocketServerLiveSocketConnection in websocketServer.LiveSocketConnections)
-            {
                 await websocketServerLiveSocketConnection.Value.Send(serializedTimeSeries);
-            }
-            
+
             var pongMessage = new MqttApplicationMessageBuilder()
                 .WithTopic("response_topic")
                 .WithPayload("yes we received the message, thank you very much, the websocket client also has the data")

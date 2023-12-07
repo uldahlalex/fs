@@ -1,7 +1,6 @@
 using api.Websocket;
 using core;
 using core.ExtensionMethods;
-using core.Models;
 using core.Models.WebsocketTransferObjects;
 using FluentAssertions;
 using Infrastructure;
@@ -44,7 +43,7 @@ public class WebsocketServerTests
         {
             roomId = roomId
         };
-        var expectedNotification = new ServerNotifiesClientsInRoom()
+        var expectedNotification = new ServerNotifiesClientsInRoom
         {
             roomId = roomId,
             message = "A new user has entered the room!"
@@ -93,7 +92,7 @@ public class WebsocketServerTests
         {
             roomId = roomId
         };
-        var sendMessageEvent = new ClientWantsToSendMessageToRoom()
+        var sendMessageEvent = new ClientWantsToSendMessageToRoom
         {
             roomId = roomId,
             messageContent = message
@@ -105,14 +104,16 @@ public class WebsocketServerTests
             client.MessageReceived.Subscribe(message =>
             {
                 Log.Information("CLIENT 1: GETS: " + message.Text);
-                if (message.Text.Deserialize<BaseTransferObject>().eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
+                if (message.Text.Deserialize<BaseTransferObject>().eventType ==
+                    nameof(ServerBroadcastsMessageToClientsInRoom))
                     messagesSentToClient1.Add(message.Text.Deserialize<ServerBroadcastsMessageToClientsInRoom>());
             });
 
             client2.MessageReceived.Subscribe(message =>
             {
                 Log.Information("CLIENT 2: GETS: " + message.Text);
-                if (message.Text.Deserialize<BaseTransferObject>().eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
+                if (message.Text.Deserialize<BaseTransferObject>().eventType ==
+                    nameof(ServerBroadcastsMessageToClientsInRoom))
                     messagesSentToClient2.Add(message.Text.Deserialize<ServerBroadcastsMessageToClientsInRoom>());
             });
 
@@ -125,6 +126,7 @@ public class WebsocketServerTests
             client.Send(sendMessageEvent.ToJsonString());
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
+
         messagesSentToClient1
             .First().message.messageContent.Should().Be(message);
         messagesSentToClient2

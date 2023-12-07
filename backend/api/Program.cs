@@ -37,5 +37,6 @@ catch (Exception e)
 {
     Log.Error(e, "MQTT Broker exception");
 }
+
 app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
 await app.RunAsync();

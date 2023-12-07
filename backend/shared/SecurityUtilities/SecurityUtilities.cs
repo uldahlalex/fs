@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Fleck;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -21,7 +20,7 @@ public static class SecurityUtilities
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
 
-            decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), verify: true);
+            decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), true);
             return true;
         }
         catch
@@ -29,7 +28,7 @@ public static class SecurityUtilities
             return false;
         }
     }
-    
+
     public static Dictionary<string, string> ExtractClaims(string jwt)
     {
         try
@@ -40,7 +39,7 @@ public static class SecurityUtilities
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
 
-            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), verify: true);
+            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"), true);
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         }
         catch (Exception e)

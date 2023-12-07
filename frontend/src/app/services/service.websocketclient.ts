@@ -9,9 +9,9 @@ import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMe
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {
-  ServerNotifiesClientsInRoomSomeoneHasLeftRoom,
   ServerNotifiesClientsInRoom,
-  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom,
+  ServerNotifiesClientsInRoomSomeoneHasLeftRoom
 } from "../models/serverNotifiesClientsInRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
@@ -26,20 +26,19 @@ import {MessageService} from "primeng/api";
 export class WebSocketClientService implements ApiCallServiceInterface {
 
 
-  private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
   public roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
   public roomsWithConnections: Map<number, number> = new Map<number, number>();
   public rooms: Room[] = [{id: 1, title: "Work stuff"}, {id: 2, title: "Casual conversations"}, {
     id: 3,
     title: "Sports"
   }];
-
-
-
-
+  private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
 
   constructor(public messageService: MessageService) {
-    this.rooms.forEach(room => {this.roomsWithMessages.set(room.id!, []); this.roomsWithConnections.set(room.id!, 0)} );
+    this.rooms.forEach(room => {
+      this.roomsWithMessages.set(room.id!, []);
+      this.roomsWithConnections.set(room.id!, 0)
+    });
     this.socketConnection.onopen = () => {
       let jwt = localStorage.getItem("jwt");
       if (jwt != '') {
@@ -78,12 +77,12 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom(dto: ServerNotifiesClientsInRoomSomeoneHasJoinedRoom) {
     this.messageService.add({life: 2000, severity: 'warning', summary: '🧨', detail: dto.message});
-    this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)!+1);
+    this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)! + 1);
   }
 
   ServerNotifiesClientsInRoomSomeoneHasLeftRoom(dto: ServerNotifiesClientsInRoomSomeoneHasLeftRoom) {
     this.messageService.add({life: 2000, severity: 'warning', summary: '👋', detail: dto.message});
-    this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)!-1);
+    this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)! - 1);
   }
 
   ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) {
@@ -102,7 +101,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
     this.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
-      .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
+        .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
   }
 
 

@@ -78,7 +78,7 @@
           "options": {
             "buildTarget": "frontend:build"
           }
-        },
+        }
       }
     }
   }

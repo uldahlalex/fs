@@ -7,10 +7,7 @@ public class ToxicityFilter : ValidationAttribute
 {
     protected override ValidationResult IsValid(object? givenString, ValidationContext validationContext)
     {
-        if (IsToxic((string?)givenString))
-        {
-            return new ValidationResult("Message is toxic.");
-        }
+        if (IsToxic((string?)givenString)) return new ValidationResult("Message is toxic.");
 
         return ValidationResult.Success!;
     }
