@@ -8,7 +8,11 @@ import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
-import {ServerNotifiesClientsInRoom} from "../models/serverNotifiesClientsInRoom";
+import {
+  ServerNotifiesClientsInRoomSomeoneHasLeftRoom,
+  ServerNotifiesClientsInRoom,
+  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+} from "../models/serverNotifiesClientsInRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room} from "../models/entities";
@@ -72,9 +76,19 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     this.messageService.add({life: 2000, summary: '📬', detail: 'New message!'});
   }
 
-  ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) { //maybe refactor
+  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom(dto: ServerNotifiesClientsInRoomSomeoneHasJoinedRoom) {
     this.messageService.add({life: 2000, severity: 'warning', summary: '🧨', detail: dto.message});
-    //this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)!+1);
+    this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)!+1);
+  }
+
+  ServerNotifiesClientsInRoomSomeoneHasLeftRoom(dto: ServerNotifiesClientsInRoomSomeoneHasLeftRoom) {
+    this.messageService.add({life: 2000, severity: 'warning', summary: '👋', detail: dto.message});
+    this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)!-1);
+  }
+
+  ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) {
+    this.messageService.add({life: 2000, severity: 'info', summary: 'Info!', detail: dto.message});
+
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {

@@ -8,7 +8,7 @@ import {Room} from "../models/entities";
 import {ComponentSidebar} from "./component.sidebar";
 import {environment} from "../../environments/environment";
 import {WebSocketClientService} from "../services/service.websocketclient";
-import {API_SERVICE_TOKEN} from "../../main";
+import {API_SERVICE_TOKEN} from "../app.module";
 import {ToastModule} from "primeng/toast";
 import {BrowserAnimationsModule, NoopAnimationsModule} from "@angular/platform-browser/animations";
 import {BrowserModule} from "@angular/platform-browser";
@@ -18,7 +18,7 @@ import {MessageModule} from "primeng/message";
 @Component({
   selector: 'app-root',
   template: `
-      <div style="display: flex; height: 100vh;">
+      <div style="display: flex; height: 50vh;">
           <div style="flex: 0 0 2%; margin-right: 10px;">
               <!--<button>Open</button>
               <button (click)="toggleDialog()">{{ dialogText }}</button>
@@ -29,7 +29,7 @@ import {MessageModule} from "primeng/message";
               <app-sidebar></app-sidebar>
           </div>
 
-          <div style="flex: 3; border-left: black;">
+          <div style="display: flex; flex-direction: column; flex: 3; border-left: black; height: 100%; align-items: center;">
               <router-outlet></router-outlet>
 
 

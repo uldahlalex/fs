@@ -4,7 +4,7 @@ import {NgIf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
-import {API_SERVICE_TOKEN} from "../../main";
+import {API_SERVICE_TOKEN} from "../app.module";
 
 @Component({
 template: `

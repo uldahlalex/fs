@@ -2,7 +2,7 @@ import {Component, Inject, inject, signal} from "@angular/core";
 import {Router} from "@angular/router";
 import {NgForOf} from "@angular/common";
 import {WebSocketClientService} from "../services/service.websocketclient";
-import {API_SERVICE_TOKEN} from "../../main";
+import {API_SERVICE_TOKEN} from "../app.module";
 
 @Component({
   template: `
@@ -19,6 +19,7 @@ import {API_SERVICE_TOKEN} from "../../main";
                   <li (click)="GoToRoom(room.id)" *ngFor="let room of webSocketClientService.rooms">{{ room.title }}👈</li>
               </ul>
           </p-dialog>
+          <button (click)="goToTimeSeriesDashboard()">Show time series data</button>
 
       </div>
   `,
@@ -49,5 +50,9 @@ export class ComponentSidebar {
 
   goToLoginPage() {
     this.router.navigate(['/login']);
+  }
+
+  goToTimeSeriesDashboard() {
+    this.router.navigate(['/time-series-dashboard']);
   }
 }

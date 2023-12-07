@@ -60,7 +60,7 @@ public class WebsocketServer(ChatRepository chatRepository)
             {
                 foreach (var connectedRoom in socket.GetConnectedRooms())
                 {
-                    ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom()
+                    ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom()
                         { message = "Client left the room!", roomId = connectedRoom });
                 }
 
@@ -141,7 +141,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         var request = dto.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
         ExitIfNotAuthenticated(socket, request.eventType);
 
-        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom()
+        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom()
         {
             message = "Client joined the room!",
             roomId = request.roomId
@@ -161,7 +161,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
         socket.RemoveFromRoom(request.roomId);
-        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoom() { message = "Client left the room!" });
+        ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom() { message = "Client left the room!" });
     }
 
     [UsedImplicitly]
@@ -209,8 +209,7 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     #region EXIT POINTS
 
-    //Nuværende regel: Alt i client, nedenstående kun til at transmit. En klient kan godt kalde flere transmit funktioner, men en trasnsmit har højst en tramission
-    //note skal broadcast laves om til at have et loop?
+    //Note: everything is very single-purpose. Sometimes lines are duplicated in order to not share logic
     private void ServerAddsClientToRoom(IWebSocketConnection socket, ServerAddsClientToRoom dto)
     {
         socket.Send(dto.ToJsonString());
@@ -242,6 +241,9 @@ public class WebsocketServer(ChatRepository chatRepository)
     }
 
 
+    /**
+     * THIS ONE IS MULTI PURPOSE
+     */
     private void ServerNotifiesClientsInRoom(ServerNotifiesClientsInRoom dto)
     {
         foreach (var connection in LiveSocketConnections)

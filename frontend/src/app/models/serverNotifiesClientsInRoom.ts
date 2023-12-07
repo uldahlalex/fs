@@ -4,3 +4,8 @@ export class ServerNotifiesClientsInRoom extends BaseTransferObject<ServerNotifi
   roomId?: number;
   message?: string;
 }
+
+export class ServerNotifiesClientsInRoomSomeoneHasJoinedRoom extends ServerNotifiesClientsInRoom {
+}
+
+export class ServerNotifiesClientsInRoomSomeoneHasLeftRoom extends ServerNotifiesClientsInRoom {}

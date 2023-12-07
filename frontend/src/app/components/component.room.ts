@@ -8,7 +8,7 @@ import ago from 's-ago';
 import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
-import {API_SERVICE_TOKEN} from "../../main";
+import {API_SERVICE_TOKEN} from "../app.module";
 
 
 @Component({
@@ -18,16 +18,17 @@ import {API_SERVICE_TOKEN} from "../../main";
 
       <div style="display: flex; flex-direction: row; justify-content: center; ">
           <button (click)="loadOlderMessages()" style="height: 100%;">Load older messages...</button>
-          <p>Currently live in room: {{webSocketClientService.roomsWithConnections.get(roomId!)}}</p>
+          <p>Currently live in room: {{ webSocketClientService.roomsWithConnections.get(roomId!) }}</p>
       </div>
 
       <div style="
       display: flex;
       flex-direction: column;
+      overflow-y: scroll; max-height: 50%;
 ">
           <div *ngIf="roomId">
               <div *ngFor="let k of webSocketClientService.roomsWithMessages.get(roomId)"
-                   style="display: flex; flex-direction: row; justify-content: space-between">
+                   style="display: flex; flex-direction: row; justify-content: space-between;">
                   <div>
                       UID: {{ k.sender }}
                       said <i>{{ k.messageContent }}</i>
@@ -38,15 +39,15 @@ import {API_SERVICE_TOKEN} from "../../main";
 
           </div>
 
+
+      </div>
+
           <div style="display: flex; flex-direction: row; justify-content: center;">
-              <input [formControl]="messageInput" placeholder="Write something interesting"
-                     style="height: 100%;">
-              <button (click)="clientWantsToSendMessageToRoom()" style="height: 100%;">insert
-              </button>
+              <input [formControl]="messageInput" placeholder="Write something interesting" style="height: 100%;">
+              <button (click)="clientWantsToSendMessageToRoom()" style="height: 100%;">insert</button>
           </div>
 
 
-      </div>
   `,
 })
 export class ComponentRoom {
