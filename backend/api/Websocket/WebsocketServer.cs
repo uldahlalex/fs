@@ -82,7 +82,8 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     private void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
-        if (!LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id) || !socket.GetMetadata().isAuthenticated)
+        if (
+            !LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id) || !socket.GetMetadata().isAuthenticated)
         {
             ServerSendsErrorMessageToClient(socket, new ServerSendsErrorMessageToClient
             {
