@@ -53,6 +53,6 @@ export class ComponentSidebar {
   }
 
   goToTimeSeriesDashboard() {
-    this.router.navigate(['/time-series-dashboard']);
+    this.router.navigate(['/timeseries']);
   }
 }

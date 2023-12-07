@@ -32,6 +32,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     id: 3,
     title: "Sports"
   }];
+  public timeseriesData: any[] = [];
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
 
   constructor(public messageService: MessageService) {
@@ -96,6 +97,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
     this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "New time series data!"});
+    this.timeseriesData.push(dto.timeSeriesData!);
   }
 
 
@@ -103,6 +105,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     this.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
       .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
   }
+
 
 
   // CLIENT -> SERVER COMMUNICATION
@@ -135,4 +138,9 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     this.socketConnection.send(JSON.stringify(clientWantsToSendMessageToRoom));
   }
 
+  ClientWantsToSubscribeToTimeSeriesData(clientWantsToSubscribeToTimeSeriesData: ClientWantsToRegister): void {
+    {
+      this.socketConnection.send(JSON.stringify(clientWantsToSubscribeToTimeSeriesData));
+    }
+  }
 }

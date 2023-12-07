@@ -215,6 +215,12 @@ public class WebsocketServer(ChatRepository chatRepository)
         ServerAuthenticatesUser(socket, new ServerAuthenticatesUser { jwt = jwt });
     }
 
+    [UsedImplicitly]
+    public void ClientWantsToSubscribeToTimeSeriesData(IWebSocketConnection socket, string dto)
+    {
+        socket.SubscribeToTopic("ServerBroadcastsTimeSeriesData");
+    }
+
     #endregion
 
 

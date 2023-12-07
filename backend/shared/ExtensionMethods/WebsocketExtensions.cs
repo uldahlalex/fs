@@ -63,7 +63,10 @@ public static class WebsocketExtensions
     public static void BroadcastToTopic(string topic, string message)
     {
         foreach (var socket in ConnectionPool.Values.Where(x => x.subscribedToTopics.Contains(topic)))
+        {
+            Console.WriteLine(socket.socket.ConnectionInfo.Id);
             socket.socket!.Send(message);
+        }
     }
 
     public static void BroadCastToAllClients(string message)

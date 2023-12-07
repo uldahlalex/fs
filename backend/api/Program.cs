@@ -26,7 +26,8 @@ builder.Services.AddSingleton<MqttClient>();
 var app = builder.Build();
 try
 {
-    if (Environment.GetEnvironmentVariable("START_BROKER") is "true")
+    Console.WriteLine(Environment.GetEnvironmentVariable("START_BROKER"));
+    if (Environment.GetEnvironmentVariable("START_BROKER")!.Equals("true"))
         await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
 }
 catch (MqttCommunicationException e)

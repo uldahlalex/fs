@@ -17,48 +17,53 @@ import {CommonModule} from "@angular/common";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 import {MessageService} from "primeng/api";
 import {DialogModule} from "primeng/dialog";
+import {ComponentTimeseries} from "./components/component.timeseries";
 
 export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
 const ApiServiceProvider = {
-    provide: API_SERVICE_TOKEN,
-    useClass: environment.production ? WebSocketClientService : ApiCallServiceMock,
+  provide: API_SERVICE_TOKEN,
+  useClass: environment.production ? WebSocketClientService : ApiCallServiceMock,
 };
 
 @NgModule({
-    imports: [
-        BrowserModule,
-        CommonModule,
-        ToastModule,
-        MessageModule,
-        BrowserAnimationsModule,
-        ReactiveFormsModule,
-        FormsModule,
-        RouterModule.forRoot([
-            {
-                path: 'room/:id', component: ComponentRoom
-            },
-            {
-                path: 'login', component: ComponentLogin
-            }
-        ]),
-        DialogModule,
-        DialogModule,
-    ],
-    declarations: [
-        ComponentApp,
-        ComponentRoom,
-        ComponentSidebar,
-        ComponentLogin
-    ],
-    providers: [ApiServiceProvider, MessageService],
-    bootstrap: [ComponentApp]
+  imports: [
+    BrowserModule,
+    CommonModule,
+    ToastModule,
+    MessageModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule.forRoot([
+      {
+        path: 'room/:id', component: ComponentRoom
+      },
+      {
+        path: 'login', component: ComponentLogin
+      },
+      {
+        path: 'timeseries', component: ComponentTimeseries
+      }
+    ]),
+    DialogModule,
+    DialogModule,
+  ],
+  declarations: [
+    ComponentApp,
+    ComponentRoom,
+    ComponentSidebar,
+    ComponentLogin,
+    ComponentTimeseries
+  ],
+  providers: [ApiServiceProvider, MessageService],
+  bootstrap: [ComponentApp]
 })
 export class AppModule {
 }
 
 if (environment.production) {
-    enableProdMode();
+  enableProdMode();
 }
 
 platformBrowserDynamic().bootstrapModule(AppModule)

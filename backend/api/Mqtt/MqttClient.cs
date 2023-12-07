@@ -32,23 +32,33 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
 
         mqttClient.ApplicationMessageReceivedAsync += async e =>
         {
-            var message = e.ApplicationMessage.ConvertPayloadToString();
-            var timeSeriesDataPoint = message.DeserializeToModelAndValidate<TimeSeriesDataPoint>();
-            timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
-            var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
-            var serializedTimeSeries =
-                new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
-            Log.Information(serializedTimeSeries);
+            try
+            {
+                var message = e.ApplicationMessage.ConvertPayloadToString();
+                Log.Information(message);
+                var timeSeriesDataPoint = message.Deserialize<TimeSeriesDataPoint>();
+                timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
+                var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
+                var serializedTimeSeries =
+                    new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult }.ToJsonString();
+                Log.Information(serializedTimeSeries);
 
-            WebsocketExtensions.BroadcastToTopic("Timeseries", serializedTimeSeries);
+                WebsocketExtensions.BroadcastToTopic("ServerBroadcastsTimeSeriesData",
+                    serializedTimeSeries.ToJsonString());
 
-            var pongMessage = new MqttApplicationMessageBuilder()
-                .WithTopic("response_topic")
-                .WithPayload("yes we received the message, thank you very much, the websocket client also has the data")
-                .WithQualityOfServiceLevel(e.ApplicationMessage.QualityOfServiceLevel)
-                .WithRetainFlag(e.ApplicationMessage.Retain)
-                .Build();
-            await mqttClient.PublishAsync(pongMessage, CancellationToken.None);
+                var pongMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic("response_topic")
+                    .WithPayload(
+                        "yes we received the message, thank you very much, the websocket client also has the data")
+                    .WithQualityOfServiceLevel(e.ApplicationMessage.QualityOfServiceLevel)
+                    .WithRetainFlag(e.ApplicationMessage.Retain)
+                    .Build();
+                await mqttClient.PublishAsync(pongMessage, CancellationToken.None);
+            }
+            catch (Exception exc)
+            {
+                Log.Logger.Error(exc, "MqttClient");
+            }
         };
     }
 }
