@@ -1,4 +1,5 @@
 import {BaseTransferObject} from "./baseTransferObject";
+import {EndUser} from "./entities";
 
 export class ServerNotifiesClientsInRoom extends BaseTransferObject<ServerNotifiesClientsInRoom> {
   roomId?: number;
@@ -6,7 +7,9 @@ export class ServerNotifiesClientsInRoom extends BaseTransferObject<ServerNotifi
 }
 
 export class ServerNotifiesClientsInRoomSomeoneHasJoinedRoom extends ServerNotifiesClientsInRoom {
+    user?: EndUser
 }
 
 export class ServerNotifiesClientsInRoomSomeoneHasLeftRoom extends ServerNotifiesClientsInRoom {
+    user?: EndUser
 }

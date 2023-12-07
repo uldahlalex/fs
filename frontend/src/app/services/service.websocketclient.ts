@@ -9,9 +9,8 @@ import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMe
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {
-  ServerNotifiesClientsInRoom,
-  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom,
-  ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+    ServerNotifiesClientsInRoomSomeoneHasJoinedRoom,
+    ServerNotifiesClientsInRoomSomeoneHasLeftRoom
 } from "../models/serverNotifiesClientsInRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
@@ -62,13 +61,13 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
     this.roomsWithMessages.set(dto.roomId!, dto.messages!.reverse());
-    this.roomsWithConnections.set(dto.roomId!, dto.liveConnections!)
+      this.roomsWithConnections.set(dto.roomId!, dto.liveConnections!);
+      this.messageService.add({life: 2000, severity: 'success', summary: 'Success', detail: 'Welcome to room, '});
   }
 
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
     this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
     localStorage.setItem("jwt", dto.jwt!);
-
   }
 
   ServerBroadcastsMessageToClientsInRoom(dto: ServerBroadcastsMessageToClientsInRoom) {
@@ -77,18 +76,23 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   }
 
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom(dto: ServerNotifiesClientsInRoomSomeoneHasJoinedRoom) {
-    this.messageService.add({life: 2000, severity: 'warning', summary: '🧨', detail: dto.message});
+      this.messageService.add({
+          life: 2000,
+          severity: 'warning',
+          summary: '🧨',
+          detail: "New user joined: " + dto.user?.email
+      });
     this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)! + 1);
   }
 
   ServerNotifiesClientsInRoomSomeoneHasLeftRoom(dto: ServerNotifiesClientsInRoomSomeoneHasLeftRoom) {
-    this.messageService.add({life: 2000, severity: 'warning', summary: '👋', detail: dto.message});
+      this.messageService.add({
+          life: 2000,
+          severity: 'warning',
+          summary: '👋',
+          detail: dto.user?.email + " left the room!"
+      });
     this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)! - 1);
-  }
-
-  ServerNotifiesClientsInRoom(dto: ServerNotifiesClientsInRoom) {
-    this.messageService.add({life: 2000, severity: 'info', summary: 'Info!', detail: dto.message});
-
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {

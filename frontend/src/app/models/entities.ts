@@ -9,6 +9,15 @@ export class Message {
     }
 }
 
+export class EndUser {
+    id?: number;
+    email?: string;
+
+    constructor(init?: Partial<EndUser>) {
+        Object.assign(this, init);
+    }
+}
+
 export class Room {
     id?: number;
     title?: string;

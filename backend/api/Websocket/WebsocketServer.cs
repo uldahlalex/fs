@@ -54,7 +54,7 @@ public class WebsocketServer(ChatRepository chatRepository)
                 {
                     WebsocketExtensions.BroadcastObjectToTopicListeners(
                         new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                            { message = "Client left the topic!", roomId = int.Parse(topic) }, topic);
+                            { message = "Client left room: " + topic, user = socket.GetMetadata().userInfo }, topic);
                 }
 
 
@@ -149,6 +149,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
+            user = socket.GetMetadata().userInfo,
             roomId = request.roomId
         }, request.roomId.ToString());
         socket.SubscribeToTopic(request.roomId.ToString());
@@ -166,7 +167,8 @@ public class WebsocketServer(ChatRepository chatRepository)
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
         socket.UnsubscribeFromTopic(request.roomId.ToString());
         WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-            { message = "Client left room: " + request.roomId }, request.roomId.ToString());
+                { message = "Client left room: " + request.roomId, user = socket.GetMetadata().userInfo },
+            request.roomId.ToString());
     }
 
     [UsedImplicitly]
