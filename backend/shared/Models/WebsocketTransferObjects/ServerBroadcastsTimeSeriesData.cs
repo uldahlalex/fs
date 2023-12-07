@@ -2,5 +2,5 @@ namespace core.Models.WebsocketTransferObjects;
 
 public class ServerBroadcastsTimeSeriesData : BaseTransferObject
 {
-    public TimeSeriesDataPoint? timeSeriesDataPoint { get; set; }
+    public TimeSeries? timeSeriesDataPoint { get; set; }
 }

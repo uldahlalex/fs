@@ -27,12 +27,12 @@ export class Room {
     }
 }
 
-export class TimeSeriesData {
+export class TimeSeries {
     timestamp?: string;
-    messageContent?: string;
+    datapoint?: number;
     id?: number;
 
-    constructor(init?: Partial<TimeSeriesData>) {
+    constructor(init?: Partial<TimeSeries>) {
         Object.assign(this, init);
     }
 }

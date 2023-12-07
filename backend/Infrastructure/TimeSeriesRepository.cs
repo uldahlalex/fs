@@ -4,34 +4,26 @@ using Npgsql;
 
 namespace Infrastructure;
 
-public class TimeSeriesRepository
+public class TimeSeriesRepository(NpgsqlDataSource dataSource)
 {
-    private readonly NpgsqlDataSource _dataSource;
-
-    public TimeSeriesRepository(NpgsqlDataSource dataSource)
+    public TimeSeries PersistTimeSeriesDataPoint(TimeSeries timeseries)
     {
-        _dataSource = dataSource;
-        using (var conn = _dataSource.OpenConnection())
-        {
-            conn.Execute(@"
-drop schema demo cascade;
-CREATE SCHEMA IF NOT EXISTS demo;
-CREATE TABLE IF NOT EXISTS demo.timeseries
-(id int primary key generated always as identity,
- messageContent TEXT, timestamp TIMESTAMP WITH TIME ZONE);
+        var sql =
+            @"INSERT INTO demo.timeseries (datapoint, timestamp) VALUES (@datapoint, @timestamp) RETURNING *;";
 
-");
+        using (var conn = dataSource.OpenConnection())
+        {
+            return conn.QueryFirst<TimeSeries>(sql,
+                new { datapoint = timeseries.datapoint, timestamp = DateTimeOffset.UtcNow });
         }
     }
 
-    public TimeSeriesDataPoint PersistTimeSeriesDataPoint(TimeSeriesDataPoint dataPoint)
+    public IEnumerable<TimeSeries> GetOlderTimeSeriesDataPoints()
     {
-        var sql =
-            @"INSERT INTO demo.timeseries (messageContent, timestamp) VALUES (@messageContent, @timestamp) RETURNING *;";
-
-        using (var conn = _dataSource.OpenConnection())
+        var sql = "SELECT * FROM demo.timeseries LIMIT 100;";
+        using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirst<TimeSeriesDataPoint>(sql, new { dataPoint.messageContent, dataPoint.timestamp });
+            return conn.Query<TimeSeries>(sql);
         }
     }
 }

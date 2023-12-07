@@ -11,7 +11,7 @@ EnforceNameCheck.CheckPropertyNames<EndUser>();
 EnforceNameCheck.CheckPropertyNames<Message>();
 EnforceNameCheck.CheckPropertyNames<Room>();
 EnforceNameCheck.CheckPropertyNames<UserRoomJunctions>();
-EnforceNameCheck.CheckPropertyNames<TimeSeriesDataPoint>();
+EnforceNameCheck.CheckPropertyNames<TimeSeries>();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
@@ -26,9 +26,9 @@ builder.Services.AddSingleton<MqttClient>();
 var app = builder.Build();
 try
 {
-    Console.WriteLine(Environment.GetEnvironmentVariable("START_BROKER"));
-    if (Environment.GetEnvironmentVariable("START_BROKER")!.Equals("true"))
-        await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+    // Console.WriteLine(Environment.GetEnvironmentVariable("START_BROKER"));
+    // if (Environment.GetEnvironmentVariable("START_BROKER")!.Equals("true") || true)
+    await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
 }
 catch (MqttCommunicationException e)
 {

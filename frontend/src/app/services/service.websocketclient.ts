@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {Injectable, Input} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
@@ -9,8 +9,8 @@ import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMe
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {
-    ServerNotifiesClientsInRoomSomeoneHasJoinedRoom,
-    ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom,
+  ServerNotifiesClientsInRoomSomeoneHasLeftRoom
 } from "../models/serverNotifiesClientsInRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
@@ -20,6 +20,8 @@ import {ApiCallServiceInterface} from "./apiCallService.interface";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 import {MessageService} from "primeng/api";
+import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlderTimeSeriesDataToClient";
+import {ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexGrid, ApexStroke, ApexTitleSubtitle} from "ng-apexcharts";
 
 @Injectable()
 export class WebSocketClientService implements ApiCallServiceInterface {
@@ -31,7 +33,21 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     id: 3,
     title: "Sports"
   }];
-  public timeseriesData: any[] = [];
+
+
+  public timeseriesData: any[] = [
+    {
+      name: "Data points over time",
+      data: []
+    }
+  ];
+  @Input() public series: ApexAxisChartSeries = this.timeseriesData;
+  @Input() public chart: ApexChart | undefined;
+  @Input() public title: ApexTitleSubtitle | undefined;
+  @Input() public dataLabels: ApexDataLabels | undefined;
+  @Input() public stroke: ApexStroke | undefined;
+  @Input() public grid: ApexGrid | undefined;
+  @Input() public xaxis: ApexGrid | any;
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
 
   constructor(public messageService: MessageService) {
@@ -99,15 +115,32 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage});
   }
 
-  ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
-    this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "New time series data!"});
-    this.timeseriesData.push(dto.timeSeriesData!);
-  }
+
 
 
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
     this.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
       .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
+  }
+
+  ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
+    this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "New time series data!"});
+    let transform = {x: new Date(dto.timeSeriesDataPoint?.timestamp!), y: dto.timeSeriesDataPoint?.datapoint}
+    let copy = JSON.parse(JSON.stringify(this.timeseriesData));
+    copy[0].data.push(transform!);
+    this.timeseriesData = copy;
+
+    // this.timeseriesData[0].data.push(transform!);
+  }
+
+  ServerSendsOlderTimeSeriesDataToClient(serverSendsOlderTimeSeriesDataToClient: ServerSendsOlderTimeSeriesDataToClient) {
+    let transform = serverSendsOlderTimeSeriesDataToClient.timeseries.map((ts) => ({
+      x: new Date(ts.timestamp!),
+      y: ts.datapoint
+    }));
+
+    this.timeseriesData[0].data.push(...transform!);
+
   }
 
 

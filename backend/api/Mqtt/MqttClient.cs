@@ -25,7 +25,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
         await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
         var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder()
-            .WithTopicFilter(f => f.WithTopic("timeseries"))
+            .WithTopicFilter(f => f.WithTopic("TimeSeries"))
             .Build();
 
         await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
@@ -36,7 +36,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
             {
                 var message = e.ApplicationMessage.ConvertPayloadToString();
                 Log.Information(message);
-                var timeSeriesDataPoint = message.Deserialize<TimeSeriesDataPoint>();
+                var timeSeriesDataPoint = message.Deserialize<TimeSeries>();
                 timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
                 var dto = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult };
@@ -45,8 +45,8 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
 
                 var pongMessage = new MqttApplicationMessageBuilder()
                     .WithTopic("response_topic")
-                    .WithPayload(
-                        "yes we received the message, thank you very much, the websocket client also has the data")
+                    .WithPayload("yes we received the message, thank you very much, " +
+                                 "the websocket client(s) also has the data")
                     .WithQualityOfServiceLevel(e.ApplicationMessage.QualityOfServiceLevel)
                     .WithRetainFlag(e.ApplicationMessage.Retain)
                     .Build();

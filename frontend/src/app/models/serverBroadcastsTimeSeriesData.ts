@@ -1,6 +1,6 @@
 import {BaseTransferObject} from "./baseTransferObject";
-import {TimeSeriesData} from "./entities";
+import {TimeSeries} from "./entities";
 
 export class ServerBroadcastsTimeSeriesData extends BaseTransferObject<ServerBroadcastsTimeSeriesData> {
-  timeSeriesData?: TimeSeriesData;
+    timeSeriesDataPoint?: TimeSeries;
 }

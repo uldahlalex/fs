@@ -41,11 +41,11 @@ public class UserRoomJunctions
     [EnforceName("room")] public int room { get; set; }
 }
 
-public class TimeSeriesDataPoint
+public class TimeSeries
 {
     [EnforceName("id")] public int id { get; set; }
 
-    [EnforceName("messageContent")] public string? messageContent { get; set; }
+    [EnforceName("datapoint")] public int? datapoint { get; set; }
 
     [EnforceName("timestamp")] public DateTimeOffset timestamp { get; set; }
 }

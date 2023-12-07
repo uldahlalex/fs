@@ -43,7 +43,7 @@ public class WebsocketServerTests
         {
             roomId = roomId
         };
-        var expectedNotification = new ServerNotifiesClientsInRoom
+        var expectedNotification = new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom()
         {
             roomId = roomId,
             message = "A new user has entered the room!"

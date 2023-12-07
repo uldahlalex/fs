@@ -11,7 +11,7 @@ using Serilog;
 
 namespace api.Websocket;
 
-public class WebsocketServer(ChatRepository chatRepository)
+public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository timeSeriesRepository)
 {
     public void StartWebsocketServer()
     {
@@ -215,7 +215,9 @@ public class WebsocketServer(ChatRepository chatRepository)
     public void ClientWantsToSubscribeToTimeSeriesData(IWebSocketConnection socket, string dto)
     {
         socket.SubscribeToTopic("TimeSeries");
-        //todo more
+        var data = timeSeriesRepository.GetOlderTimeSeriesDataPoints();
+        Log.Information(data.ToJsonString());
+        socket.SendDto(new ServerSendsOlderTimeSeriesDataToClient() { timeseries = data });
     }
 
     #endregion

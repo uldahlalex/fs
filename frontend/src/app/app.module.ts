@@ -18,6 +18,8 @@ import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 import {MessageService} from "primeng/api";
 import {DialogModule} from "primeng/dialog";
 import {ComponentTimeseries} from "./components/component.timeseries";
+import {NgApexchartsModule} from "ng-apexcharts";
+
 
 export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
@@ -35,6 +37,7 @@ const ApiServiceProvider = {
     BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,
+      NgApexchartsModule,
     RouterModule.forRoot([
       {
         path: 'room/:id', component: ComponentRoom
@@ -46,8 +49,7 @@ const ApiServiceProvider = {
         path: 'timeseries', component: ComponentTimeseries
       }
     ]),
-    DialogModule,
-    DialogModule,
+      DialogModule
   ],
   declarations: [
     ComponentApp,
