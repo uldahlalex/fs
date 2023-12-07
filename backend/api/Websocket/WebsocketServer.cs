@@ -48,7 +48,7 @@ public class WebsocketServer(ChatRepository chatRepository)
             };
             socket.OnOpen = () =>
             {
-                LiveSocketConnections.TryAdd(socket.ConnectionInfo.Id, socket);
+                socket.AddToConnectionPool();
                 Log.Information("Connected: " + socket.ConnectionInfo.Id);
             };
             socket.OnClose = () =>
@@ -57,8 +57,7 @@ public class WebsocketServer(ChatRepository chatRepository)
                     ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
                         { message = "Client left the room!", roomId = connectedRoom });
 
-                if (LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
-                    LiveSocketConnections.Remove(socket.ConnectionInfo.Id, out _);
+                socket.RemoveFromConnectionPool();
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
             };
             socket.OnError = exception =>
@@ -83,7 +82,7 @@ public class WebsocketServer(ChatRepository chatRepository)
     private void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
         if (
-            !LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id) || !socket.GetMetadata().isAuthenticated)
+            !socket.IsInConnectionPool() || !socket.GetMetadata().isAuthenticated)
         {
             ServerSendsErrorMessageToClient(socket, new ServerSendsErrorMessageToClient
             {
@@ -162,8 +161,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         ServerAddsClientToRoom(socket, new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.roomId),
-            liveConnections =
-                LiveSocketConnections.Count(c => c.Value.GetMetadata().connectedRooms.Contains(request.roomId)),
+            liveConnections = socket.CountUsersInRoom(request.roomId),
             roomId = request.roomId
         });
     }
@@ -250,11 +248,7 @@ public class WebsocketServer(ChatRepository chatRepository)
      */
     private void ServerNotifiesClientsInRoom(ServerNotifiesClientsInRoom dto)
     {
-        foreach (var connection in LiveSocketConnections)
-        {
-            if (connection.Value.GetMetadata().connectedRooms.Contains(dto.roomId))
-                connection.Value.Send(dto.ToJsonString());
-        }
+        WebsocketExtensions.BroadcastToRoom(dto.roomId, dto.message!);
     }
 
     /**
@@ -262,11 +256,7 @@ public class WebsocketServer(ChatRepository chatRepository)
      */
     private void ServerBroadcastsMessageToClientsInRoom(ServerBroadcastsMessageToClientsInRoom dto)
     {
-        foreach (var connection in LiveSocketConnections)
-        {
-            if (connection.Value.GetMetadata().connectedRooms.Contains(dto.roomId))
-                connection.Value.Send(dto.ToJsonString());
-        }
+        WebsocketExtensions.BroadcastToRoom(dto.roomId, dto.message!.ToJsonString());
     }
 
     #endregion
