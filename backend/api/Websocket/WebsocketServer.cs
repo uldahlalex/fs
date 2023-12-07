@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Reflection;
 using System.Security.Authentication;
 using core.ExtensionMethods;
@@ -14,7 +13,7 @@ namespace api.Websocket;
 
 public class WebsocketServer(ChatRepository chatRepository)
 {
-    public readonly ConcurrentDictionary<Guid, IWebSocketConnection> LiveSocketConnections = new();
+    //public readonly ConcurrentDictionary<Guid, IWebSocketConnection> LiveSocketConnections = new();
 
     public void StartWebsocketServer()
     {
@@ -54,7 +53,7 @@ public class WebsocketServer(ChatRepository chatRepository)
             };
             socket.OnClose = () =>
             {
-                foreach (var connectedRoom in socket.GetConnectedRooms())
+                foreach (var connectedRoom in socket.GetMetadata().connectedRooms)
                     ServerNotifiesClientsInRoom(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
                         { message = "Client left the room!", roomId = connectedRoom });
 
@@ -83,7 +82,7 @@ public class WebsocketServer(ChatRepository chatRepository)
 
     private void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
-        if (!socket.IsAuthenticated() && LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id))
+        if (!LiveSocketConnections.ContainsKey(socket.ConnectionInfo.Id) || !socket.GetMetadata().isAuthenticated)
         {
             ServerSendsErrorMessageToClient(socket, new ServerSendsErrorMessageToClient
             {
@@ -102,17 +101,19 @@ public class WebsocketServer(ChatRepository chatRepository)
     public void ClientWantsToAuthenticateWithJwt(IWebSocketConnection socket, string dto)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToAuthenticateWithJwt>();
-        if (SecurityUtilities.IsJwtValid(request.jwt!) &&
-            !chatRepository.IsUserBanned(SecurityUtilities.ExtractClaims(request.jwt!)["email"]))
+        if (SecurityUtilities.IsJwtValid(request.jwt!))
         {
-            var id = int.Parse(SecurityUtilities.ExtractClaims(request.jwt!)["id"]);
-            socket.Authenticate(id);
-        }
-        else
-        {
-            socket.UnAuthenticate();
+            //unauth
         }
 
+        var email = (SecurityUtilities.ExtractClaims(request.jwt!)["email"]);
+        var user = chatRepository.GetUser(email);
+        if (user.isbanned)
+        {
+            //unauth
+        }
+
+        socket.Authenticate(user);
         socket.Send(new ServerAuthenticatesUser { jwt = request.jwt }.ToJsonString());
     }
 
@@ -135,7 +136,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         var request = dto.DeserializeToModelAndValidate<ClientWantsToSendMessageToRoom>();
         ExitIfNotAuthenticated(socket, request.eventType);
         var insertedMessage =
-            chatRepository.InsertMessage(request.roomId, socket.GetUserIdForConnection(), request.messageContent!);
+            chatRepository.InsertMessage(request.roomId, socket.GetMetadata().userInfo.id, request.messageContent!);
 
         ServerBroadcastsMessageToClientsInRoom(new ServerBroadcastsMessageToClientsInRoom
         {
@@ -160,8 +161,8 @@ public class WebsocketServer(ChatRepository chatRepository)
         ServerAddsClientToRoom(socket, new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.roomId),
-            liveConnections = LiveSocketConnections.Values.Where(x => x.GetConnectedRooms().Contains(request.roomId))
-                .Select(x => x.ConnectionInfo.Id).Count(),
+            liveConnections =
+                LiveSocketConnections.Count(c => c.Value.GetMetadata().connectedRooms.Contains(request.roomId)),
             roomId = request.roomId
         });
     }
@@ -185,7 +186,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         var user = chatRepository.InsertUser(request.email!, hash, salt);
         var jwt = SecurityUtilities.IssueJwt(
             new Dictionary<string, object?> { { "email", user.email }, { "id", user.id } });
-        socket.Authenticate(user.id);
+        socket.Authenticate(user);
         ServerAuthenticatesUser(socket, new ServerAuthenticatesUser
         {
             jwt = jwt
@@ -211,7 +212,7 @@ public class WebsocketServer(ChatRepository chatRepository)
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>
             { { "email", user.email }, { "id", user.id } });
-        socket.Authenticate(user.id);
+        socket.Authenticate(user);
         ServerAuthenticatesUser(socket, new ServerAuthenticatesUser { jwt = jwt });
     }
 
@@ -229,15 +230,6 @@ public class WebsocketServer(ChatRepository chatRepository)
     private void ServerAuthenticatesUser(IWebSocketConnection socket, ServerAuthenticatesUser dto)
     {
         socket.Send(dto.ToJsonString());
-    }
-
-    private void ServerBroadcastsMessageToClientsInRoom(ServerBroadcastsMessageToClientsInRoom dto)
-    {
-        foreach (var connection in LiveSocketConnections)
-        {
-            if (connection.Value.GetConnectedRooms().Contains(dto.roomId)) ;
-            connection.Value.Send(dto.ToJsonString());
-        }
     }
 
 
@@ -259,8 +251,20 @@ public class WebsocketServer(ChatRepository chatRepository)
     {
         foreach (var connection in LiveSocketConnections)
         {
-            if (connection.Value.GetConnectedRooms().Contains(dto.roomId)) ;
-            connection.Value.Send(dto.ToJsonString());
+            if (connection.Value.GetMetadata().connectedRooms.Contains(dto.roomId))
+                connection.Value.Send(dto.ToJsonString());
+        }
+    }
+
+    /**
+     * Combine with above??
+     */
+    private void ServerBroadcastsMessageToClientsInRoom(ServerBroadcastsMessageToClientsInRoom dto)
+    {
+        foreach (var connection in LiveSocketConnections)
+        {
+            if (connection.Value.GetMetadata().connectedRooms.Contains(dto.roomId))
+                connection.Value.Send(dto.ToJsonString());
         }
     }
 
