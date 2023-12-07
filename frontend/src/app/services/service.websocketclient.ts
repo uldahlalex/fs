@@ -101,7 +101,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
     this.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!
-        .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
+      .unshift(...serverSendsOlderMessagesToClient.messages?.reverse()!);
   }
 
 

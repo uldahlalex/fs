@@ -7,30 +7,30 @@ import {API_SERVICE_TOKEN} from "../app.module";
 
 @Component({
   template: `
-    <div *ngIf="showLogin"
-         style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-      <input [formControl]="loginEmail" placeholder="email">
-      <input type="password" [formControl]="loginPassword" placeholder="password">
-      <div style="display: flex; flex-direction: row">
-        <button (click)="toggleRegisterLogin()">Not signed
-          up?
-        </button>
-        <button (click)="login()">Log in!</button>
+      <div *ngIf="showLogin"
+           style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <input [formControl]="loginEmail" placeholder="email">
+          <input type="password" [formControl]="loginPassword" placeholder="password">
+          <div style="display: flex; flex-direction: row">
+              <button (click)="toggleRegisterLogin()">Not signed
+                  up?
+              </button>
+              <button (click)="login()">Log in!</button>
+          </div>
       </div>
-    </div>
 
-    <div *ngIf="!showLogin"
-         style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-      <input [formControl]="registerEmail" placeholder="email">
-      <input type="password" [formControl]="registerPassword" placeholder="password">
-      <input type="password" [formControl]="registerPasswordRepeat" placeholder="password">
-      <div style="display: flex; flex-direction: row">
-        <button (click)="toggleRegisterLogin()">Already
-          signed up?
-        </button>
-        <button (click)="register()">Register!</button>
+      <div *ngIf="!showLogin"
+           style="height: calc(20% + 100px); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <input [formControl]="registerEmail" placeholder="email">
+          <input type="password" [formControl]="registerPassword" placeholder="password">
+          <input type="password" [formControl]="registerPasswordRepeat" placeholder="password">
+          <div style="display: flex; flex-direction: row">
+              <button (click)="toggleRegisterLogin()">Already
+                  signed up?
+              </button>
+              <button (click)="register()">Register!</button>
+          </div>
       </div>
-    </div>
 
   `
 })
@@ -51,7 +51,7 @@ export class ComponentLogin {
   showLogin: boolean = true;
 
   constructor(
-      @Inject(API_SERVICE_TOKEN) private apiCallService: WebSocketClientService
+    @Inject(API_SERVICE_TOKEN) private apiCallService: WebSocketClientService
   ) {
   }
 
