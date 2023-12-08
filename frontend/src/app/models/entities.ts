@@ -3,6 +3,7 @@ export class Message {
     timestamp?: string
     id?: number;
     messageContent?: string;
+  email?: string;
 
     constructor(init?: Partial<Message>) {
         Object.assign(this, init);
@@ -35,4 +36,9 @@ export class TimeSeries {
     constructor(init?: Partial<TimeSeries>) {
         Object.assign(this, init);
     }
+}
+
+export class TimeSeriesApexChartData {
+  x?: Date;
+  y?: number;
 }

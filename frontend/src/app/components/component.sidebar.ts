@@ -5,10 +5,13 @@ import {API_SERVICE_TOKEN} from "../app.module";
 
 @Component({
   template: `
-      <h5>Controls</h5>
+      <div style="display: flex; flex-direction: row; justify-content: start;">
+          <h3>Controls</h3>
+
+      </div>
 
 
-      <div style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+      <div style="display: flex; flex-direction: row; justify-content: normal; position: relative;">
           <button (click)="goToLoginPage()">Go to log in</button>
           <button (click)="toggleDialog()">{{ dialogText }}</button>
 

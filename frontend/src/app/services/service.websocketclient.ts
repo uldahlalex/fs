@@ -14,13 +14,14 @@ import {
 } from "../models/serverNotifiesClientsInRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
-import {Message, Room} from "../models/entities";
+import {Message, Room, TimeSeries, TimeSeriesApexChartData} from "../models/entities";
 import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
 import {ApiCallServiceInterface} from "./apiCallService.interface";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 import {MessageService} from "primeng/api";
 import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlderTimeSeriesDataToClient";
+import {ApexAxisChartSeries, ApexNonAxisChartSeries} from "ng-apexcharts";
 
 @Injectable()
 export class WebSocketClientService implements ApiCallServiceInterface {
@@ -33,6 +34,12 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     title: "Sports"
   }];
 
+  public series: ApexAxisChartSeries | ApexNonAxisChartSeries = [{
+    name: "Timeseries",
+    data: []
+  }];
+
+
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
 
   constructor(public messageService: MessageService) {
@@ -41,11 +48,10 @@ export class WebSocketClientService implements ApiCallServiceInterface {
       this.roomsWithConnections.set(room.id!, 0)
     });
     this.socketConnection.onopen = () => {
-      let jwt = localStorage.getItem("jwt");
-      if (jwt != '') {
-        this.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticateWithJwt({jwt: jwt!})));
-      }
       console.info("connection established");
+      let jwt = localStorage.getItem("jwt");
+      if (jwt != '')
+        this.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticateWithJwt({jwt: jwt!})));
     }
     this.socketConnection.onmessage = (event) => {
       let data = JSON.parse(event.data) as BaseTransferObject<any>;
@@ -110,17 +116,27 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
     this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "New time series data!"});
-    let transform = {x: new Date(dto.timeSeriesDataPoint?.timestamp!), y: dto.timeSeriesDataPoint?.datapoint}
-
-
-    // this.timeseriesData[0].data.push(transform!);
+    let transform: TimeSeriesApexChartData = {
+      x: new Date(dto.timeSeriesDataPoint?.timestamp!),
+      y: dto.timeSeriesDataPoint?.datapoint
+    }
+    this.series = [{
+      name: "Timeseries",
+      // @ts-ignore
+      data: this.series[0].data.concat(transform)
+    }];
   }
 
   ServerSendsOlderTimeSeriesDataToClient(serverSendsOlderTimeSeriesDataToClient: ServerSendsOlderTimeSeriesDataToClient) {
-    let transform = serverSendsOlderTimeSeriesDataToClient.timeseries.map((ts) => ({
-      x: new Date(ts.timestamp!),
+    this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "Heeeeere's the data!"});
+    let transformation = serverSendsOlderTimeSeriesDataToClient.timeseries.map((ts: TimeSeries) => ({
+      x: ts.timestamp!,
       y: ts.datapoint
     }));
+    this.series = [{
+      name: "Timeseries",
+      data: transformation
+    }];
 
   }
 

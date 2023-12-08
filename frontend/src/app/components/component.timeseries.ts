@@ -1,37 +1,49 @@
-import {Component} from "@angular/core";
-import {ApexAxisChartSeries, ApexChart, ApexNonAxisChartSeries, ApexTitleSubtitle} from "ng-apexcharts";
+import {Component, Inject} from "@angular/core";
+import {ApexChart, ApexTitleSubtitle, ApexXAxis} from "ng-apexcharts";
+import {WebSocketClientService} from "../services/service.websocketclient";
+import {API_SERVICE_TOKEN} from "../app.module";
+import {ClientWantsToSubscribeToTimeSeriesData} from "../models/ClientWantsToSubscribeToTimeSeriesData";
 
 
 @Component({
   template: `
 
       <div style="text-align:center">
-          <apx-chart [series]="series!" [chart]="chart!" [title]="title!"></apx-chart>
+          <apx-chart [series]="webSocketClientService.series!" [chart]="chart!" [title]="title!"
+                     [xaxis]="xaxis"></apx-chart>
       </div>
-      <button (click)="updateSeriesData()">Update data</button>
+      <button (click)="clearTemporarily()">Clear temporarily</button>
+
   `,
 })
 export class TimeSeriesComponent {
-  series: ApexAxisChartSeries | ApexNonAxisChartSeries = [{
-    name: "Desktops",
-    data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
-  }];
 
   chart: ApexChart | undefined = {
     height: 350,
     type: 'line',
     zoom: {
       enabled: false
-    }
+    },
+  };
+  title: ApexTitleSubtitle | undefined = {
+    text: 'Time series data',
+  }
+  xaxis: ApexXAxis = {
+    type: 'datetime',
   };
 
-  title: ApexTitleSubtitle | undefined;
+  constructor(@Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService) {
+    this.webSocketClientService.ClientWantsToSubscribeToTimeSeriesData(
+      new ClientWantsToSubscribeToTimeSeriesData())
+  }
 
-  updateSeriesData() {
-    this.series = [{
-      name: "Desktops",
-      data: [10, 41, 35, 51, 49, 62, 69, 91, 35, 51, 49, 62, 69, 91, 148]
+  clearTemporarily() {
+    // @ts-ignore
+    this.webSocketClientService.series = [{
+      name: "Timeseries",
+      data: []
     }];
   }
+
 
 }

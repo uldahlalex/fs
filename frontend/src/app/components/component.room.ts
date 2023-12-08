@@ -15,25 +15,27 @@ import {API_SERVICE_TOKEN} from "../app.module";
 
       <h3>Main Content</h3>
 
-      <div style="display: flex; flex-direction: row; justify-content: center; ">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; ">
           <button (click)="loadOlderMessages()" style="height: 100%;">Load older messages...</button>
-          <p>Currently live in room: {{ webSocketClientService.roomsWithConnections.get(roomId!) }}</p>
+          <div>Currently live in room: {{ webSocketClientService.roomsWithConnections.get(roomId!) }}</div>
       </div>
 
       <div style="
       display: flex;
       flex-direction: column;
-      overflow-y: scroll; max-height: 50%;
+      overflow-y: scroll; max-height: 300px;
 ">
           <div *ngIf="roomId">
               <div *ngFor="let k of webSocketClientService.roomsWithMessages.get(roomId)"
                    style="display: flex; flex-direction: row; justify-content: space-between;">
-                  <div>
-                      UID: {{ k.sender }}
-                      said <i>{{ k.messageContent }}</i>
-                      <b>{{ k.id }}</b>
+
+                  <div><b>{{ k.email }}</b> says:<br>
+                      <div style="display: inline-block; margin: 10px; padding: 10px; border-radius: 25px;  background: #f3bce6; color: #000000;  max-width: 80%;">
+
+                          {{ k.messageContent }}
+                      </div>
                   </div>
-                  <div title="{{fullDate(k.timestamp)}}">written {{ timestampThis(k.timestamp) }}</div>
+                  <i title="{{fullDate(k.timestamp)}}">written {{ timestampThis(k.timestamp) }}</i>
               </div>
 
           </div>
@@ -98,4 +100,6 @@ export class ComponentRoom {
     let dto = new ClientWantsToSendMessageToRoom({messageContent: this.messageInput.value!, roomId: this.roomId});
     this.webSocketClientService.ClientWantsToSendMessageToRoom(dto);
   }
+
+  protected readonly localStorage = localStorage;
 }
