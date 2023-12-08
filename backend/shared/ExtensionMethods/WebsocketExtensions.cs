@@ -12,6 +12,8 @@ public static class WebsocketExtensions
     public static void Authenticate(this IWebSocketConnection connection, EndUser userInfo)
     {
         ConnectionPool[connection.ConnectionInfo.Id].isAuthenticated = true;
+        userInfo.hash = null;
+        userInfo.salt = null;
         ConnectionPool[connection.ConnectionInfo.Id].userInfo = userInfo;
     }
 

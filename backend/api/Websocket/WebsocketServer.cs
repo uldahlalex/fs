@@ -131,11 +131,19 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
         ExitIfNotAuthenticated(socket, request.eventType);
         var insertedMessage =
             chatRepository.InsertMessage(request.roomId, socket.GetMetadata().userInfo.id, request.messageContent!);
-
+        var messageWithUserInfo = new MessageWithSenderEmail()
+        {
+            room = insertedMessage.room,
+            sender = insertedMessage.sender,
+            timestamp = insertedMessage.timestamp,
+            messageContent = insertedMessage.messageContent,
+            id = insertedMessage.id,
+            email = socket.GetMetadata().userInfo.email
+        };
         WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
         {
-            message = insertedMessage,
-            roomId = request.roomId
+            message = messageWithUserInfo,
+            roomId = request.roomId,
         }, request.roomId.ToString());
     }
 
@@ -216,7 +224,6 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
     {
         socket.SubscribeToTopic("TimeSeries");
         var data = timeSeriesRepository.GetOlderTimeSeriesDataPoints();
-        Log.Information(data.ToJsonString());
         socket.SendDto(new ServerSendsOlderTimeSeriesDataToClient() { timeseries = data });
     }
 

@@ -49,3 +49,13 @@ public class TimeSeries
 
     [EnforceName("timestamp")] public DateTimeOffset timestamp { get; set; }
 }
+
+public class MessageWithSenderEmail //Situational query model
+{
+    public int id { get; set; }
+    public DateTimeOffset timestamp { get; set; }
+    public string? messageContent { get; set; }
+    public int sender { get; set; }
+    public int room { get; set; }
+    public string? email { get; set; }
+}
