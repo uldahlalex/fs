@@ -7,7 +7,9 @@ namespace core.Models.WebsocketTransferObjects;
  * If the client has different behavior based on the notification
  * (should it still be notification - or could there be a "just notify"?)
  *  - prolly not, since the client should know how to treat the message
+ *
  */
+//todo delete?
 public abstract class ServerNotifiesClientsInRoom : BaseTransferObject
 {
     public int

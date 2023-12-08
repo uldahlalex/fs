@@ -17,7 +17,7 @@ import {CommonModule} from "@angular/common";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 import {MessageService} from "primeng/api";
 import {DialogModule} from "primeng/dialog";
-import {ComponentTimeseries} from "./components/component.timeseries";
+import {TimeSeriesComponent} from "./components/component.timeseries";
 import {NgApexchartsModule} from "ng-apexcharts";
 
 
@@ -36,8 +36,8 @@ const ApiServiceProvider = {
     MessageModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    NgApexchartsModule,
     FormsModule,
-      NgApexchartsModule,
     RouterModule.forRoot([
       {
         path: 'room/:id', component: ComponentRoom
@@ -46,7 +46,7 @@ const ApiServiceProvider = {
         path: 'login', component: ComponentLogin
       },
       {
-        path: 'timeseries', component: ComponentTimeseries
+        path: 'timeseries', component: TimeSeriesComponent
       }
     ]),
       DialogModule
@@ -56,7 +56,7 @@ const ApiServiceProvider = {
     ComponentRoom,
     ComponentSidebar,
     ComponentLogin,
-    ComponentTimeseries
+    TimeSeriesComponent
   ],
   providers: [ApiServiceProvider, MessageService],
   bootstrap: [ComponentApp]

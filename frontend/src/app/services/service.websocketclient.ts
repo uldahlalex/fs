@@ -1,4 +1,4 @@
-import {Injectable, Input} from "@angular/core";
+import {Injectable} from "@angular/core";
 import {BaseTransferObject} from "../models/baseTransferObject";
 import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
@@ -21,7 +21,6 @@ import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessage
 import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 import {MessageService} from "primeng/api";
 import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlderTimeSeriesDataToClient";
-import {ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexGrid, ApexStroke, ApexTitleSubtitle} from "ng-apexcharts";
 
 @Injectable()
 export class WebSocketClientService implements ApiCallServiceInterface {
@@ -34,20 +33,6 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     title: "Sports"
   }];
 
-
-  public timeseriesData: any[] = [
-    {
-      name: "Data points over time",
-      data: []
-    }
-  ];
-  @Input() public series: ApexAxisChartSeries = this.timeseriesData;
-  @Input() public chart: ApexChart | undefined;
-  @Input() public title: ApexTitleSubtitle | undefined;
-  @Input() public dataLabels: ApexDataLabels | undefined;
-  @Input() public stroke: ApexStroke | undefined;
-  @Input() public grid: ApexGrid | undefined;
-  @Input() public xaxis: ApexGrid | any;
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
 
   constructor(public messageService: MessageService) {
@@ -126,9 +111,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   ServerBroadcastsTimeSeriesData(dto: ServerBroadcastsTimeSeriesData) {
     this.messageService.add({life: 2000, severity: 'info', summary: '📈', detail: "New time series data!"});
     let transform = {x: new Date(dto.timeSeriesDataPoint?.timestamp!), y: dto.timeSeriesDataPoint?.datapoint}
-    let copy = JSON.parse(JSON.stringify(this.timeseriesData));
-    copy[0].data.push(transform!);
-    this.timeseriesData = copy;
+
 
     // this.timeseriesData[0].data.push(transform!);
   }
@@ -138,8 +121,6 @@ export class WebSocketClientService implements ApiCallServiceInterface {
       x: new Date(ts.timestamp!),
       y: ts.datapoint
     }));
-
-    this.timeseriesData[0].data.push(...transform!);
 
   }
 
