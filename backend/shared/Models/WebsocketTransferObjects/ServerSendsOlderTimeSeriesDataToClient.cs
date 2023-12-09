@@ -1,3 +1,5 @@
+using core.Models.DbModels;
+
 namespace core.Models.WebsocketTransferObjects;
 
 public class ServerSendsOlderTimeSeriesDataToClient : BaseTransferObject

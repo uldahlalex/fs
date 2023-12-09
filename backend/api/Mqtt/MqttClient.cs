@@ -1,6 +1,6 @@
 using api.Websocket;
 using core.ExtensionMethods;
-using core.Models;
+using core.Models.DbModels;
 using core.Models.WebsocketTransferObjects;
 using Infrastructure;
 using MQTTnet;

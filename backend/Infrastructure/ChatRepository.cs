@@ -1,4 +1,5 @@
-using core.Models;
+using core.Models.DbModels;
+using core.Models.QueryModels;
 using Dapper;
 using Npgsql;
 

@@ -1,3 +1,5 @@
+using core.Models.QueryModels;
+
 namespace core.Models.WebsocketTransferObjects;
 
 public class ServerBroadcastsMessageToClientsInRoom : BaseTransferObject

@@ -1,7 +1,8 @@
 using System.Reflection;
 using System.Security.Authentication;
 using core.ExtensionMethods;
-using core.Models;
+using core.Models.DbModels;
+using core.Models.QueryModels;
 using core.Models.WebsocketTransferObjects;
 using core.SecurityUtilities;
 using Fleck;
@@ -160,7 +161,7 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
             user = socket.GetMetadata().userInfo,
             roomId = request.roomId
         }, request.roomId.ToString());
-        socket.SubscribeToTopic(request.roomId.ToString());
+        socket.SubscribeToTopic("ChatRooms/" + request.roomId.ToString());
         socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.roomId),
