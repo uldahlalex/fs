@@ -35,7 +35,7 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
                     Log.Error(e, "WebsocketServer");
                     var errorMessage =
                         Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Development")
-                            ? e.Message
+                            ? e.InnerException.Message
                             : "Something went wrong";
                     socket.SendDto(new ServerSendsErrorMessageToClient
                     {

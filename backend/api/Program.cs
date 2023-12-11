@@ -39,5 +39,26 @@ catch (Exception e)
     Log.Error(e, "MQTT Broker exception");
 }
 
+try
+{
+    Log.Information("They environment variables required:");
+    if (Environment.GetEnvironmentVariable("tox")!.Length==0)
+    {
+        Log.Information("No tox environment variable present to connect to Azure cognitive service toxicity filter");
+    }
+    if (Environment.GetEnvironmentVariable("secret")!.Length==0)
+    {
+        Log.Information("No secret environment variable present to issue and validate JWTs");
+    }
+    if (Environment.GetEnvironmentVariable("pgconn")!.Length==0)
+    {
+        Log.Information("Not pgconn environment variable present to connect to postgresql");
+    }
+}
+catch (Exception e)
+{
+    Log.Error(e, "Program.cs");
+}
+
 app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
 await app.RunAsync();
