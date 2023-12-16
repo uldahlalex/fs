@@ -18,4 +18,8 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="5.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="WebsocketUtilities.cs\" />
+    </ItemGroup>
+
 </Project>

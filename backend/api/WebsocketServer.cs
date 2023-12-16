@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Security.Authentication;
 using core.ExtensionMethods;
@@ -5,6 +6,7 @@ using core.Models.DbModels;
 using core.Models.QueryModels;
 using core.Models.WebsocketTransferObjects;
 using core.SecurityUtilities;
+using core.State;
 using Fleck;
 using Infrastructure;
 using JetBrains.Annotations;
@@ -46,7 +48,7 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
             };
             socket.OnOpen = () =>
             {
-                socket.AddToConnectionPool();
+                socket.AddToWebsocketConnections();
                 Log.Information("Connected: " + socket.ConnectionInfo.Id);
             };
             socket.OnClose = () =>
@@ -59,7 +61,7 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
                 }
 
 
-                socket.RemoveFromConnectionPool();
+                socket.RemoveFromWebsocketConnections();
                 Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
             };
             socket.OnError = exception =>
@@ -80,7 +82,7 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
 
     private void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
-        if (socket.GetMetadata().isAuthenticated && socket.IsInConnectionPool())
+        if (socket.GetMetadata().isAuthenticated && socket.IsInWebsocketConnections())
             return;
 
         socket.SendDto(new ServerSendsErrorMessageToClient
@@ -97,16 +99,18 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
     public void ClientWantsToAuthenticateWithJwt(IWebSocketConnection socket, string dto)
     {
         var request = dto.DeserializeToModelAndValidate<ClientWantsToAuthenticateWithJwt>();
-        if (SecurityUtilities.IsJwtValid(request.jwt!))
+        if (!SecurityUtilities.IsJwtValid(request.jwt!))
         {
-            //unauth
+           socket.UnAuthenticate();
+           return;
         }
 
         var email = SecurityUtilities.ExtractClaims(request.jwt!)["email"];
         var user = chatRepository.GetUser(email);
         if (user.isbanned)
         {
-            //unauth
+           socket.UnAuthenticate();
+           return;
         }
 
         socket.Authenticate(user);
@@ -197,28 +201,7 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
         });
     }
 
-    [UsedImplicitly]
-    public void ClientWantsToAuthenticate(IWebSocketConnection socket, string dto)
-    {
-        var request = dto.DeserializeToModelAndValidate<ClientWantsToAuthenticate>();
-        EndUser user;
-        try
-        {
-            user = chatRepository.GetUser(request.email!);
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "WebsocketServer");
-            throw new AuthenticationException("User does not exist!");
-        }
 
-        var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
-        if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
-        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>
-            { { "email", user.email }, { "id", user.id } });
-        socket.Authenticate(user);
-        socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
-    }
 
     [UsedImplicitly]
     public void ClientWantsToSubscribeToTimeSeriesData(IWebSocketConnection socket, string dto)

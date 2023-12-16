@@ -23,11 +23,14 @@ builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
+//add MediatR
+//builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 var app = builder.Build();
 try
 {
     // Console.WriteLine(Environment.GetEnvironmentVariable("START_BROKER"));
     // if (Environment.GetEnvironmentVariable("START_BROKER")!.Equals("true") || true)
+    //todo start med cli arg i stedet for env var
     await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
 }
 catch (MqttCommunicationException e)
