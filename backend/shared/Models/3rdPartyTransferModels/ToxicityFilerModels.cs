@@ -1,4 +1,3 @@
-// Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
 public class ToxicityRequest
 {
     public string text { get; set; }
@@ -8,7 +7,6 @@ public class ToxicityRequest
     public string outputType { get; set; }
 }
 
-// Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
 public class BlocklistsMatch
 {
     public string blocklistName { get; set; }

@@ -44,6 +44,7 @@ public class ToxicityFilter : ValidationAttribute
         {
             Console.WriteLine(x.category);
             Console.WriteLine(x.severity);
+            //Få styr på loggeren i test runneren (både riders og dotnets)
             
         });
 
