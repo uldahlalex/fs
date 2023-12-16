@@ -1,4 +1,5 @@
 using System.Security.Authentication;
+using core.Exceptions;
 using core.ExtensionMethods;
 using core.Models.DbModels;
 using core.Models.WebsocketTransferObjects;
@@ -7,28 +8,44 @@ using Fleck;
 using Infrastructure;
 using MediatR;
 using Serilog;
-using core.ExtensionMethods;
+using System.Text.Json;
+
 
 namespace api;
 
 
-//todo hav type her i stedet for shared?
+
 
 public class EventTypeRequest<T> : IRequest
 {
-    public WebSocketConnection Socket { get; set; }
+    public IWebSocketConnection Socket { get; set; }
     public T Dto { get; set; }
 }
-public class ClientWantsToAuthenticate(ChatRepository chatRepository) : IRequestHandler<EventTypeRequest<core.Models.WebsocketTransferObjects.ClientWantsToAuthenticate>>
-{
-    
-    public Task Handle(EventTypeRequest<core.Models.WebsocketTransferObjects.ClientWantsToAuthenticate> request, CancellationToken cancellationToken)
-    {
 
+public class WebSocketRequest : IRequest
+{
+    public IWebSocketConnection Socket { get; set; }
+    public string RawMessage { get; set; }
+}
+
+
+public class ClientWantsToAuthenticateHandler
+    : IRequestHandler<WebSocketRequest>
+{
+    private readonly ChatRepository _chatRepository;
+
+    public ClientWantsToAuthenticateHandler(ChatRepository chatRepository)
+    {
+        _chatRepository = chatRepository;
+    }
+    
+    public Task Handle(WebSocketRequest request, CancellationToken cancellationToken)
+    {
+        var dto = request.RawMessage.DeserializeToModelAndValidate<core.Models.WebsocketTransferObjects.ClientWantsToAuthenticate>();
         EndUser user;
         try
         {
-            user = chatRepository.GetUser(request.Dto.email!);
+            user =  _chatRepository.GetUser(dto.email!);
         }
         catch (Exception e)
         {
@@ -36,12 +53,20 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : IRequest
             throw new AuthenticationException("User does not exist!");
         }
 
-        var expectedHash = SecurityUtilities.Hash(request.Dto.password, user.salt!);
+        var expectedHash = SecurityUtilities.Hash(dto.password, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>
             { { "email", user.email }, { "id", user.id } });
         request.Socket.Authenticate(user);
         request.Socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
-        return Task.CompletedTask;
+
+        return Task.FromResult(Unit.Value);
+    }
+    
+    private T Deserialize<T>(string message)
+    {
+        return JsonSerializer.Deserialize<T>(message,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? throw new DeserializationException($"Failed to deserialize message: {message}");
     }
 }

@@ -10,11 +10,15 @@ using core.State;
 using Fleck;
 using Infrastructure;
 using JetBrains.Annotations;
+using MediatR;
+using Microsoft.Extensions.Primitives;
 using Serilog;
 
 namespace api.Websocket;
 
-public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository timeSeriesRepository)
+public class WebsocketServer(ChatRepository chatRepository, 
+    TimeSeriesRepository timeSeriesRepository,
+    Mediator mediator)
 {
     public void StartWebsocketServer()
     {
@@ -22,15 +26,21 @@ public class WebsocketServer(ChatRepository chatRepository, TimeSeriesRepository
         server.RestartAfterListenError = true;
         server.Start(socket =>
         {
-            socket.OnMessage = message =>
+            socket.OnMessage = async message =>
             {
                 Log.Information(message, "Client sent message: ");
-                var eventType = message.Deserialize<BaseTransferObject>().eventType;
+                var baseTransferObject = message.Deserialize<BaseTransferObject>();
+                var eventType = baseTransferObject.eventType;
                 try
                 {
-                    GetType()
-                        .GetMethod(eventType, BindingFlags.Public | BindingFlags.Instance)!
-                        .Invoke(this, new object[] { socket, message });
+          
+                    var request = new WebSocketRequest 
+                    {
+                        Socket = socket,
+                        RawMessage = message
+                    };
+                    await mediator.Send(request);
+                        
                 }
                 catch (Exception e)
                 {

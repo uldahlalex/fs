@@ -1,9 +1,11 @@
+using System.Reflection;
 using api.Mqtt;
 using api.Websocket;
 using core;
 using core.Attributes;
 using core.Models.DbModels;
 using Infrastructure;
+using MediatR;
 using MQTTnet.Exceptions;
 using Serilog;
 
@@ -23,8 +25,11 @@ builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
+builder.Services.AddSingleton<Mediator>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 //add MediatR
 //builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
+
 var app = builder.Build();
 try
 {
