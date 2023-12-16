@@ -1,3 +1,4 @@
+using api;
 using core.Models.DbModels;
 
 namespace core.Models.WebsocketTransferObjects;

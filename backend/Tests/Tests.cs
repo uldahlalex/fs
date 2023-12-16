@@ -26,11 +26,12 @@ public class WebsocketServerTests
     [SetUp]
     public void Setup()
     {
-        var npg = new NpgsqlDataSourceBuilder(
+        /*var npg = new NpgsqlDataSourceBuilder(
             Utilities.ProperlyFormattedConnectionString).Build();
         new WebsocketServer(
-                new ChatRepository(npg), new TimeSeriesRepository(npg))
-            .StartWebsocketServer();
+                new ChatRepository(npg), new TimeSeriesRepository(npg)
+                )
+            .StartWebsocketServer();*/
         //if you want to run server manually for the tests, simply comment out the lines above, although not recommended
     }
 

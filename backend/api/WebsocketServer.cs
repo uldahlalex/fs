@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Security.Authentication;
+using System.Text.Json;
+using core.Exceptions;
 using core.ExtensionMethods;
 using core.Models.DbModels;
 using core.Models.QueryModels;
@@ -20,6 +22,17 @@ public class WebsocketServer(ChatRepository chatRepository,
     TimeSeriesRepository timeSeriesRepository,
     Mediator mediator)
 {
+    
+    public static EventTypeRequest<T> CreateRequest<T>(string message, IWebSocketConnection socket)
+        where T : BaseTransferObject
+    {
+        return new EventTypeRequest<T>
+        {
+            Socket = socket,
+            MessageObject = message.DeserializeToModelAndValidate<T>()
+        };
+    }
+
     public void StartWebsocketServer()
     {
         var server = new WebSocketServer("ws://127.0.0.1:8181");
@@ -31,17 +44,22 @@ public class WebsocketServer(ChatRepository chatRepository,
                 Log.Information(message, "Client sent message: ");
                 var baseTransferObject = message.Deserialize<BaseTransferObject>();
                 var eventType = baseTransferObject.eventType;
+
                 try
                 {
-          
-                    var request = new WebSocketRequest 
+                    var eventTypeRequestMappings = new Dictionary<string, Func<string, IWebSocketConnection, IRequest>> //Anti-reflection way of invoking
                     {
-                        Socket = socket,
-                        RawMessage = message
-                    };
-                    await mediator.Send(request);
+                        { "ClientWantsToAuthenticate", CreateRequest<ClientWantsToAuthenticate> },
+                        { "ClientWantsToEnterRoom", CreateRequest<ClientWantsToEnterRoom> },
                         
+                    };
+                    if (!eventTypeRequestMappings.TryGetValue(eventType, out var createRequestFunc)) return;
+                    var request = createRequestFunc(message, socket);
+                    await mediator.Send(request);
+
                 }
+                
+                
                 catch (Exception e)
                 {
                     Log.Error(e, "WebsocketServer");
@@ -67,7 +85,7 @@ public class WebsocketServer(ChatRepository chatRepository,
                 {
                     WebsocketExtensions.BroadcastObjectToTopicListeners(
                         new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                            { message = "Client left room: " + topic, user = socket.GetMetadata().userInfo }, topic);
+                            {   user = socket.GetMetadata().userInfo }, topic);
                 }
 
 
@@ -105,27 +123,7 @@ public class WebsocketServer(ChatRepository chatRepository,
 
     #region ENTRY POINTS
 
-    [UsedImplicitly]
-    public void ClientWantsToAuthenticateWithJwt(IWebSocketConnection socket, string dto)
-    {
-        var request = dto.DeserializeToModelAndValidate<ClientWantsToAuthenticateWithJwt>();
-        if (!SecurityUtilities.IsJwtValid(request.jwt!))
-        {
-           socket.UnAuthenticate();
-           return;
-        }
-
-        var email = SecurityUtilities.ExtractClaims(request.jwt!)["email"];
-        var user = chatRepository.GetUser(email);
-        if (user.isbanned)
-        {
-           socket.UnAuthenticate();
-           return;
-        }
-
-        socket.Authenticate(user);
-        socket.Send(new ServerAuthenticatesUser { jwt = request.jwt }.ToJsonString());
-    }
+  
 
     [UsedImplicitly]
     public void ClientWantsToLoadOlderMessages(IWebSocketConnection socket, string dto)
@@ -164,23 +162,23 @@ public class WebsocketServer(ChatRepository chatRepository,
 
 
     [UsedImplicitly]
-    public void ClientWantsToEnterRoom(IWebSocketConnection socket, string dto)
+    public void ClientWantsToEnterRoom(IWebSocketConnection socket, string request)
     {
-        var request = dto.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
-        ExitIfNotAuthenticated(socket, request.eventType);
+        var dto = request.DeserializeToModelAndValidate<ClientWantsToEnterRoom>();
+        ExitIfNotAuthenticated(socket, dto.eventType);
 
         WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
             user = socket.GetMetadata().userInfo,
-            roomId = request.roomId
-        }, request.roomId.ToString());
-        socket.SubscribeToTopic("ChatRooms/" + request.roomId.ToString());
+            roomId = dto.roomId
+        }, dto.roomId.ToString());
+        socket.SubscribeToTopic("ChatRooms/" + dto.roomId.ToString());
         socket.SendDto(new ServerAddsClientToRoom
         {
-            messages = chatRepository.GetPastMessages(request.roomId),
-            liveConnections = socket.CountUsersInRoom(request.roomId.ToString()),
-            roomId = request.roomId
+            messages = chatRepository.GetPastMessages(dto.roomId),
+            liveConnections = socket.CountUsersInRoom(dto.roomId.ToString()),
+            roomId = dto.roomId
         });
     }
 
@@ -190,7 +188,7 @@ public class WebsocketServer(ChatRepository chatRepository,
         var request = dto.DeserializeToModelAndValidate<ClientWantsToLeaveRoom>();
         socket.UnsubscribeFromTopic(request.roomId.ToString());
         WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                { message = "Client left room: " + request.roomId, user = socket.GetMetadata().userInfo },
+                {  user = socket.GetMetadata().userInfo },
             request.roomId.ToString());
     }
 

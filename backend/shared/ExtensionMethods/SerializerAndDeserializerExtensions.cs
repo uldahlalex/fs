@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text.Json;
 using core.Exceptions;
 using Newtonsoft.Json;
@@ -39,5 +40,26 @@ public static class SerializerAndDeserializerExtensions
         if (isValid) return deserialized;
         var errors = string.Join(", ", validationResults.Select(rv => rv.ErrorMessage));
         throw new DeserializationException($"Failed to validate message: {message}. Errors: {errors}");
+    }
+    
+    public static object DeserializeToType(string message, string eventType)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var type = assembly.GetTypes().FirstOrDefault(t => t.Name == eventType);
+        if (type == null)
+        {
+            throw new InvalidOperationException($"Type not found for event type: {eventType}");
+        }
+
+        MethodInfo deserializeMethod = typeof(SerializerAndDeserializerExtensions)
+            .GetMethod(nameof(SerializerAndDeserializerExtensions.Deserialize))
+            ?.MakeGenericMethod(type);
+
+        if (deserializeMethod == null)
+        {
+            throw new InvalidOperationException("Deserialize method not found.");
+        }
+
+        return deserializeMethod.Invoke(null, new object[] { message });
     }
 }

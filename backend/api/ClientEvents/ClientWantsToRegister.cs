@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using api;
 
 namespace core.Models.WebsocketTransferObjects;
 
-public class ClientWantsToAuthenticate : BaseTransferObject
+public class ClientWantsToRegister : BaseTransferObject
 {
     [EmailAddress] public string? email { get; set; }
 

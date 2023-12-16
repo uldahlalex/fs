@@ -1,4 +1,4 @@
-namespace core.Models.WebsocketTransferObjects;
+namespace api;
 
 public class BaseTransferObject
 {

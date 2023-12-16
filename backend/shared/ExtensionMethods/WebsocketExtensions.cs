@@ -1,6 +1,4 @@
-using System.Collections.Concurrent;
 using core.Models.DbModels;
-using core.Models.WebsocketTransferObjects;
 using core.State;
 using Fleck;
 
@@ -42,12 +40,12 @@ public static class WebsocketExtensions
         return WebsocketConnections.ConnectionPool.Values.Count(x => x.subscribedToTopics.Contains(topic));
     }
 
-    public static void SendDto(this IWebSocketConnection socket, BaseTransferObject dto)
+    public static void SendDto(this IWebSocketConnection socket, object dto)
     {
         socket.Send(dto.ToJsonString());
     }
 
-    public static void BroadcastObjectToTopicListeners(BaseTransferObject dto, string topic)
+    public static void BroadcastObjectToTopicListeners(object dto, string topic) //could be basetransferobject if this was in api
     {
         foreach (var socket in WebsocketConnections.ConnectionPool.Values.Where(x => x.subscribedToTopics.Contains(topic)))
         {
@@ -79,7 +77,7 @@ public static class WebsocketExtensions
 
 
 
-    public static void BroadcastToAllClients(BaseTransferObject dto)
+    public static void BroadcastToAllClients(object dto)
     {
         foreach (var keyValuePair in WebsocketConnections.ConnectionPool) keyValuePair.Value.socket!.Send(dto.ToJsonString());
     }
