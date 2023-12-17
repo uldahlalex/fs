@@ -1,5 +1,5 @@
 
-using api.Resusables;
+using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
 using core.ExtensionMethods;
@@ -21,7 +21,7 @@ public class ClientWantsToLoadOlderMessagesHandler(ChatRepository chatRepository
 {
     public Task Handle(EventTypeRequest<ClientWantsToLoadOlderMessages> request, CancellationToken cancellationToken)
     {
-        Reusables.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
+        SocketUtilities.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
         var messages = chatRepository.GetPastMessages(
             request.MessageObject.roomId,
             request.MessageObject.lastMessageId);

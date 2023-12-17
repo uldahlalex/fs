@@ -3,7 +3,7 @@ using core.ExtensionMethods;
 using Fleck;
 using Serilog;
 
-namespace api.Resusables;
+namespace api.Reusables;
 
 public static class GeneralExceptionHandler
 {

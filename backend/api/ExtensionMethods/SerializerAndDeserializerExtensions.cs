@@ -16,14 +16,6 @@ public static class SerializerAndDeserializerExtensions
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         });
     }
-
-
-    /* //newtonsoft implementation
-    public static T FromJson<T>(this string json)
-    {
-        return JsonConvert.DeserializeObject<T>(json);
-    }*/
-
     public static T Deserialize<T>(this string message)
     {
         return JsonSerializer.Deserialize<T>(message,
@@ -40,26 +32,5 @@ public static class SerializerAndDeserializerExtensions
         if (isValid) return deserialized;
         var errors = string.Join(", ", validationResults.Select(rv => rv.ErrorMessage));
         throw new DeserializationException($"Failed to validate message: {message}. Errors: {errors}");
-    }
-    
-    public static object DeserializeToType(string message, string eventType)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var type = assembly.GetTypes().FirstOrDefault(t => t.Name == eventType);
-        if (type == null)
-        {
-            throw new InvalidOperationException($"Type not found for event type: {eventType}");
-        }
-
-        MethodInfo deserializeMethod = typeof(SerializerAndDeserializerExtensions)
-            .GetMethod(nameof(SerializerAndDeserializerExtensions.Deserialize))
-            ?.MakeGenericMethod(type);
-
-        if (deserializeMethod == null)
-        {
-            throw new InvalidOperationException("Deserialize method not found.");
-        }
-
-        return deserializeMethod.Invoke(null, new object[] { message });
     }
 }

@@ -2,7 +2,7 @@ using api.SharedApiModels;
 using core.ExtensionMethods;
 using Fleck;
 
-namespace api.Resusables;
+namespace api.Reusables;
 
 public static class RequestFactory
 {

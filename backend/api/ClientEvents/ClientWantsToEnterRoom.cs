@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using api.Resusables;
+using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
 using core.ExtensionMethods;
+using core.State;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
@@ -20,18 +21,18 @@ public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository)
 {
     public Task Handle(EventTypeRequest<ClientWantsToEnterRoom> request, CancellationToken cancellationToken)
     {
-        Reusables.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
-        Reusables.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+        SocketUtilities.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
+        SocketUtilities.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
-            user = request.Socket.GetMetadata().userInfo,
+            user = request.Socket.GetMetadata().UserInfo,
             roomId = request.MessageObject.roomId
         }, request.MessageObject.roomId.ToString());
         request.Socket.SubscribeToTopic("ChatRooms/" + request.MessageObject.roomId);
         request.Socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.MessageObject.roomId),
-            liveConnections = request.Socket.CountUsersInRoom(request.MessageObject.roomId.ToString()),
+            liveConnections = WebsocketConnections.TopicSubscriptions["ChatRooms/"+request.MessageObject.roomId].Count,//request.Socket.CountUsersInRoom(request.MessageObject.roomId.ToString()),
             roomId = request.MessageObject.roomId
         });
         return Task.CompletedTask;

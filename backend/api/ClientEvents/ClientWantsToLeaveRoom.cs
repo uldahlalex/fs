@@ -1,4 +1,4 @@
-using api.Resusables;
+using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
 using core.ExtensionMethods;
@@ -18,8 +18,8 @@ public class ClientWantsToLeaveRoomHandler : IRequestHandler<EventTypeRequest<Cl
     public Task Handle(EventTypeRequest<ClientWantsToLeaveRoom> request, CancellationToken cancellationToken)
     {
         request.Socket.UnsubscribeFromTopic(request.MessageObject.roomId.ToString());
-        Reusables.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                { user = request.Socket.GetMetadata().userInfo },
+        SocketUtilities.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+                { user = request.Socket.GetMetadata().UserInfo },
             request.MessageObject.roomId.ToString());
         return Task.CompletedTask;
     }

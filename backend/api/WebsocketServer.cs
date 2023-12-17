@@ -1,6 +1,7 @@
+using System.Net.WebSockets;
 using System.Security.Authentication;
 using api.ClientEvents;
-using api.Resusables;
+using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
 using core.Exceptions;
@@ -70,10 +71,8 @@ public class WebsocketServer(Mediator mediator)
             };
             socket.OnClose = () =>
             {
-                foreach (var topic in socket.GetMetadata().subscribedToTopics.ToList())
-                    Reusables.BroadcastObjectToTopicListeners(
-                        new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-                            { user = socket.GetMetadata().userInfo }, topic);
+                //Subscribe to topics and broadcast to topic listeners that someone has left the room and remove conn from pool
+
 
 
                 socket.RemoveFromWebsocketConnections();

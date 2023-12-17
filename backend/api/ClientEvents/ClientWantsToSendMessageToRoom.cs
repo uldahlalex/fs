@@ -1,4 +1,4 @@
-using api.Resusables;
+using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
 using core.Attributes;
@@ -23,9 +23,9 @@ public class ClientWantsToSendMessageToRoomHandler(ChatRepository chatRepository
 {
     public Task Handle(EventTypeRequest<ClientWantsToSendMessageToRoom> request, CancellationToken cancellationToken)
     {
-        Reusables.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
+        SocketUtilities.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
         var insertedMessage =
-            chatRepository.InsertMessage(request.MessageObject.roomId, request.Socket.GetMetadata().userInfo.id,
+            chatRepository.InsertMessage(request.MessageObject.roomId, request.Socket.GetMetadata().UserInfo.id,
                 request.MessageObject.messageContent!);
         var messageWithUserInfo = new MessageWithSenderEmail
         {
@@ -34,9 +34,9 @@ public class ClientWantsToSendMessageToRoomHandler(ChatRepository chatRepository
             timestamp = insertedMessage.timestamp,
             messageContent = insertedMessage.messageContent,
             id = insertedMessage.id,
-            email = request.Socket.GetMetadata().userInfo.email
+            email = request.Socket.GetMetadata().UserInfo.email
         };
-        Reusables.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
+        SocketUtilities.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
         {
             message = messageWithUserInfo,
             roomId = request.MessageObject.roomId
