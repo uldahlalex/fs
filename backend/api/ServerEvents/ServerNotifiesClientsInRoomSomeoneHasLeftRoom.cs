@@ -1,8 +1,7 @@
-using api;
+using api.SharedApiModels;
 using core.Models.DbModels;
 
-
-namespace core.Models.WebsocketTransferObjects;
+namespace api.ServerEvents;
 
 public class ServerNotifiesClientsInRoomSomeoneHasLeftRoom : BaseTransferObject
 {

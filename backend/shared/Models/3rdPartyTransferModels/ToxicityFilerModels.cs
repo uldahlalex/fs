@@ -1,3 +1,5 @@
+namespace core.Models._3rdPartyTransferModels;
+
 public class ToxicityRequest
 {
     public string text { get; set; }
@@ -25,4 +27,3 @@ public class ToxicityResponse
     public List<BlocklistsMatch> blocklistsMatch { get; set; }
     public List<CategoriesAnalysis> categoriesAnalysis { get; set; }
 }
-

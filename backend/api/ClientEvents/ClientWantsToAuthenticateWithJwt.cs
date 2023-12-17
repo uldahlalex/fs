@@ -1,11 +1,13 @@
+using api.ServerEvents;
+using api.SharedApiModels;
+using core;
 using core.ExtensionMethods;
-using core.Models.WebsocketTransferObjects;
 using core.SecurityUtilities;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace api;
+namespace api.ClientEvents;
 
 public class ClientWantsToAuthenticateWithJwt : BaseTransferObject
 {
@@ -13,7 +15,8 @@ public class ClientWantsToAuthenticateWithJwt : BaseTransferObject
 }
 
 [UsedImplicitly]
-public class ClientWantsToAuthenticateWithJwtHandler(ChatRepository chatRepository) : IRequestHandler<EventTypeRequest<ClientWantsToAuthenticateWithJwt>>
+public class ClientWantsToAuthenticateWithJwtHandler(ChatRepository chatRepository)
+    : IRequestHandler<EventTypeRequest<ClientWantsToAuthenticateWithJwt>>
 {
     public Task Handle(EventTypeRequest<ClientWantsToAuthenticateWithJwt> request, CancellationToken cancellationToken)
     {

@@ -1,14 +1,13 @@
-using api.Websocket;
+using api.ServerEvents;
 using core.ExtensionMethods;
 using core.Models.DbModels;
-using core.Models.WebsocketTransferObjects;
 using Infrastructure;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
 using Serilog;
 
-namespace api.Mqtt;
+namespace api;
 
 public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServer websocketServer)
 {

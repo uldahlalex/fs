@@ -1,7 +1,5 @@
-using api.Websocket;
 using core;
 using core.ExtensionMethods;
-using core.Models.WebsocketTransferObjects;
 using FluentAssertions;
 using Infrastructure;
 using Npgsql;

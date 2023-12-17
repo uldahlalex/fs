@@ -1,4 +1,4 @@
-namespace api;
+namespace api.SharedApiModels;
 
 public class BaseTransferObject
 {

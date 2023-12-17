@@ -1,7 +1,7 @@
-using api;
+using api.SharedApiModels;
 using core.Models.QueryModels;
 
-namespace core.Models.WebsocketTransferObjects;
+namespace api.ServerEvents;
 
 public class ServerBroadcastsMessageToClientsInRoom : BaseTransferObject
 {

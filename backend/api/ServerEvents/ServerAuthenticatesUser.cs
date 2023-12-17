@@ -1,6 +1,6 @@
-using api;
+using api.SharedApiModels;
 
-namespace core.Models.WebsocketTransferObjects;
+namespace api.ServerEvents;
 
 public class ServerAuthenticatesUser : BaseTransferObject
 {

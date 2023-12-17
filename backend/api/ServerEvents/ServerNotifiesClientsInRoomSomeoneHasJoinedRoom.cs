@@ -1,6 +1,6 @@
 using core.Models.DbModels;
 
-namespace core.Models.WebsocketTransferObjects;
+namespace api.ServerEvents;
 
 public class ServerNotifiesClientsInRoomSomeoneHasJoinedRoom : ServerNotifiesClientsInRoom
 {

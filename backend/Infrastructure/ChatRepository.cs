@@ -1,3 +1,4 @@
+using core.Exceptions;
 using core.Models.DbModels;
 using core.Models.QueryModels;
 using Dapper;
@@ -70,7 +71,7 @@ returning *;";
         var sql = @"select * from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirst<EndUser>(sql, new { email });
+            return conn.QueryFirstOrDefault<EndUser>(sql, new { email }) ?? throw new UserNotFoundException("Could not find user with email "+email);
         }
     }
 

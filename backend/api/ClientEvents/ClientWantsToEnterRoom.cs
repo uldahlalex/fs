@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using api.Resusables;
+using api.ServerEvents;
+using api.SharedApiModels;
 using core.ExtensionMethods;
-using core.Models.WebsocketTransferObjects;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace api;
-
+namespace api.ClientEvents;
 
 public class ClientWantsToEnterRoom : BaseTransferObject
 {
@@ -15,10 +15,11 @@ public class ClientWantsToEnterRoom : BaseTransferObject
 }
 
 [UsedImplicitly]
-public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository) : IRequestHandler<EventTypeRequest<ClientWantsToEnterRoom>>
-{  
+public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository)
+    : IRequestHandler<EventTypeRequest<ClientWantsToEnterRoom>>
+{
     public Task Handle(EventTypeRequest<ClientWantsToEnterRoom> request, CancellationToken cancellationToken)
-    { 
+    {
         Reusables.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
 
         WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
@@ -27,7 +28,7 @@ public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository) : IReq
             user = request.Socket.GetMetadata().userInfo,
             roomId = request.MessageObject.roomId
         }, request.MessageObject.roomId.ToString());
-        request.Socket.SubscribeToTopic("ChatRooms/" + request.MessageObject.roomId.ToString());
+        request.Socket.SubscribeToTopic("ChatRooms/" + request.MessageObject.roomId);
         request.Socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.MessageObject.roomId),
