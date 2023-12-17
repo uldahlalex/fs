@@ -1,8 +1,6 @@
-using System.Collections.Concurrent;
-using core.State;
+namespace api.ExtensionMethods;
 
-namespace core.ExtensionMethods;
-
+/* //currently using the SocketUtilities class instead
 public static class GuidExtensions
 {
     public static void SubscribeToTopic(this Guid connectionId, string topic)
@@ -24,3 +22,4 @@ public static class GuidExtensions
         }
     }
 }
+*/

@@ -1,4 +1,4 @@
-namespace core.Models.Enums;
+namespace api.Enums;
 
 public enum TopicEnums
 {

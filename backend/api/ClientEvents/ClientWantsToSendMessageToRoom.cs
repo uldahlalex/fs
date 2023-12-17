@@ -1,10 +1,12 @@
+using System.Net.Sockets;
+using api.Attributes;
+using api.ExtensionMethods;
 using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
-using core.Attributes;
-using core.ExtensionMethods;
-using core.Models.QueryModels;
+using api.State;
 using Infrastructure;
+using Infrastructure.QueryModels;
 using JetBrains.Annotations;
 using MediatR;
 
@@ -12,7 +14,8 @@ namespace api.ClientEvents;
 
 public class ClientWantsToSendMessageToRoom : BaseTransferObject
 {
-    [ToxicityFilter] public string? messageContent { get; set; }
+    //[ToxicityFilter] 
+    public string? messageContent { get; set; }
 
     public int roomId { get; set; }
 }
@@ -24,6 +27,12 @@ public class ClientWantsToSendMessageToRoomHandler(ChatRepository chatRepository
     public Task Handle(EventTypeRequest<ClientWantsToSendMessageToRoom> request, CancellationToken cancellationToken)
     {
         SocketUtilities.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
+        var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue("ChatRooms/" + request.MessageObject.roomId,
+            out var topicSubscriptions);
+        if(!getValue || !topicSubscriptions.Contains(request.Socket.ConnectionInfo.Id))
+            throw new Exception("You are not subscribed to this room");
+            
+        
         var insertedMessage =
             chatRepository.InsertMessage(request.MessageObject.roomId, request.Socket.GetMetadata().UserInfo.id,
                 request.MessageObject.messageContent!);
@@ -40,7 +49,7 @@ public class ClientWantsToSendMessageToRoomHandler(ChatRepository chatRepository
         {
             message = messageWithUserInfo,
             roomId = request.MessageObject.roomId
-        }, request.MessageObject.roomId.ToString());
+        }, "ChatRooms/"+request.MessageObject.roomId.ToString());
         return Task.CompletedTask;
     }
 }

@@ -1,8 +1,6 @@
 using api;
-using core;
-using core.Attributes;
-using core.Models.DbModels;
 using Infrastructure;
+using Infrastructure.DbModels;
 using MediatR;
 using MQTTnet.Exceptions;
 using Serilog;

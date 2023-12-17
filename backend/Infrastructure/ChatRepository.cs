@@ -1,7 +1,6 @@
-using core.Exceptions;
-using core.Models.DbModels;
-using core.Models.QueryModels;
 using Dapper;
+using Infrastructure.DbModels;
+using Infrastructure.QueryModels;
 using Npgsql;
 
 namespace Infrastructure;
@@ -71,7 +70,8 @@ returning *;";
         var sql = @"select * from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirstOrDefault<EndUser>(sql, new { email }) ?? throw new KeyNotFoundException("Could not find user with email "+email);
+            return conn.QueryFirstOrDefault<EndUser>(sql, new { email }) ??
+                   throw new KeyNotFoundException("Could not find user with email " + email);
         }
     }
 

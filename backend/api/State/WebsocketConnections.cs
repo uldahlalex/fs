@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using core.Models.DbModels;
 using Fleck;
+using Infrastructure.DbModels;
 
-namespace core.State;
+namespace api.State;
 
 public static class WebsocketConnections
 {

@@ -7,9 +7,9 @@ export class ServerNotifiesClientsInRoom extends BaseTransferObject<ServerNotifi
 }
 
 export class ServerNotifiesClientsInRoomSomeoneHasJoinedRoom extends ServerNotifiesClientsInRoom {
-    user?: EndUser
+  user?: EndUser
 }
 
 export class ServerNotifiesClientsInRoomSomeoneHasLeftRoom extends ServerNotifiesClientsInRoom {
-    user?: EndUser
+  user?: EndUser
 }

@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using api.ExtensionMethods;
 using api.Reusables;
 using api.ServerEvents;
 using api.SharedApiModels;
-using core.ExtensionMethods;
-using core.State;
+using api.State;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
@@ -32,7 +32,9 @@ public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository)
         request.Socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(request.MessageObject.roomId),
-            liveConnections = WebsocketConnections.TopicSubscriptions["ChatRooms/"+request.MessageObject.roomId].Count,//request.Socket.CountUsersInRoom(request.MessageObject.roomId.ToString()),
+            liveConnections =
+                WebsocketConnections.TopicSubscriptions["ChatRooms/" + request.MessageObject.roomId]
+                    .Count, //request.Socket.CountUsersInRoom(request.MessageObject.roomId.ToString()),
             roomId = request.MessageObject.roomId
         });
         return Task.CompletedTask;

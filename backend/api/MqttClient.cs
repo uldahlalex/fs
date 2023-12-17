@@ -1,8 +1,8 @@
+using api.ExtensionMethods;
 using api.Reusables;
 using api.ServerEvents;
-using core.ExtensionMethods;
-using core.Models.DbModels;
 using Infrastructure;
+using Infrastructure.DbModels;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;

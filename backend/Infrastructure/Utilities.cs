@@ -1,4 +1,4 @@
-﻿namespace core;
+﻿namespace Infrastructure;
 
 public class Utilities
 {

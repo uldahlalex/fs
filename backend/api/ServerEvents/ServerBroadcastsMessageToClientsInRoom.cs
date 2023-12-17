@@ -1,5 +1,5 @@
 using api.SharedApiModels;
-using core.Models.QueryModels;
+using Infrastructure.QueryModels;
 
 namespace api.ServerEvents;
 

@@ -68,8 +68,8 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
     this.roomsWithMessages.set(dto.roomId!, dto.messages!.reverse());
-      this.roomsWithConnections.set(dto.roomId!, dto.liveConnections!);
-      this.messageService.add({life: 2000, severity: 'success', summary: 'Success', detail: 'Welcome to room, '});
+    this.roomsWithConnections.set(dto.roomId!, dto.liveConnections!);
+    this.messageService.add({life: 2000, severity: 'success', summary: 'Success', detail: 'Welcome to room, '});
   }
 
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
@@ -83,30 +83,28 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   }
 
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom(dto: ServerNotifiesClientsInRoomSomeoneHasJoinedRoom) {
-      this.messageService.add({
-          life: 2000,
-          severity: 'warning',
-          summary: '🧨',
-          detail: "New user joined: " + dto.user?.email
-      });
+    this.messageService.add({
+      life: 2000,
+      severity: 'warning',
+      summary: '🧨',
+      detail: "New user joined: " + dto.user?.email
+    });
     this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)! + 1);
   }
 
   ServerNotifiesClientsInRoomSomeoneHasLeftRoom(dto: ServerNotifiesClientsInRoomSomeoneHasLeftRoom) {
-      this.messageService.add({
-          life: 2000,
-          severity: 'warning',
-          summary: '👋',
-          detail: dto.user?.email + " left the room!"
-      });
+    this.messageService.add({
+      life: 2000,
+      severity: 'warning',
+      summary: '👋',
+      detail: dto.user?.email + " left the room!"
+    });
     this.roomsWithConnections.set(dto.roomId!, this.roomsWithConnections.get(dto.roomId!)! - 1);
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
     this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage});
   }
-
-
 
 
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
@@ -139,7 +137,6 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     }];
 
   }
-
 
 
   // CLIENT -> SERVER COMMUNICATION

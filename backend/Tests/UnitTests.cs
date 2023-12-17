@@ -1,4 +1,4 @@
-using core.Attributes;
+using api.Attributes;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -11,14 +11,12 @@ public class UnitTests
     {
         var result = await new ToxicityFilter().IsToxic("I hate you");
         result.Should().BeTrue();
-
     }
-    
+
     [Test]
     public async Task Test2()
     {
         var result = await new ToxicityFilter().IsToxic("I love you");
         result.Should().BeFalse();
-
     }
 }

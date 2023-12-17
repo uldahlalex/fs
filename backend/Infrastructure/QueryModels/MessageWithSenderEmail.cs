@@ -1,4 +1,4 @@
-namespace core.Models.QueryModels;
+namespace Infrastructure.QueryModels;
 
 public class MessageWithSenderEmail
 {

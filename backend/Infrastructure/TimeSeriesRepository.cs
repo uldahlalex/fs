@@ -1,5 +1,5 @@
-using core.Models.DbModels;
 using Dapper;
+using Infrastructure.DbModels;
 using Npgsql;
 
 namespace Infrastructure;
@@ -14,7 +14,7 @@ public class TimeSeriesRepository(NpgsqlDataSource dataSource)
         using (var conn = dataSource.OpenConnection())
         {
             return conn.QueryFirst<TimeSeries>(sql,
-                new { datapoint = timeseries.datapoint, timestamp = DateTimeOffset.UtcNow });
+                new { timeseries.datapoint, timestamp = DateTimeOffset.UtcNow });
         }
     }
 

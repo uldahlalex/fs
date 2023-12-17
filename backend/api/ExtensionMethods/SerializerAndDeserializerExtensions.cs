@@ -1,21 +1,22 @@
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 using System.Text.Json;
-using core.Exceptions;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Xml;
+using api.Exceptions;
 
-namespace core.ExtensionMethods;
+
+namespace api.ExtensionMethods;
 
 public static class SerializerAndDeserializerExtensions
 {
     public static string ToJsonString(this object obj)
     {
-        return JsonConvert.SerializeObject(obj, Formatting.Indented, new JsonSerializerSettings
+        return JsonSerializer.Serialize(obj, new JsonSerializerOptions()
         {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
         });
     }
+
     public static T Deserialize<T>(this string message)
     {
         return JsonSerializer.Deserialize<T>(message,

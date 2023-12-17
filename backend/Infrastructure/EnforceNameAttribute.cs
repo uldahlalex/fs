@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace core.Attributes;
+namespace Infrastructure;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class EnforceNameAttribute : ValidationAttribute

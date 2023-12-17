@@ -1,5 +1,5 @@
+using api.ExtensionMethods;
 using api.ServerEvents;
-using core.ExtensionMethods;
 using Fleck;
 using Serilog;
 
@@ -12,7 +12,8 @@ public static class GeneralExceptionHandler
         Log.Error(exception, "WebsocketServer");
         socket.SendDto(new ServerSendsErrorMessageToClient
         {
-            receivedEventType = eventType ?? "Could not determine event type from: \n"+message, errorMessage = exception.Message
+            receivedEventType = eventType ?? "Could not determine event type from: \n" + message,
+            errorMessage = exception.Message
         });
     }
 }

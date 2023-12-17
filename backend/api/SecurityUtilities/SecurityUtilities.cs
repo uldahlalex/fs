@@ -6,7 +6,7 @@ using JWT.Serializers;
 using Newtonsoft.Json;
 using Serilog;
 
-namespace core.SecurityUtilities;
+namespace api.SecurityUtilities;
 
 public static class SecurityUtilities
 {
@@ -63,7 +63,6 @@ public static class SecurityUtilities
             Log.Error(e, "IssueJWT");
             throw new Exception("User authentication succeeded, but could not create token");
         }
-
     }
 
     public static string Hash(string password, string salt)
@@ -80,7 +79,6 @@ public static class SecurityUtilities
             Log.Error(e, "Hash");
             throw new Exception("Failed to hash password");
         }
-
     }
 
     public static string GenerateSalt()

@@ -1,6 +1,6 @@
+using api.ExtensionMethods;
 using api.ServerEvents;
 using api.SharedApiModels;
-using core.ExtensionMethods;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;

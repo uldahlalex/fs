@@ -1,6 +1,4 @@
-using core.Attributes;
-
-namespace core.Models.DbModels;
+namespace Infrastructure.DbModels;
 
 public class TimeSeries
 {

@@ -49,7 +49,7 @@ const ApiServiceProvider = {
         path: 'timeseries', component: TimeSeriesComponent
       }
     ]),
-      DialogModule
+    DialogModule
   ],
   declarations: [
     ComponentApp,
@@ -69,4 +69,4 @@ if (environment.production) {
 }
 
 platformBrowserDynamic().bootstrapModule(AppModule)
-    .catch(err => console.log(err));
+  .catch(err => console.log(err));

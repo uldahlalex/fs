@@ -1,11 +1,14 @@
-using core;
-using core.ExtensionMethods;
+using api.ClientEvents;
+using api.ExtensionMethods;
+using api.ServerEvents;
+using api.SharedApiModels;
 using FluentAssertions;
-using Infrastructure;
-using Npgsql;
+using Microsoft.VisualBasic;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Serilog;
-using Websocket.Client;
+using WebSocketSharp;
+
 
 namespace Tests;
 
@@ -131,4 +134,47 @@ public class WebsocketServerTests
          messagesSentToClient2
              .First().message.messageContent.Should().Be(message);
      }*/
+    [Test]
+    public async Task Test1()
+    {
+        using (var ws = new WebSocket("ws://localhost:8181/"))
+        {
+            var messages = new List<BaseTransferObject>();
+            ws.Connect();
+
+            ws.OnOpen += (sender, e) => {  };
+
+            ws.OnMessage += (sender, e) =>
+            {
+                messages.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            };
+
+            ws.OnError += (sender, e) => { Log.Error(e.Message, e.Exception, "Error"); };
+
+            ws.OnClose += (sender, e) => { Log.Information("Close" + e.Reason); };
+
+
+            ws.Send(new ClientWantsToAuthenticate()
+            {
+                email = "alex@uldahl.dk",
+                password = "qweqweqwe"
+            }.ToJsonString());
+            ws.Send(new ClientWantsToEnterRoom
+            {
+                roomId = 1
+            }.ToJsonString());
+            ws.Send(new ClientWantsToSendMessageToRoom()
+            {
+                roomId = 1,
+                messageContent = "hey"
+            }.ToJsonString());
+            await Task.Delay(2000);
+            Log.Information("Messages: " + messages.ToJsonString());
+            messages.Should().Contain(x => x.eventType == nameof(ServerAddsClientToRoom));
+            messages.Should().Contain(x => x.eventType == nameof(ServerAuthenticatesUser));
+            messages.Should().Contain(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom));
+            //Maybe also check message contents 
+        }
+    }
+    
 }

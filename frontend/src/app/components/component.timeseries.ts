@@ -8,11 +8,11 @@ import {ClientWantsToSubscribeToTimeSeriesData} from "../models/ClientWantsToSub
 @Component({
   template: `
 
-      <div style="text-align:center">
-          <apx-chart [series]="webSocketClientService.series!" [chart]="chart!" [title]="title!"
-                     [xaxis]="xaxis"></apx-chart>
-      </div>
-      <button (click)="clearTemporarily()">Clear temporarily</button>
+    <div style="text-align:center">
+      <apx-chart [series]="webSocketClientService.series!" [chart]="chart!" [title]="title!"
+                 [xaxis]="xaxis"></apx-chart>
+    </div>
+    <button (click)="clearTemporarily()">Clear temporarily</button>
 
   `,
 })
