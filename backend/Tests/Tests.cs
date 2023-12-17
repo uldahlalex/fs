@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using api.ClientEvents;
 using api.ExtensionMethods;
 using api.ServerEvents;
@@ -135,24 +136,15 @@ public class WebsocketServerTests
              .First().message.messageContent.Should().Be(message);
      }*/
     [Test]
-    public async Task Test1()
+    public async Task Signin_EnterRoom_SendMessage()
     {
         using (var ws = new WebSocket("ws://localhost:8181/"))
         {
-            var messages = new List<BaseTransferObject>();
+            var messagesReceivedFromServer = new List<BaseTransferObject>();
             ws.Connect();
-
-            ws.OnOpen += (sender, e) => {  };
-
             ws.OnMessage += (sender, e) =>
-            {
-                messages.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
-            };
-
-            ws.OnError += (sender, e) => { Log.Error(e.Message, e.Exception, "Error"); };
-
-            ws.OnClose += (sender, e) => { Log.Information("Close" + e.Reason); };
-
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            ws.OnError += (sender, e) => { Assert.Fail(); };
 
             ws.Send(new ClientWantsToAuthenticate()
             {
@@ -168,12 +160,131 @@ public class WebsocketServerTests
                 roomId = 1,
                 messageContent = "hey"
             }.ToJsonString());
+
             await Task.Delay(2000);
-            Log.Information("Messages: " + messages.ToJsonString());
-            messages.Should().Contain(x => x.eventType == nameof(ServerAddsClientToRoom));
-            messages.Should().Contain(x => x.eventType == nameof(ServerAuthenticatesUser));
-            messages.Should().Contain(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom));
-            //Maybe also check message contents 
+            Log.Information("Messages: " + messagesReceivedFromServer.ToJsonString());
+            messagesReceivedFromServer.Should().Contain(x => x.eventType == nameof(ServerAddsClientToRoom));
+            messagesReceivedFromServer.Should().Contain(x => x.eventType == nameof(ServerAuthenticatesUser));
+            messagesReceivedFromServer.Should()
+                .Contain(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom));
+        }
+    }
+
+    [Test]
+    public async Task Must_Enter_Room_To_Send_Message()
+    {
+        using (var ws = new WebSocket("ws://localhost:8181/"))
+        {
+            var messagesReceivedFromServer = new List<BaseTransferObject>();
+            ws.Connect();
+            ws.OnMessage += (sender, e) =>
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            ws.OnError += (sender, e) => { Assert.Fail(); };
+
+            ws.Send(new ClientWantsToAuthenticate()
+            {
+                email = "alex@uldahl.dk",
+                password = "qweqweqwe"
+            }.ToJsonString());
+            ws.Send(new ClientWantsToSendMessageToRoom()
+            {
+                roomId = 1,
+                messageContent = "hey"
+            }.ToJsonString());
+
+
+            await Task.Delay(2000);
+            Log.Information("Messages: " + messagesReceivedFromServer.ToJsonString());
+            messagesReceivedFromServer.Should().Contain(x => x.eventType == nameof(ServerAuthenticatesUser));
+            messagesReceivedFromServer.Should().Contain(x => x.eventType == nameof(ServerSendsErrorMessageToClient));
+            messagesReceivedFromServer.Should().NotContain(x => x.eventType == nameof(ServerAddsClientToRoom));
+        }
+    }
+    
+    [Test]
+    public async Task Existing_Clients_In_Room_Get_Joined_Message_When_Someone_Enters()
+    {
+
+        using (var ws = new WebSocket("ws://localhost:8181/"))
+        using (var ws2 = new WebSocket("ws://localhost:8181/"))
+        {
+            var messagesReceivedFromServer = new List<BaseTransferObject>();
+            ws.Connect();
+            ws2.Connect();
+            ws.OnMessage += (sender, e) =>
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            ws.OnError += (sender, e) => { Assert.Fail(); };
+            
+            ws2.OnMessage += (sender, e) =>
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            ws2.OnError += (sender, e) => { Assert.Fail(); };
+            var auth = new ClientWantsToAuthenticate()
+            {
+                email = "alex@uldahl.dk",
+                password = "qweqweqwe"
+            }.ToJsonString();
+            ws.Send(auth);
+            ws2.Send(auth);
+            var enterRoom = new ClientWantsToEnterRoom
+            {
+                roomId = 1
+            }.ToJsonString();
+            ws.Send(enterRoom);
+            await Task.Delay(2000);
+            ws2.Send(enterRoom);
+
+
+            await Task.Delay(2000);
+            Log.Information("Messages: " + messagesReceivedFromServer.ToJsonString());
+            messagesReceivedFromServer.Should().Contain(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
+            messagesReceivedFromServer.Should().NotContain(x => x.eventType == nameof(ServerSendsErrorMessageToClient));
+        }
+    }
+    
+    [Test]
+    public async Task Message_Broadcasting_In_Room_works()
+    {
+
+        using (var ws = new WebSocket("ws://localhost:8181/"))
+        using (var ws2 = new WebSocket("ws://localhost:8181/"))
+        {
+            var messagesReceivedFromServer = new Collection<BaseTransferObject>();
+            ws.Connect();
+            ws2.Connect();
+            ws.OnMessage += (sender, e) =>
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            ws.OnError += (sender, e) => { Assert.Fail(); };
+            
+            ws2.OnMessage += (sender, e) =>
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+            ws2.OnError += (sender, e) => { Assert.Fail(); };
+            var auth = new ClientWantsToAuthenticate()
+            {
+                email = "alex@uldahl.dk",
+                password = "qweqweqwe"
+            }.ToJsonString();
+            ws.Send(auth);
+            ws2.Send(auth);
+            var enterRoom = new ClientWantsToEnterRoom
+            {
+                roomId = 1
+            }.ToJsonString();
+            ws.Send(enterRoom);
+            ws2.Send(enterRoom);
+            var message = new ClientWantsToSendMessageToRoom()
+            {
+                roomId = 1,
+                messageContent = "hey"
+            }.ToJsonString();
+            ws.Send(message);
+
+            await Task.Delay(2000);
+            Log.Information("Messages: " + messagesReceivedFromServer.ToJsonString());
+            messagesReceivedFromServer.Should().Contain(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
+            messagesReceivedFromServer.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
+                .Should().Be(2);
+            messagesReceivedFromServer.Should().NotContain(x => x.eventType == nameof(ServerSendsErrorMessageToClient));
+            
         }
     }
     

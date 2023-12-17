@@ -28,25 +28,6 @@ public static class SecurityUtilities
         }
     }
 
-    public static Dictionary<string, string> ExtractClaims(string jwt)
-    {
-        try
-        {
-            IJsonSerializer serializer = new JsonNetSerializer();
-            var provider = new UtcDateTimeProvider();
-            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-            IJwtValidator validator = new JwtValidator(serializer, provider);
-            IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
-
-            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"));
-            return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "ExtractClaims");
-            throw;
-        }
-    }
 
     public static string IssueJwt(Dictionary<string, object> claimsPayload)
     {

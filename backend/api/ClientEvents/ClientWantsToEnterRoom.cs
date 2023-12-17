@@ -27,7 +27,7 @@ public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository)
             message = "Client joined the room!",
             user = request.Socket.GetMetadata().UserInfo,
             roomId = request.MessageObject.roomId
-        }, request.MessageObject.roomId.ToString());
+        }, "ChatRooms/"+request.MessageObject.roomId.ToString());
         request.Socket.SubscribeToTopic("ChatRooms/" + request.MessageObject.roomId);
         request.Socket.SendDto(new ServerAddsClientToRoom
         {
