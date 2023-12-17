@@ -45,15 +45,6 @@ public static class WebsocketExtensions
         socket.Send(dto.ToJsonString());
     }
 
-    public static void BroadcastObjectToTopicListeners(object dto, string topic) //could be basetransferobject if this was in api
-    {
-        foreach (var socket in WebsocketConnections.ConnectionPool.Values.Where(x => x.subscribedToTopics.Contains(topic)))
-        {
-            Console.WriteLine(socket.socket!.ConnectionInfo.Id);
-            socket.socket!.Send(dto.ToJsonString());
-        }
-    }
-    
     public static bool IsInWebsocketConnections(this IWebSocketConnection connection)
     {
         return WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);

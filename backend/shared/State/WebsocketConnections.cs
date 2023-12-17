@@ -13,6 +13,6 @@ public class WebsocketMetadata
 {
     public IWebSocketConnection? socket { get; set; }
     public bool isAuthenticated { get; set; }
-    public EndUser userInfo { get; set; }
-    public HashSet<string> subscribedToTopics { get; set; }
+    public EndUser userInfo { get; set; } = null!;
+    public HashSet<string> subscribedToTopics { get; set; } = new HashSet<string>();
 }

@@ -28,9 +28,9 @@ public class ClientWantsToAuthenticateHandler(ChatRepository chatRepository)
     {
         EndUser user = chatRepository.GetUser(request.MessageObject.email!);
         var expectedHash = SecurityUtilities.Hash(request.MessageObject.password!, user.salt!);
-        if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong password!");
+        if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong credentials!");
         var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>
-            { { "email", user.email }, { "id", user.id } });
+            { { "email", user.email }, { "id", user.id } }!);
         request.Socket.Authenticate(user);
         request.Socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
         return Task.CompletedTask;

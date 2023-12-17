@@ -21,8 +21,7 @@ public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository)
     public Task Handle(EventTypeRequest<ClientWantsToEnterRoom> request, CancellationToken cancellationToken)
     {
         Reusables.ExitIfNotAuthenticated(request.Socket, request.MessageObject.eventType);
-
-        WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+        Reusables.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
             user = request.Socket.GetMetadata().userInfo,

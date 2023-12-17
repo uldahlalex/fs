@@ -71,7 +71,7 @@ returning *;";
         var sql = @"select * from chat.enduser where email = @email;";
         using (var conn = dataSource.OpenConnection())
         {
-            return conn.QueryFirstOrDefault<EndUser>(sql, new { email }) ?? throw new UserNotFoundException("Could not find user with email "+email);
+            return conn.QueryFirstOrDefault<EndUser>(sql, new { email }) ?? throw new KeyNotFoundException("Could not find user with email "+email);
         }
     }
 

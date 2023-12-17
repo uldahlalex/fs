@@ -1,5 +1,6 @@
+using System.Security.Authentication;
 using api.ClientEvents;
-using api.Reusables;
+using api.Resusables;
 using api.ServerEvents;
 using api.SharedApiModels;
 using core.Exceptions;
@@ -17,27 +18,48 @@ public class WebsocketServer(Mediator mediator)
     {
         var server = new WebSocketServer("ws://127.0.0.1:8181");
         server.RestartAfterListenError = true;
-        server.Start(socket =>
+        server.Start(config);
+    }
+
+    private Action<IWebSocketConnection> config = socket =>
         {
             socket.OnMessage = async message =>
             {
-                Log.Information(message, "Client sent message: ");
-                var eventTypeRequestMappings =
-                    new Dictionary<string,
-                            Func<string, IWebSocketConnection, IRequest>> //Anti-reflection way of invoking
-                        {
-                            { "ClientWantsToAuthenticate", RequestFactory.CreateRequest<ClientWantsToAuthenticate> },
-                            { "ClientWantsToEnterRoom", RequestFactory.CreateRequest<ClientWantsToEnterRoom> }
-                        };
-                if (eventTypeRequestMappings.TryGetValue(message.DeserializeToModelAndValidate<BaseTransferObject>().eventType,
-                        out var createRequestFunc))
+                string eventType = null;
+                try
                 {
-                    var request = createRequestFunc(message, socket);
-                    await mediator.Send(request);
+                    Log.Information(message, "Client sent message: ");
+                    eventType = message.DeserializeToModelAndValidate<BaseTransferObject>().eventType;
+                    var eventTypeRequestMappings =
+                        new Dictionary<string,
+                                Func<string, IWebSocketConnection, IRequest>> //Anti-reflection way of invoking
+                            {
+                                {
+                                    "ClientWantsToAuthenticate", RequestFactory.CreateRequest<ClientWantsToAuthenticate>
+                                },
+                                { "ClientWantsToEnterRoom", RequestFactory.CreateRequest<ClientWantsToEnterRoom> }
+                            };
+                    if (eventTypeRequestMappings.TryGetValue(eventType,
+                            out var createRequestFunc))
+                    {
+                        var request = createRequestFunc(message, socket);
+                        await mediator.Send(request);
+                    }
+                    else
+                    {
+                        throw new MediationException("Could not find a valid event to mediate to");
+                    }
                 }
-                else
+                catch (AuthenticationException exception)
                 {
-                    throw new MediationException("Could not find a valid event to mediate to");
+                    socket.UnAuthenticate();
+                    GeneralExceptionHandler.Handle(exception: exception, socket: socket, eventType: eventType,
+                        message: message);
+                }
+                catch (Exception exception)
+                {
+                    GeneralExceptionHandler.Handle(exception: exception, socket: socket, eventType: eventType,
+                        message: message);
                 }
             };
 
@@ -49,7 +71,7 @@ public class WebsocketServer(Mediator mediator)
             socket.OnClose = () =>
             {
                 foreach (var topic in socket.GetMetadata().subscribedToTopics.ToList())
-                    WebsocketExtensions.BroadcastObjectToTopicListeners(
+                    Reusables.BroadcastObjectToTopicListeners(
                         new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
                             { user = socket.GetMetadata().userInfo }, topic);
 
@@ -65,6 +87,5 @@ public class WebsocketServer(Mediator mediator)
                     errorMessage = exception.Message
                 });
             };
-        });
-    }
+        };
 }

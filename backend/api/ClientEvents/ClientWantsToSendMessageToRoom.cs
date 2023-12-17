@@ -36,7 +36,7 @@ public class ClientWantsToSendMessageToRoomHandler(ChatRepository chatRepository
             id = insertedMessage.id,
             email = request.Socket.GetMetadata().userInfo.email
         };
-        WebsocketExtensions.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
+        Reusables.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
         {
             message = messageWithUserInfo,
             roomId = request.MessageObject.roomId

@@ -1,3 +1,4 @@
+using api.Resusables;
 using api.ServerEvents;
 using core.ExtensionMethods;
 using core.Models.DbModels;
@@ -40,7 +41,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
                 var dto = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult };
 
-                WebsocketExtensions.BroadcastObjectToTopicListeners(dto, "TimeSeries");
+                Reusables.BroadcastObjectToTopicListeners(dto, "TimeSeries");
 
                 var pongMessage = new MqttApplicationMessageBuilder()
                     .WithTopic("response_topic")

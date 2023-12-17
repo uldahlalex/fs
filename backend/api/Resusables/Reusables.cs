@@ -1,6 +1,7 @@
 using System.Security.Authentication;
 using api.ServerEvents;
 using core.ExtensionMethods;
+using core.State;
 using Fleck;
 
 namespace api.Resusables;
@@ -18,5 +19,14 @@ public static class Reusables
             errorMessage = "Unauthorized access."
         });
         throw new AuthenticationException("Unauthorized access.");
+    }
+
+    public static void BroadcastObjectToTopicListeners(object dto, string topic)
+    {
+        foreach (var socket in WebsocketConnections.ConnectionPool.Values.Where(x => x.subscribedToTopics.Contains(topic)))
+        {
+            Console.WriteLine(socket.socket!.ConnectionInfo.Id);
+            socket.socket!.Send(dto.ToJsonString());
+        }
     }
 }
