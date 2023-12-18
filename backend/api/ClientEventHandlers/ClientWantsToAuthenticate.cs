@@ -32,12 +32,10 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : IEventHa
         return Task.CompletedTask;
     }
 
-   // public string EventType => "ClientWantsToAuthenticate";
-
-    public Task HandleAsync(string message, IWebSocketConnection socket)
+    public Task DeserializeAndInvokeHandler(string message, IWebSocketConnection socket)
     {
-        var msg = message.DeserializeToModelAndValidate<ClientWantsToAuthenticateDto>();
-        Handle(msg, socket);
+        var correctModel = message.DeserializeToModelAndValidate<ClientWantsToAuthenticateDto>();
+        this.Handle(correctModel, socket);
         return Task.CompletedTask;
     }
 }

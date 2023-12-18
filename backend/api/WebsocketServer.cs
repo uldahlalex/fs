@@ -11,9 +11,15 @@ using Serilog;
 
 namespace api;
 
-public class WebsocketServer(Mediator mediator, EventHandlerService eventHandlerService)
+public class WebsocketServer(IServiceProvider serviceProvider)
 {
-    private readonly Action<IWebSocketConnection> config = socket =>
+
+    private static readonly List<Type> HandlerTypes = new()
+    {
+        typeof(ClientWantsToAuthenticate),
+    };
+    
+    private readonly Action<IWebSocketConnection> _config = socket =>
     {
         socket.OnMessage = async message =>
         {
@@ -22,8 +28,16 @@ public class WebsocketServer(Mediator mediator, EventHandlerService eventHandler
             {
                 Log.Information(message, "Client sent message: ");
                 eventType = message.DeserializeToModelAndValidate<BaseTransferObject>().eventType;
-                await eventHandlerService.HandleEventAsync(eventType, message, socket);
-
+                var handlerType = HandlerTypes.FirstOrDefault(t => t.Name == eventType);
+                if (handlerType != null)
+                {
+                    dynamic handler = serviceProvider.GetRequiredService(handlerType);
+                    await handler.DeserializeAndInvokeHandler(message, socket);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Handler not found for event type: {eventType}");
+                }
             }
             catch (AuthenticationException exception)
             {
@@ -65,6 +79,6 @@ public class WebsocketServer(Mediator mediator, EventHandlerService eventHandler
     {
         var server = new WebSocketServer("ws://127.0.0.1:8181");
         server.RestartAfterListenError = true;
-        server.Start(config);
+        server.Start(_config);
     }
 }

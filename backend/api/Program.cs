@@ -1,6 +1,5 @@
 using api;
 using api.ClientEventHandlers;
-using api.Models;
 using Fleck;
 using Infrastructure;
 using Infrastructure.DbModels;
@@ -26,7 +25,6 @@ builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 builder.Services.AddSingleton<Mediator>();
 builder.Services.AddSingleton<ClientWantsToAuthenticate>();
-builder.Services.AddSingleton<EventHandlerService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 //add MediatR
 //builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
@@ -66,40 +64,3 @@ catch (Exception e)
 app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
 await app.RunAsync();
 
-public interface IEventHandler<T> where T : BaseTransferObject
-{
-    public string EventType => GetType().Name;
-
-    Task HandleAsync(string message, IWebSocketConnection socket);
-
-    Task Handle(T dto, IWebSocketConnection socket);
-}
-
-public class EventHandlerService
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly Dictionary<string, Type> _handlerMap;
-
-    public EventHandlerService(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-        _handlerMap = new Dictionary<string, Type>
-        {
-            { "ClientWantsToAuthenticate", typeof(ClientWantsToAuthenticate) },
-            // Map other event types to handlers...
-        };
-    }
-
-    public async Task HandleEventAsync(string eventType, string message, IWebSocketConnection socket)
-    {
-        if (_handlerMap.TryGetValue(eventType, out var handlerType))
-        {
-            var handler = (dynamic)_serviceProvider.GetRequiredService(handlerType);
-            await handler.HandleAsync(message, socket);
-        }
-        else
-        {
-            throw new InvalidOperationException($"Handler not found for event type: {eventType}");
-        }
-    }
-}

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Infrastructure;
 
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.All)]
 public class EnforceNameAttribute : ValidationAttribute
 {
     public EnforceNameAttribute(string name)
