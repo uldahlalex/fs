@@ -1,26 +1,24 @@
-// using api.ExtensionMethods;
-// using api.Helpers;
-// using api.Models;
-// using api.Models.ServerEvents;
-// using JetBrains.Annotations;
-// using MediatR;
-//
-// namespace api.ClientEventHandlers;
-//
-// public class ClientWantsToLeaveRoom : BaseTransferObject
-// {
-//     public int roomId { get; set; }
-// }
-//
-// [UsedImplicitly]
-// public class ClientWantsToLeaveRoomHandler : IRequestHandler<EventTypeRequest<ClientWantsToLeaveRoom>>
-// {
-//     public Task Handle(EventTypeRequest<ClientWantsToLeaveRoom> request, CancellationToken cancellationToken)
-//     {
-//         request.Socket.UnsubscribeFromTopic(request.MessageObject.roomId.ToString());
-//         SocketUtilities.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-//                 { user = request.Socket.GetMetadata().UserInfo },
-//             request.MessageObject.roomId.ToString());
-//         return Task.CompletedTask;
-//     }
-// }
+using api.ExtensionMethods;
+using api.Helpers;
+using api.Models;
+using api.Models.ServerEvents;
+using Fleck;
+
+namespace api.ClientEventHandlers;
+
+public class ClientWantsToLeaveRoomDto : BaseTransferObject
+{
+    public int roomId { get; set; }
+}
+
+public class ClientWantsToLeaveRoom : BaseEventHandler<ClientWantsToLeaveRoomDto>
+{
+    public override Task Handle(ClientWantsToLeaveRoomDto request, IWebSocketConnection socket)
+    {
+        socket.UnsubscribeFromTopic(request.roomId.ToString());
+        SocketUtilities.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+                { user = socket.GetMetadata().UserInfo },
+            request.roomId.ToString());
+        return Task.CompletedTask;
+    }
+}

@@ -11,11 +11,7 @@ namespace api;
 
 public class WebsocketServer(IServiceProvider serviceProvider)
 {
-
-    public static List<Type> HandlerTypes = new()
-    {
-      
-    };
+    public static List<Type> HandlerTypes = null!;
     
     private readonly Action<IWebSocketConnection> _config = socket =>
     {

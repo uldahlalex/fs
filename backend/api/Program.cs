@@ -21,12 +21,25 @@ EnforceNameCheck.CheckPropertyNames<TimeSeries>();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
+
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<TimeSeriesRepository>();
+
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
+
 builder.Services.AddSingleton<ClientWantsToAuthenticate>();
+builder.Services.AddSingleton<ClientWantsToAuthenticateWithJwt>();
+builder.Services.AddSingleton<ClientWantsToRegister>();
+
 builder.Services.AddSingleton<ClientWantsToEnterRoom>();
+builder.Services.AddSingleton<ClientWantsToLeaveRoom>();
+builder.Services.AddSingleton<ClientWantsToLoadOlderMessages>();
+builder.Services.AddSingleton<ClientWantsToSendMessageToRoom>();
+
+builder.Services.AddSingleton<ClientWantsToSubscribeToTimeSeriesData>();
+
+
 
 var handlerTypes = new List<Type>();
 foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
@@ -45,8 +58,8 @@ var app = builder.Build();
 // Store the list of handler types in a static property or pass it where needed
 WebsocketServer.HandlerTypes = handlerTypes;
 
-string mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT");
-if (mqttClientSetting != null && mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
+string mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT")!;
+if (!string.IsNullOrEmpty(mqttClientSetting) && mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
 {
    await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
 }
