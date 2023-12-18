@@ -23,6 +23,7 @@ builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 builder.Services.AddSingleton<ClientWantsToAuthenticate>();
+builder.Services.AddSingleton<ClientWantsToEnterRoom>();
 //add MediatR
 //builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 

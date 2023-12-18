@@ -164,7 +164,7 @@ public class WebsocketServerTests
                 email = "alex@uldahl.dk",
                 password = "qweqweqwe"
             }.ToJsonString());
-            ws.Send(new ClientWantsToEnterRoom
+            ws.Send(new ClientWantsToEnterRoomDto
             {
                 roomId = 1
             }.ToJsonString());
@@ -237,7 +237,7 @@ public class WebsocketServerTests
             }.ToJsonString();
             ws.Send(auth);
             ws2.Send(auth);
-            var enterRoom = new ClientWantsToEnterRoom
+            var enterRoom = new ClientWantsToEnterRoomDto
             {
                 roomId = 1
             }.ToJsonString();
@@ -277,7 +277,7 @@ public class WebsocketServerTests
             }.ToJsonString();
             ws.Send(auth);
             ws2.Send(auth);
-            var enterRoom = new ClientWantsToEnterRoom
+            var enterRoom = new ClientWantsToEnterRoomDto
             {
                 roomId = 1
             }.ToJsonString();
