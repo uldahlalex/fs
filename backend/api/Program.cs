@@ -1,3 +1,4 @@
+using System.Reflection;
 using api;
 using api.ClientEventHandlers;
 using Fleck;
@@ -24,10 +25,23 @@ builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 builder.Services.AddSingleton<ClientWantsToAuthenticate>();
 builder.Services.AddSingleton<ClientWantsToEnterRoom>();
-//add MediatR
-//builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 
+var handlerTypes = new List<Type>();
+foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+{
+    if (type.BaseType != null && type.BaseType.IsGenericType && 
+        type.BaseType.GetGenericTypeDefinition() == typeof(BaseEventHandler<>))
+    {
+        builder.Services.AddSingleton(type);
+        handlerTypes.Add(type);
+    }
+}
+
+// After all services have been registered
 var app = builder.Build();
+
+// Store the list of handler types in a static property or pass it where needed
+WebsocketServer.HandlerTypes = handlerTypes;
 try
 {
     // Console.WriteLine(Environment.GetEnvironmentVariable("START_BROKER"));

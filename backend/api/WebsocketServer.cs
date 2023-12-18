@@ -12,10 +12,9 @@ namespace api;
 public class WebsocketServer(IServiceProvider serviceProvider)
 {
 
-    private static readonly List<Type> HandlerTypes = new()
+    public static List<Type> HandlerTypes = new()
     {
-        typeof(ClientWantsToAuthenticate),
-        typeof(ClientWantsToEnterRoom)
+      
     };
     
     private readonly Action<IWebSocketConnection> _config = socket =>
