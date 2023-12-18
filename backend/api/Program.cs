@@ -1,5 +1,6 @@
 using api;
 using api.ClientEventHandlers;
+using api.Models;
 using Fleck;
 using Infrastructure;
 using Infrastructure.DbModels;
@@ -24,7 +25,7 @@ builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 builder.Services.AddSingleton<Mediator>();
-builder.Services.AddSingleton<ClientWantsToAuthenticateHandler>();
+builder.Services.AddSingleton<ClientWantsToAuthenticate>();
 builder.Services.AddSingleton<EventHandlerService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 //add MediatR
@@ -65,10 +66,13 @@ catch (Exception e)
 app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
 await app.RunAsync();
 
-public interface IEventHandler
+public interface IEventHandler<T> where T : BaseTransferObject
 {
-    string EventType { get; }
+    public string EventType => GetType().Name;
+
     Task HandleAsync(string message, IWebSocketConnection socket);
+
+    Task Handle(T dto, IWebSocketConnection socket);
 }
 
 public class EventHandlerService
@@ -81,7 +85,7 @@ public class EventHandlerService
         _serviceProvider = serviceProvider;
         _handlerMap = new Dictionary<string, Type>
         {
-            { "ClientWantsToAuthenticate", typeof(ClientWantsToAuthenticateHandler) },
+            { "ClientWantsToAuthenticate", typeof(ClientWantsToAuthenticate) },
             // Map other event types to handlers...
         };
     }
@@ -90,7 +94,7 @@ public class EventHandlerService
     {
         if (_handlerMap.TryGetValue(eventType, out var handlerType))
         {
-            var handler = (IEventHandler)_serviceProvider.GetRequiredService(handlerType);
+            var handler = (dynamic)_serviceProvider.GetRequiredService(handlerType);
             await handler.HandleAsync(message, socket);
         }
         else

@@ -18,7 +18,7 @@ public class ClientWantsToAuthenticateDto : BaseTransferObject
     [MinLength(6)] [Required] public string? password { get; set; }
 }
 
-public class ClientWantsToAuthenticateHandler(ChatRepository chatRepository) : IEventHandler
+public class ClientWantsToAuthenticate(ChatRepository chatRepository) : IEventHandler<ClientWantsToAuthenticateDto>
 {
     public Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
@@ -32,7 +32,7 @@ public class ClientWantsToAuthenticateHandler(ChatRepository chatRepository) : I
         return Task.CompletedTask;
     }
 
-    public string EventType => "ClientWantsToAuthenticate";
+   // public string EventType => "ClientWantsToAuthenticate";
 
     public Task HandleAsync(string message, IWebSocketConnection socket)
     {
