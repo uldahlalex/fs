@@ -1,7 +1,6 @@
-using api.Models;
 using Infrastructure.QueryModels;
 
-namespace api.ClientEventHandlers;
+namespace api.Models.ServerEvents;
 
 public class ServerAddsClientToRoom : BaseTransferObject
 {

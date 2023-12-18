@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Authentication;
 using api.ClientEventHandlers;
 using api.ExtensionMethods;
@@ -12,6 +13,13 @@ namespace api;
 public class WebsocketServer(IServiceProvider serviceProvider)
 {
     public static List<Type> HandlerTypes = null!;
+    
+    public void StartWebsocketServer()
+    {
+        var server = new WebSocketServer("ws://127.0.0.1:8181");
+        server.RestartAfterListenError = true;
+        server.Start(_config);
+    }
     
     private readonly Action<IWebSocketConnection> _config = socket =>
     {
@@ -53,26 +61,14 @@ public class WebsocketServer(IServiceProvider serviceProvider)
         };
         socket.OnClose = () =>
         {
-            //Subscribe to topics and broadcast to topic listeners that someone has left the room and remove conn from pool
-
-
             socket.RemoveFromWebsocketConnections();
             Log.Information("Disconnected: " + socket.ConnectionInfo.Id);
         };
         socket.OnError = exception =>
         {
-            Log.Error(exception, "WebsocketServer");
-            socket.SendDto(new ServerSendsErrorMessageToClient
-            {
-                errorMessage = exception.Message
-            });
+            GeneralExceptionHandler.Handle(exception: exception, socket: socket, eventType: null, message: null);
         };
     };
 
-    public void StartWebsocketServer()
-    {
-        var server = new WebSocketServer("ws://127.0.0.1:8181");
-        server.RestartAfterListenError = true;
-        server.Start(_config);
-    }
+
 }

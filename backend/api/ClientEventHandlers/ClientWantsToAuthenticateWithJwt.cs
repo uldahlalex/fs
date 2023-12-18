@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
+using api.Abstractions;
 using api.ExtensionMethods;
 using api.Helpers;
 using api.Models;
@@ -14,9 +15,9 @@ public class ClientWantsToAuthenticateWithJwtDto : BaseTransferObject
     [Required] public string? jwt { get; set; }
 }
 
-public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository) : IEventHandler<ClientWantsToAuthenticateWithJwtDto>
+public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToAuthenticateWithJwtDto>
 {
-    public Task Handle(ClientWantsToAuthenticateWithJwtDto dto, IWebSocketConnection socket)
+    public override Task Handle(ClientWantsToAuthenticateWithJwtDto dto, IWebSocketConnection socket)
     {
         var claims = SecurityUtilities.ValidateJwtAndReturnClaims(dto.jwt!);
         var user = chatRepository.GetUser(claims["email"]);

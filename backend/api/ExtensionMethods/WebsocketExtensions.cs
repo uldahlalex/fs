@@ -1,5 +1,6 @@
 using api.Helpers;
 using api.Models;
+using api.Models.Enums;
 using api.State;
 using Fleck;
 using Infrastructure.DbModels;
@@ -23,14 +24,14 @@ public static class WebsocketExtensions
         metadata.IsAuthenticated = false;
     }
 
-    public static void SubscribeToTopic(this IWebSocketConnection connection, string topic)
+    public static void SubscribeToTopic(this IWebSocketConnection connection, TopicEnums topic)
     {
-        SocketUtilities.SubscribeToTopic(connection.ConnectionInfo.Id, topic);
+        WebsocketHelpers.SubscribeToTopic(connection.ConnectionInfo.Id, topic);
     }
 
-    public static void UnsubscribeFromTopic(this IWebSocketConnection connection, string topic)
+    public static void UnsubscribeFromTopic(this IWebSocketConnection connection, TopicEnums topic)
     {
-        SocketUtilities.UnsubscribeFromTopic(connection.ConnectionInfo.Id, topic);
+        WebsocketHelpers.UnsubscribeFromTopic(connection.ConnectionInfo.Id, topic);
     }
 
     public static WebsocketMetadata GetMetadata(this IWebSocketConnection connection)
@@ -64,6 +65,6 @@ public static class WebsocketExtensions
         if (WebsocketConnections.ConnectionPool.TryRemove(connection.ConnectionInfo.Id, out var metadata))
             // Clean up any topic subscriptions
             foreach (var topic in WebsocketConnections.TopicSubscriptions.Keys)
-                SocketUtilities.UnsubscribeFromTopic(connection.ConnectionInfo.Id, topic);
+                WebsocketHelpers.UnsubscribeFromTopic(connection.ConnectionInfo.Id, topic);
     }
 }

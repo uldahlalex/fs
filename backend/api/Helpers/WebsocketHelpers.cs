@@ -1,13 +1,14 @@
 using System.Collections.Concurrent;
 using System.Security.Authentication;
 using api.ExtensionMethods;
+using api.Models.Enums;
 using api.Models.ServerEvents;
 using api.State;
 using Fleck;
 
 namespace api.Helpers;
 
-public static class SocketUtilities
+public static class WebsocketHelpers
 {
     public static void ExitIfNotAuthenticated(IWebSocketConnection socket, string receivedEventType)
     {
@@ -23,7 +24,7 @@ public static class SocketUtilities
         throw new AuthenticationException("Unauthorized access.");
     }
 
-    public static void SubscribeToTopic(Guid connectionId, string topic)
+    public static void SubscribeToTopic(Guid connectionId, TopicEnums topic)
     {
         if (!WebsocketConnections.TopicSubscriptions.ContainsKey(topic))
             WebsocketConnections.TopicSubscriptions.TryAdd(topic, new ConcurrentBag<Guid>());
@@ -31,7 +32,7 @@ public static class SocketUtilities
         WebsocketConnections.TopicSubscriptions[topic].Add(connectionId);
     }
 
-    public static void UnsubscribeFromTopic(Guid connectionId, string topic)
+    public static void UnsubscribeFromTopic(Guid connectionId, TopicEnums topic)
     {
         if (WebsocketConnections.TopicSubscriptions.ContainsKey(topic))
         {
@@ -41,7 +42,7 @@ public static class SocketUtilities
         }
     }
 
-    public static void BroadcastObjectToTopicListeners(object dto, string topic)
+    public static void BroadcastObjectToTopicListeners(object dto, TopicEnums topic)
     {
         if (WebsocketConnections.TopicSubscriptions.TryGetValue(topic, out var connections))
             foreach (var connectionId in connections)

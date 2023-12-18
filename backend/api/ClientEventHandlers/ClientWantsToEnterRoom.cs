@@ -1,7 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using api.Abstractions;
+using api.Attributes;
 using api.ExtensionMethods;
 using api.Helpers;
 using api.Models;
+using api.Models.Enums;
 using api.Models.ServerEvents;
 using api.State;
 using Fleck;
@@ -15,21 +18,24 @@ public class ClientWantsToEnterRoomDto : BaseTransferObject
 
 public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToEnterRoomDto>
 {
+    [RequireAuthentication]
     public override Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)
     {
-        SocketUtilities.ExitIfNotAuthenticated(socket, dto.eventType);
-        SocketUtilities.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+        bool isValidTopic = Enum.TryParse("ChatRoom"+dto.roomId, out TopicEnums topic);
+        if(!isValidTopic)
+            throw new Exception("Invalid topic");
+        WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
             user = socket.GetMetadata().UserInfo,
             roomId = dto.roomId
-        }, "ChatRooms/" + dto.roomId);
-        socket.SubscribeToTopic("ChatRooms/" + dto.roomId);
+        }, topic);
+        socket.SubscribeToTopic(topic);
         socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(dto.roomId),
             liveConnections =
-                WebsocketConnections.TopicSubscriptions["ChatRooms/" + dto.roomId]
+                WebsocketConnections.TopicSubscriptions[topic]
                     .Count, //socket.CountUsersInRoom(dto.roomId.ToString()),
             roomId = dto.roomId
         });

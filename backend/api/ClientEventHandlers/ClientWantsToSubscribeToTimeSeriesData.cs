@@ -1,5 +1,7 @@
+using api.Abstractions;
 using api.ExtensionMethods;
 using api.Models;
+using api.Models.Enums;
 using api.Models.ServerEvents;
 using Fleck;
 using Infrastructure;
@@ -12,7 +14,7 @@ public class ClientWantsToSubscribeToTimeSeriesData(TimeSeriesRepository timeSer
 {
     public override Task Handle(ClientWantsToSubscribeToTimeSeriesDataDto dto, IWebSocketConnection socket)
     {
-        socket.SubscribeToTopic("TimeSeries");
+        socket.SubscribeToTopic(TopicEnums.TimeSeries);
         var data = timeSeriesRepository.GetOlderTimeSeriesDataPoints();
         socket.SendDto(new ServerSendsOlderTimeSeriesDataToClient { timeseries = data });
         return Task.CompletedTask;

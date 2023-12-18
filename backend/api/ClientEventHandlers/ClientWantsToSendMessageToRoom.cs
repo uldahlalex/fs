@@ -1,7 +1,9 @@
+using api.Abstractions;
 using api.Attributes;
 using api.ExtensionMethods;
 using api.Helpers;
 using api.Models;
+using api.Models.Enums;
 using api.Models.ServerEvents;
 using api.State;
 using Fleck;
@@ -21,15 +23,18 @@ public class ClientWantsToSendMessageToRoomDto : BaseTransferObject
 
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {
+    [RequireAuthentication]
     public override Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
     {
-        SocketUtilities.ExitIfNotAuthenticated(socket, dto.eventType);
-        var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue("ChatRooms/" + dto.roomId,
+        string chatRoomName = "ChatRoom" + dto.roomId;
+        bool isValidTopic = Enum.TryParse(chatRoomName, out TopicEnums topic);
+        if(!isValidTopic)
+            throw new Exception("Invalid topic");
+        var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue(topic,
             out var topicSubscriptions);
-        if (!getValue || !topicSubscriptions.Contains(socket.ConnectionInfo.Id))
+        if (!getValue || !topicSubscriptions!.Contains(socket.ConnectionInfo.Id))
             throw new Exception("You are not subscribed to this room");
-
-
+        
         var insertedMessage =
             chatRepository.InsertMessage(dto.roomId, socket.GetMetadata().UserInfo.id,
                 dto.messageContent!);
@@ -42,11 +47,11 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository) : Bas
             id = insertedMessage.id,
             email = socket.GetMetadata().UserInfo.email
         };
-        SocketUtilities.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
+        WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
         {
             message = messageWithUserInfo,
             roomId = dto.roomId
-        }, "ChatRooms/" + dto.roomId);
+        }, topic);
         return Task.CompletedTask;
     }
 }

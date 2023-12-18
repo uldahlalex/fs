@@ -1,3 +1,5 @@
+using api.Abstractions;
+using api.Attributes;
 using api.ExtensionMethods;
 using api.Helpers;
 using api.Models;
@@ -14,9 +16,9 @@ public class ClientWantsToLoadOlderMessagesDto : BaseTransferObject
 
 public class ClientWantsToLoadOlderMessages(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToLoadOlderMessagesDto>
 {
+    [RequireAuthentication]
     public override Task Handle(ClientWantsToLoadOlderMessagesDto dto, IWebSocketConnection socket)
     {
-        SocketUtilities.ExitIfNotAuthenticated(socket, dto.eventType);
         var messages = chatRepository.GetPastMessages(
             dto.roomId,
             dto.lastMessageId);

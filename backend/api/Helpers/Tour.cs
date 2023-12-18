@@ -1,10 +1,8 @@
 using dotenv.net;
 using dotenv.net.Utilities;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+
+namespace api.Helpers;
 
 public static class Tour
 {

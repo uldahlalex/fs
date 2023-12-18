@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using api.Exceptions;
+using api.Models.Exceptions;
 
 namespace api.ExtensionMethods;
 
