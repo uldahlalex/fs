@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using System.Xml;
 using api.Exceptions;
-
 
 namespace api.ExtensionMethods;
 
@@ -10,7 +8,7 @@ public static class SerializerAndDeserializerExtensions
 {
     public static string ToJsonString(this object obj)
     {
-        return JsonSerializer.Serialize(obj, new JsonSerializerOptions()
+        return JsonSerializer.Serialize(obj, new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNameCaseInsensitive = true

@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Security.Authentication;
 using api.ExtensionMethods;
-using api.ServerEvents;
+using api.Models.ServerEvents;
 using api.State;
 using Fleck;
 
-namespace api.Reusables;
+namespace api.Helpers;
 
 public static class SocketUtilities
 {

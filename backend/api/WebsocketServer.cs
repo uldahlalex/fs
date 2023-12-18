@@ -1,10 +1,10 @@
 using System.Security.Authentication;
-using api.ClientEvents;
+using api.ClientEventHandlers;
 using api.Exceptions;
 using api.ExtensionMethods;
-using api.Reusables;
-using api.ServerEvents;
-using api.SharedApiModels;
+using api.Helpers;
+using api.Models;
+using api.Models.ServerEvents;
 using Fleck;
 using MediatR;
 using Serilog;
@@ -30,7 +30,10 @@ public class WebsocketServer(Mediator mediator)
                                 "ClientWantsToAuthenticate", RequestFactory.CreateRequest<ClientWantsToAuthenticate>
                             },
                             { "ClientWantsToEnterRoom", RequestFactory.CreateRequest<ClientWantsToEnterRoom> },
-                            {"ClientWantsToSendMessageToRoom", RequestFactory.CreateRequest<ClientWantsToSendMessageToRoom>}
+                            {
+                                "ClientWantsToSendMessageToRoom",
+                                RequestFactory.CreateRequest<ClientWantsToSendMessageToRoom>
+                            }
                         };
                 if (eventTypeRequestMappings.TryGetValue(eventType,
                         out var createRequestFunc))

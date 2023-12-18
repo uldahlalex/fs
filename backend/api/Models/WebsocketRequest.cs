@@ -1,7 +1,7 @@
 using Fleck;
 using MediatR;
 
-namespace api.SharedApiModels;
+namespace api.Models;
 
 public class EventTypeRequest<BaseTransferObject> : IRequest
 {

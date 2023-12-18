@@ -1,8 +1,8 @@
 using api.ExtensionMethods;
-using api.SharedApiModels;
+using api.Models;
 using Fleck;
 
-namespace api.Reusables;
+namespace api.Helpers;
 
 public static class RequestFactory
 {

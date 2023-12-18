@@ -1,9 +1,9 @@
 using api.ExtensionMethods;
-using api.ServerEvents;
+using api.Models.ServerEvents;
 using Fleck;
 using Serilog;
 
-namespace api.Reusables;
+namespace api.Helpers;
 
 public static class GeneralExceptionHandler
 {
