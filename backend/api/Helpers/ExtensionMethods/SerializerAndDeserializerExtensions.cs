@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using api.Models.Exceptions;
 
-namespace api.ExtensionMethods;
+namespace api.Helpers.ExtensionMethods;
 
 public static class SerializerAndDeserializerExtensions
 {

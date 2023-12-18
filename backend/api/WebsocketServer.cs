@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Security.Authentication;
 using api.ClientEventHandlers;
-using api.ExtensionMethods;
 using api.Helpers;
+using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.ServerEvents;
 using Fleck;
@@ -29,7 +29,7 @@ public class WebsocketServer(IServiceProvider serviceProvider)
             try
             {
                 eventType = message.DeserializeToModelAndValidate<BaseTransferObject>().eventType;
-                var handlerType = HandlerTypes.FirstOrDefault(t => t.Name == eventType);
+                var handlerType = HandlerTypes.FirstOrDefault(t => t.Name + "Dto" == eventType || t.Name == eventType);
                 if (handlerType != null)
                 {
                     // Using dynamic here because the exact handler type is known only at runtime

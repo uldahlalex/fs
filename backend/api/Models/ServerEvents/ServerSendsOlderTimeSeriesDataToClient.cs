@@ -1,4 +1,4 @@
-using Infrastructure.DbModels;
+using api.Models.DbModels;
 
 namespace api.Models.ServerEvents;
 

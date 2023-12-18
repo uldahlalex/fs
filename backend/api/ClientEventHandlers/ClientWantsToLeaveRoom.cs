@@ -1,6 +1,6 @@
 using api.Abstractions;
-using api.ExtensionMethods;
 using api.Helpers;
+using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;

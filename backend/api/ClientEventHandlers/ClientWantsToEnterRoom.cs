@@ -1,14 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
-using api.Attributes;
-using api.ExtensionMethods;
+using api.Externalities;
 using api.Helpers;
+using api.Helpers.Attributes;
+using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;
 using api.State;
 using Fleck;
-using Infrastructure;
+
 namespace api.ClientEventHandlers;
 
 public class ClientWantsToEnterRoomDto : BaseTransferObject
@@ -36,7 +37,7 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
             messages = chatRepository.GetPastMessages(dto.roomId),
             liveConnections =
                 WebsocketConnections.TopicSubscriptions[topic]
-                    .Count, //socket.CountUsersInRoom(dto.roomId.ToString()),
+                    .Count, 
             roomId = dto.roomId
         });
         return Task.CompletedTask;

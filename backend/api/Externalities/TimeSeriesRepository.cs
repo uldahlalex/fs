@@ -1,8 +1,8 @@
+using api.Models.DbModels;
 using Dapper;
-using Infrastructure.DbModels;
 using Npgsql;
 
-namespace Infrastructure;
+namespace api.Externalities;
 
 public class TimeSeriesRepository(NpgsqlDataSource dataSource)
 {

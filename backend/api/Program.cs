@@ -2,10 +2,11 @@ using System.Reflection;
 using api;
 using api.Abstractions;
 using api.ClientEventHandlers;
+using api.Externalities;
 using api.Helpers;
+using api.Helpers.Attributes;
+using api.Models.DbModels;
 using Fleck;
-using Infrastructure;
-using Infrastructure.DbModels;
 using MQTTnet.Exceptions;
 using Serilog;
 
@@ -39,6 +40,8 @@ builder.Services.AddSingleton<ClientWantsToEnterRoom>();
 builder.Services.AddSingleton<ClientWantsToLeaveRoom>();
 builder.Services.AddSingleton<ClientWantsToLoadOlderMessages>();
 builder.Services.AddSingleton<ClientWantsToSendMessageToRoom>();
+
+builder.Services.AddSingleton<ClientWantsToKnowWhatTopicsTheySubscribeTo>();
 
 builder.Services.AddSingleton<ClientWantsToSubscribeToTimeSeriesData>();
 

@@ -1,17 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace Infrastructure;
+namespace api.Helpers.Attributes;
 
 [AttributeUsage(AttributeTargets.All)]
-public class EnforceNameAttribute : ValidationAttribute
+public class EnforceNameAttribute(string name) : ValidationAttribute
 {
-    public EnforceNameAttribute(string name)
-    {
-        Name = name;
-    }
-
-    public string Name { get; }
+    public string Name { get; } = name;
 }
 
 public static class EnforceNameCheck

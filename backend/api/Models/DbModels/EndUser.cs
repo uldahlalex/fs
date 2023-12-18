@@ -1,4 +1,6 @@
-namespace Infrastructure.DbModels;
+using api.Helpers.Attributes;
+
+namespace api.Models.DbModels;
 
 public class EndUser
 {

@@ -1,10 +1,10 @@
 using api.Abstractions;
-using api.ExtensionMethods;
+using api.Externalities;
+using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;
 using Fleck;
-using Infrastructure;
 
 namespace api.ClientEventHandlers;
 

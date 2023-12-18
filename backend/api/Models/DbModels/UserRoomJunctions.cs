@@ -1,4 +1,6 @@
-namespace Infrastructure.DbModels;
+using api.Helpers.Attributes;
+
+namespace api.Models.DbModels;
 
 /**
  * Model not instantiated, but here to convey DB model structure

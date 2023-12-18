@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using api.ClientEventHandlers;
-using api.ExtensionMethods;
+using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.ServerEvents;
 using FluentAssertions;
@@ -168,7 +168,7 @@ public class WebsocketServerTests
             {
                 roomId = 1
             }.ToJsonString());
-            ws.Send(new ClientWantsToSendMessageToRoom
+            ws.Send(new ClientWantsToSendMessageToRoomDto
             {
                 roomId = 1,
                 messageContent = "hey"
@@ -199,7 +199,7 @@ public class WebsocketServerTests
                 email = "alex@uldahl.dk",
                 password = "qweqweqwe"
             }.ToJsonString());
-            ws.Send(new ClientWantsToSendMessageToRoom
+            ws.Send(new ClientWantsToSendMessageToRoomDto
             {
                 roomId = 1,
                 messageContent = "hey"
@@ -277,11 +277,13 @@ public class WebsocketServerTests
             }.ToJsonString();
             ws.Send(auth);
             ws2.Send(auth);
+            await Task.Delay(1000);
             var enterRoom = new ClientWantsToEnterRoomDto
             {
                 roomId = 1
             }.ToJsonString();
             ws.Send(enterRoom);
+            await Task.Delay(1000);
             ws2.Send(enterRoom);
             var message = new ClientWantsToSendMessageToRoomDto
             {

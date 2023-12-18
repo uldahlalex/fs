@@ -4,7 +4,7 @@ public class BaseTransferObject
 {
     public BaseTransferObject()
     {
-        eventType = GetType().Name;
+            eventType = GetType().Name;
     }
 
     public string eventType { get; set; }

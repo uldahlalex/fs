@@ -1,15 +1,14 @@
-using api.ExtensionMethods;
 using api.Helpers;
+using api.Helpers.ExtensionMethods;
+using api.Models.DbModels;
 using api.Models.Enums;
 using api.Models.ServerEvents;
-using Infrastructure;
-using Infrastructure.DbModels;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
 using Serilog;
 
-namespace api;
+namespace api.Externalities;
 
 public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServer websocketServer)
 {

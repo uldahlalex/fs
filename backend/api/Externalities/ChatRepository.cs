@@ -1,9 +1,9 @@
+using api.Models.DbModels;
+using api.Models.QueryModels;
 using Dapper;
-using Infrastructure.DbModels;
-using Infrastructure.QueryModels;
 using Npgsql;
 
-namespace Infrastructure;
+namespace api.Externalities;
 
 public class ChatRepository(NpgsqlDataSource dataSource)
 {

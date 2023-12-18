@@ -1,5 +1,5 @@
+using api.Models.DbModels;
 using Fleck;
-using Infrastructure.DbModels;
 
 namespace api.Models;
 

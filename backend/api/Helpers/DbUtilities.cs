@@ -1,4 +1,4 @@
-﻿namespace Infrastructure;
+﻿namespace api.Helpers;
 
 public class Utilities
 {

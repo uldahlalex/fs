@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Security.Authentication;
-using api.ExtensionMethods;
+using api.Helpers.ExtensionMethods;
 using api.Models.Enums;
 using api.Models.ServerEvents;
 using api.State;

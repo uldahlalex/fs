@@ -1,11 +1,10 @@
-using api.Helpers;
 using api.Models;
+using api.Models.DbModels;
 using api.Models.Enums;
 using api.State;
 using Fleck;
-using Infrastructure.DbModels;
 
-namespace api.ExtensionMethods;
+namespace api.Helpers.ExtensionMethods;
 
 public static class WebsocketExtensions
 {
@@ -39,7 +38,7 @@ public static class WebsocketExtensions
         return WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
     }
 
-    public static void SendDto(this IWebSocketConnection socket, object dto)
+    public static void SendDto(this IWebSocketConnection socket, BaseTransferObject dto)
     {
         socket.Send(dto.ToJsonString());
     }

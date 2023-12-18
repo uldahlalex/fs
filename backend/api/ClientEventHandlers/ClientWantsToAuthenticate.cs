@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.Abstractions;
-using api.ExtensionMethods;
+using api.Externalities;
 using api.Helpers;
+using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.ServerEvents;
 using Fleck;
-using Infrastructure;
 
 namespace api.ClientEventHandlers;
 
@@ -19,8 +19,6 @@ public class ClientWantsToAuthenticateDto : BaseTransferObject
 
 public class ClientWantsToAuthenticate(ChatRepository chatRepository) :  BaseEventHandler<ClientWantsToAuthenticateDto>
 {
-    
-    
     public override Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
         var user = chatRepository.GetUser(request.email!);
