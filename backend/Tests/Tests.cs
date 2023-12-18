@@ -283,7 +283,7 @@ public class WebsocketServerTests
             }.ToJsonString();
             ws.Send(enterRoom);
             ws2.Send(enterRoom);
-            var message = new ClientWantsToSendMessageToRoom
+            var message = new ClientWantsToSendMessageToRoomDto
             {
                 roomId = 1,
                 messageContent = "hey"

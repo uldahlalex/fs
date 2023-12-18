@@ -16,7 +16,7 @@ public class ToxicityFilter : ValidationAttribute
     {
         _httpClient = new HttpClient();
         //_httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
-        _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", Environment.GetEnvironmentVariable("tox"));
+        _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES"));
     }
 
     /*  protected override async Task<ValidationResult> IsValid(object? givenString, ValidationContext validationContext)

@@ -19,7 +19,7 @@ public static class SecurityUtilities
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtValidator validator = new JwtValidator(serializer, provider);
             IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, new HMACSHA256Algorithm());
-            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("secret"));
+            var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("FULLSTACK_JWT_PRIVATE_KEY"));
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         }
         catch
@@ -37,7 +37,7 @@ public static class SecurityUtilities
             IJsonSerializer serializer = new JsonNetSerializer();
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-            return encoder.Encode(claimsPayload, Environment.GetEnvironmentVariable("secret"));
+            return encoder.Encode(claimsPayload, Environment.GetEnvironmentVariable("FULLSTACK_JWT_PRIVATE_KEY"));
         }
         catch (Exception e)
         {

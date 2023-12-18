@@ -20,7 +20,7 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) :  BaseEve
 {
     
     
-    public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
+    public override Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
         var user = chatRepository.GetUser(request.email!);
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
@@ -29,7 +29,7 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) :  BaseEve
             { { "email", user.email }, { "id", user.id } }!);
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
-     
+        return Task.CompletedTask;
     }
     
     
