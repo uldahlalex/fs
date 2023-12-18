@@ -11,7 +11,7 @@ using Serilog;
 
 namespace api;
 
-public class WebsocketServer(Mediator mediator)
+public class WebsocketServer(Mediator mediator, EventHandlerService eventHandlerService)
 {
     private readonly Action<IWebSocketConnection> config = socket =>
     {
@@ -22,29 +22,8 @@ public class WebsocketServer(Mediator mediator)
             {
                 Log.Information(message, "Client sent message: ");
                 eventType = message.DeserializeToModelAndValidate<BaseTransferObject>().eventType;
-                var eventTypeRequestMappings =
-                    new Dictionary<string,
-                            Func<string, IWebSocketConnection, IRequest>> //Anti-reflection way of invoking
-                        {
-                            {
-                                "ClientWantsToAuthenticate", RequestFactory.CreateRequest<ClientWantsToAuthenticate>
-                            },
-                            { "ClientWantsToEnterRoom", RequestFactory.CreateRequest<ClientWantsToEnterRoom> },
-                            {
-                                "ClientWantsToSendMessageToRoom",
-                                RequestFactory.CreateRequest<ClientWantsToSendMessageToRoom>
-                            }
-                        };
-                if (eventTypeRequestMappings.TryGetValue(eventType,
-                        out var createRequestFunc))
-                {
-                    var request = createRequestFunc(message, socket);
-                    await mediator.Send(request);
-                }
-                else
-                {
-                    throw new MediationException("Could not find a valid event to mediate to");
-                }
+                await eventHandlerService.HandleEventAsync(eventType, message, socket);
+
             }
             catch (AuthenticationException exception)
             {

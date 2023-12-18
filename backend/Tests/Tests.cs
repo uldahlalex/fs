@@ -159,7 +159,7 @@ public class WebsocketServerTests
                 messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
             ws.OnError += (sender, e) => { Assert.Fail(); };
 
-            ws.Send(new ClientWantsToAuthenticate
+            ws.Send(new ClientWantsToAuthenticateDto
             {
                 email = "alex@uldahl.dk",
                 password = "qweqweqwe"
@@ -194,7 +194,7 @@ public class WebsocketServerTests
                 messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
             ws.OnError += (sender, e) => { Assert.Fail(); };
 
-            ws.Send(new ClientWantsToAuthenticate
+            ws.Send(new ClientWantsToAuthenticateDto
             {
                 email = "alex@uldahl.dk",
                 password = "qweqweqwe"
@@ -230,7 +230,7 @@ public class WebsocketServerTests
             ws2.OnMessage += (sender, e) =>
                 messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
             ws2.OnError += (sender, e) => { Assert.Fail(); };
-            var auth = new ClientWantsToAuthenticate
+            var auth = new ClientWantsToAuthenticateDto
             {
                 email = "alex@uldahl.dk",
                 password = "qweqweqwe"
@@ -270,7 +270,7 @@ public class WebsocketServerTests
             ws2.OnMessage += (sender, e) =>
                 messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
             ws2.OnError += (sender, e) => { Assert.Fail(); };
-            var auth = new ClientWantsToAuthenticate
+            var auth = new ClientWantsToAuthenticateDto
             {
                 email = "alex@uldahl.dk",
                 password = "qweqweqwe"
