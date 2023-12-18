@@ -2,3 +2,4 @@
 bin
 obj
 backend/backend.sln.DotSettings.user
+.env
