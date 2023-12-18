@@ -1,6 +1,6 @@
 using api.ExtensionMethods;
-using api.Reusables;
-using api.ServerEvents;
+using api.Helpers;
+using api.Models.ServerEvents;
 using Infrastructure;
 using Infrastructure.DbModels;
 using MQTTnet;

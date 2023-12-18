@@ -1,6 +1,4 @@
-using api.SharedApiModels;
-
-namespace api.ServerEvents;
+namespace api.Models.ServerEvents;
 
 public class ServerAuthenticatesUser : BaseTransferObject
 {

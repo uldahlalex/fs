@@ -1,12 +1,12 @@
 using api.ExtensionMethods;
-using api.Reusables;
-using api.ServerEvents;
-using api.SharedApiModels;
+using api.Helpers;
+using api.Models;
+using api.Models.ServerEvents;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace api.ClientEvents;
+namespace api.ClientEventHandlers;
 
 public class ClientWantsToLoadOlderMessages : BaseTransferObject
 {

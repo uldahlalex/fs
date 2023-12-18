@@ -1,7 +1,6 @@
-using api.SharedApiModels;
 using Infrastructure.QueryModels;
 
-namespace api.ServerEvents;
+namespace api.Models.ServerEvents;
 
 public class ServerBroadcastsMessageToClientsInRoom : BaseTransferObject
 {

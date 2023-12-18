@@ -1,7 +1,6 @@
-using api.SharedApiModels;
 using Infrastructure.DbModels;
 
-namespace api.ServerEvents;
+namespace api.Models.ServerEvents;
 
 public class ServerBroadcastsTimeSeriesData : BaseTransferObject
 {

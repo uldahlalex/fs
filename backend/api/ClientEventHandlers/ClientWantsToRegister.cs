@@ -1,12 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using api.ExtensionMethods;
-using api.ServerEvents;
-using api.SharedApiModels;
+using api.Helpers;
+using api.Models;
+using api.Models.ServerEvents;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace api.ClientEvents;
+namespace api.ClientEventHandlers;
 
 public class ClientWantsToRegister : BaseTransferObject
 {
@@ -22,10 +23,10 @@ public class ClientWantsToRegisterHandler(ChatRepository chatRepository)
     public Task Handle(EventTypeRequest<ClientWantsToRegister> request, CancellationToken cancellationToken)
     {
         if (chatRepository.UserExists(request.MessageObject.email)) throw new Exception("User already exists!");
-        var salt = SecurityUtilities.SecurityUtilities.GenerateSalt();
-        var hash = SecurityUtilities.SecurityUtilities.Hash(request.MessageObject.password!, salt);
+        var salt = SecurityUtilities.GenerateSalt();
+        var hash = SecurityUtilities.Hash(request.MessageObject.password!, salt);
         var user = chatRepository.InsertUser(request.MessageObject.email!, hash, salt);
-        var jwt = SecurityUtilities.SecurityUtilities.IssueJwt(
+        var jwt = SecurityUtilities.IssueJwt(
             new Dictionary<string, object?> { { "email", user.email }, { "id", user.id } });
         request.Socket.Authenticate(user);
         request.Socket.SendDto(new ServerAuthenticatesUser

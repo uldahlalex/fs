@@ -1,13 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.ExtensionMethods;
-using api.ServerEvents;
-using api.SharedApiModels;
+using api.Helpers;
+using api.Models;
+using api.Models.ServerEvents;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace api.ClientEvents;
+namespace api.ClientEventHandlers;
 
 public class ClientWantsToAuthenticateWithJwt : BaseTransferObject
 {
@@ -20,7 +21,7 @@ public class ClientWantsToAuthenticateWithJwtHandler(ChatRepository chatReposito
 {
     public Task Handle(EventTypeRequest<ClientWantsToAuthenticateWithJwt> request, CancellationToken cancellationToken)
     {
-        var claims = SecurityUtilities.SecurityUtilities.ValidateJwtAndReturnClaims(request.MessageObject.jwt!);
+        var claims = SecurityUtilities.ValidateJwtAndReturnClaims(request.MessageObject.jwt!);
         var user = chatRepository.GetUser(claims["email"]);
         if (user.isbanned)
             throw new AuthenticationException("User is banned");

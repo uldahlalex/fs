@@ -6,7 +6,7 @@ using JWT.Serializers;
 using Newtonsoft.Json;
 using Serilog;
 
-namespace api.SecurityUtilities;
+namespace api.Helpers;
 
 public static class SecurityUtilities
 {

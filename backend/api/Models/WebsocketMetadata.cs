@@ -1,7 +1,7 @@
 using Fleck;
 using Infrastructure.DbModels;
 
-namespace api.State;
+namespace api.Models;
 
 public class WebsocketMetadata
 {

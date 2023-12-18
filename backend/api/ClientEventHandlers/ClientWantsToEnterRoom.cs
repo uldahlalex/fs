@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using api.ExtensionMethods;
-using api.Reusables;
-using api.ServerEvents;
-using api.SharedApiModels;
+using api.Helpers;
+using api.Models;
+using api.Models.ServerEvents;
 using api.State;
 using Infrastructure;
 using JetBrains.Annotations;
 using MediatR;
 
-namespace api.ClientEvents;
+namespace api.ClientEventHandlers;
 
 public class ClientWantsToEnterRoom : BaseTransferObject
 {
@@ -27,7 +27,7 @@ public class ClientWantsToEnterRoomHandler(ChatRepository chatRepository)
             message = "Client joined the room!",
             user = request.Socket.GetMetadata().UserInfo,
             roomId = request.MessageObject.roomId
-        }, "ChatRooms/"+request.MessageObject.roomId.ToString());
+        }, "ChatRooms/" + request.MessageObject.roomId);
         request.Socket.SubscribeToTopic("ChatRooms/" + request.MessageObject.roomId);
         request.Socket.SendDto(new ServerAddsClientToRoom
         {
