@@ -1,12 +1,10 @@
 using System.Security.Authentication;
 using api.ClientEventHandlers;
-using api.Exceptions;
 using api.ExtensionMethods;
 using api.Helpers;
 using api.Models;
 using api.Models.ServerEvents;
 using Fleck;
-using MediatR;
 using Serilog;
 
 namespace api;
@@ -26,11 +24,11 @@ public class WebsocketServer(IServiceProvider serviceProvider)
             string eventType = null;
             try
             {
-                Log.Information(message, "Client sent message: ");
                 eventType = message.DeserializeToModelAndValidate<BaseTransferObject>().eventType;
                 var handlerType = HandlerTypes.FirstOrDefault(t => t.Name == eventType);
                 if (handlerType != null)
                 {
+                    // Using dynamic here because the exact handler type is known only at runtime
                     dynamic handler = serviceProvider.GetRequiredService(handlerType);
                     await handler.DeserializeAndInvokeHandler(message, socket);
                 }

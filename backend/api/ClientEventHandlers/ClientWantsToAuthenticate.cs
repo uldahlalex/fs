@@ -6,8 +6,6 @@ using api.Models;
 using api.Models.ServerEvents;
 using Fleck;
 using Infrastructure;
-using JetBrains.Annotations;
-using MediatR;
 
 namespace api.ClientEventHandlers;
 
@@ -18,9 +16,11 @@ public class ClientWantsToAuthenticateDto : BaseTransferObject
     [MinLength(6)] [Required] public string? password { get; set; }
 }
 
-public class ClientWantsToAuthenticate(ChatRepository chatRepository) : IEventHandler<ClientWantsToAuthenticateDto>
+public class ClientWantsToAuthenticate(ChatRepository chatRepository) :  BaseEventHandler<ClientWantsToAuthenticateDto>
 {
-    public Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
+    
+    
+    public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
         var user = chatRepository.GetUser(request.email!);
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
@@ -29,13 +29,8 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : IEventHa
             { { "email", user.email }, { "id", user.id } }!);
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
-        return Task.CompletedTask;
+     
     }
-
-    public Task DeserializeAndInvokeHandler(string message, IWebSocketConnection socket)
-    {
-        var correctModel = message.DeserializeToModelAndValidate<ClientWantsToAuthenticateDto>();
-        this.Handle(correctModel, socket);
-        return Task.CompletedTask;
-    }
+    
+    
 }

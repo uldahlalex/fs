@@ -30,6 +30,6 @@ public static class SerializerAndDeserializerExtensions
         var isValid = Validator.TryValidateObject(deserialized, context, validationResults, true);
         if (isValid) return deserialized;
         var errors = string.Join(", ", validationResults.Select(rv => rv.ErrorMessage));
-        throw new DeserializationException($"Failed to validate message: {message}. Errors: {errors}");
+        throw new ValidationException($"Failed to validate message: {message}. Errors: {errors}");
     }
 }

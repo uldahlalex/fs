@@ -3,7 +3,6 @@ using api.ClientEventHandlers;
 using Fleck;
 using Infrastructure;
 using Infrastructure.DbModels;
-using MediatR;
 using MQTTnet.Exceptions;
 using Serilog;
 
@@ -23,9 +22,7 @@ builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
-builder.Services.AddSingleton<Mediator>();
 builder.Services.AddSingleton<ClientWantsToAuthenticate>();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 //add MediatR
 //builder.Services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 

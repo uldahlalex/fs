@@ -9,9 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Fleck" Version="1.2.0"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0"/>
         <PackageReference Include="JWT" Version="10.1.1"/>
-        <PackageReference Include="MediatR" Version="12.2.0"/>
         <PackageReference Include="MQTTnet" Version="4.3.1.873"/>
         <PackageReference Include="Npgsql.DependencyInjection" Version="7.0.6"/>
         <PackageReference Include="Serilog" Version="3.1.2-dev-02097"/>

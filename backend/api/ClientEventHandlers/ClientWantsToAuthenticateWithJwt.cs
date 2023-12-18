@@ -4,30 +4,27 @@ using api.ExtensionMethods;
 using api.Helpers;
 using api.Models;
 using api.Models.ServerEvents;
+using Fleck;
 using Infrastructure;
-using JetBrains.Annotations;
-using MediatR;
 
 namespace api.ClientEventHandlers;
 
-public class ClientWantsToAuthenticateWithJwt : BaseTransferObject
+public class ClientWantsToAuthenticateWithJwtDto : BaseTransferObject
 {
     [Required] public string? jwt { get; set; }
 }
 
-[UsedImplicitly]
-public class ClientWantsToAuthenticateWithJwtHandler(ChatRepository chatRepository)
-    : IRequestHandler<EventTypeRequest<ClientWantsToAuthenticateWithJwt>>
+public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository) : IEventHandler<ClientWantsToAuthenticateWithJwtDto>
 {
-    public Task Handle(EventTypeRequest<ClientWantsToAuthenticateWithJwt> request, CancellationToken cancellationToken)
+    public Task Handle(ClientWantsToAuthenticateWithJwtDto dto, IWebSocketConnection socket)
     {
-        var claims = SecurityUtilities.ValidateJwtAndReturnClaims(request.MessageObject.jwt!);
+        var claims = SecurityUtilities.ValidateJwtAndReturnClaims(dto.jwt!);
         var user = chatRepository.GetUser(claims["email"]);
         if (user.isbanned)
             throw new AuthenticationException("User is banned");
 
-        request.Socket.Authenticate(user);
-        request.Socket.SendDto(new ServerAuthenticatesUser { jwt = request.MessageObject.jwt });
+        socket.Authenticate(user);
+        socket.SendDto(new ServerAuthenticatesUser { jwt = dto.jwt });
         return Task.CompletedTask;
     }
 }
