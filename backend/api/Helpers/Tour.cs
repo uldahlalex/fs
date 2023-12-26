@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using dotenv.net;
 using dotenv.net.Utilities;
 using Serilog;
