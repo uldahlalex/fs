@@ -1,31 +1,21 @@
 using api.Helpers.ExtensionMethods;
 using api.Models._3rdPartyTransferModels;
-using FluentAssertions;
-using NUnit.Framework;
 using Serilog;
 
 namespace api.Externalities;
 
 public class AzureCognitiveServices
 {
-//todo imma rewrite all this shit tomorrow
-
-    /*  protected override async Task<ValidationResult> IsValid(object? givenString, ValidationContext validationContext)
-      {
-          if (await IsToxic((string?)givenString)) return new ValidationResult("Message is toxic.");
-
-          return ValidationResult.Success!;
-      }*/
-
     public async Task<bool> IsToxic(string? message)
     {
         string BaseUrl = "https://toxicityfilter.cognitiveservices.azure.com/";
-     
 
-             var _httpClient = new HttpClient();
-             //_httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
-             _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES"));
-         
+
+        var _httpClient = new HttpClient();
+        //_httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+        _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key",
+            Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES"));
+
         var request = new ToxicityRequest
         {
             categories = new List<string> { "Hate", "SelfHarm", "Sexual", "Violence" },
@@ -49,16 +39,5 @@ public class AzureCognitiveServices
             return true;
         return false;
     }
-
-    [Test]
-    public void Test()
-    {
-        IsToxic("I hate you").Result.Should().BeTrue();
-    }
     
-    [Test]
-    public void Test2()
-    {
-        IsToxic("I love you").Result.Should().BeFalse();
-    }
 }
