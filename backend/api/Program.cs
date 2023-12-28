@@ -8,14 +8,14 @@ using api.Helpers.Attributes;
 using api.Models.DbModels;
 using Fleck;
 using MQTTnet.Exceptions;
+using Npgsql;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
     .CreateLogger();
 
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-    Tour.CheckIsFirstRun();
+EnvSetup.SetDefaultEnvVariables();
 
 EnforceNameCheck.CheckPropertyNames<EndUser>();
 EnforceNameCheck.CheckPropertyNames<Message>();
@@ -24,7 +24,7 @@ EnforceNameCheck.CheckPropertyNames<UserRoomJunctions>();
 EnforceNameCheck.CheckPropertyNames<TimeSeries>();
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddNpgsqlDataSource(Utilities.ProperlyFormattedConnectionString,
+builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
 
 builder.Services.AddSingleton<ChatRepository>();
@@ -58,6 +58,16 @@ foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
 }
 
 var app = builder.Build();
+
+try
+{
+    app.Services.GetService<NpgsqlDataSource>().OpenConnection().Close();
+} catch (Exception e)
+{
+    Log.Error(e, "Postgres connection failed. Exiting.");
+    Log.Information("PGCONN: "+Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN"));
+}
+
 
 WebsocketServer.HandlerTypes = handlerTypes;
 

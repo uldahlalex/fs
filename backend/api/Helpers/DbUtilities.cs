@@ -1,5 +1,5 @@
 ﻿namespace api.Helpers;
-
+/* Migrating away from elephantsql to containers anyways
 public class Utilities
 {
     private static readonly Uri Uri = new(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!);
@@ -15,3 +15,4 @@ public class Utilities
                 Uri.UserInfo.Split(':')[1],
                 Uri.Port > 0 ? Uri.Port : 5432);
 }
+*/
