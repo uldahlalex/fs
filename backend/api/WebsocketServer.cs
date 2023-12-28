@@ -16,7 +16,7 @@ public class WebsocketServer(IServiceProvider serviceProvider)
     
     public void StartWebsocketServer()
     {
-        var server = new WebSocketServer("ws://127.0.0.1:8181");
+        var server = new WebSocketServer("ws://0.0.0.0:8181");
         server.RestartAfterListenError = true;
         server.Start(_config);
     }

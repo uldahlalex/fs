@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  webapi:
+    build:
+      context: ./backend/api/
+      dockerfile: Dockerfile
+    ports:
+      - "8181:8181"
+    depends_on: 
+      - db
+    environment:
+      - FULLSTACK_JWT_PRIVATE_KEY=${FULLSTACK_JWT_PRIVATE_KEY}
+      - FULLSTACK_PG_CONN=${FULLSTACK_PG_CONN}
+      - FULLSTACK_AZURE_COGNITIVE_SERVICES=${FULLSTACK_AZURE_COGNITIVE_SERVICES}
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - FULLSTACK_START_MQTT_CLIENT=false
+  db:
+    image: postgres:16.1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init/01-rebuild.sql:/docker-entrypoint-initdb.d/01-rebuild.sql
+volumes:
+  postgres_data:

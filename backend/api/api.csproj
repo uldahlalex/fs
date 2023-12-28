@@ -19,11 +19,5 @@
         <PackageReference Include="Dapper" Version="2.1.15"/>
         <PackageReference Include="Npgsql" Version="7.0.6"/>
     </ItemGroup>
-    
-    <ItemGroup>
-        <None Update=".env">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
 
 </Project>

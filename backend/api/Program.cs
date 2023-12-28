@@ -14,7 +14,8 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
     .CreateLogger();
 
-Tour.CheckIsFirstRun();
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+    Tour.CheckIsFirstRun();
 
 EnforceNameCheck.CheckPropertyNames<EndUser>();
 EnforceNameCheck.CheckPropertyNames<Message>();
