@@ -1,5 +1,7 @@
 using api.Helpers.ExtensionMethods;
 using api.Models._3rdPartyTransferModels;
+using FluentAssertions;
+using NUnit.Framework;
 using Serilog;
 
 namespace api.Externalities;
@@ -46,5 +48,17 @@ public class AzureCognitiveServices
         if (toxicityResponse.categoriesAnalysis.Any(x => x.severity > 1))
             return true;
         return false;
+    }
+
+    [Test]
+    public void Test()
+    {
+        IsToxic("I hate you").Result.Should().BeTrue();
+    }
+    
+    [Test]
+    public void Test2()
+    {
+        IsToxic("I love you").Result.Should().BeFalse();
     }
 }
