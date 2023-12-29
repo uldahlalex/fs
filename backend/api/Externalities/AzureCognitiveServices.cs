@@ -1,8 +1,10 @@
 using api.Helpers.ExtensionMethods;
 using api.Models._3rdPartyTransferModels;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace api.Externalities;
+
 
 public class AzureCognitiveServices
 {
