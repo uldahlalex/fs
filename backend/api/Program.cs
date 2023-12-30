@@ -31,18 +31,18 @@ builder.Services.AddSingleton<TimeSeriesRepository>();
 builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 
-builder.Services.AddSingleton<ClientWantsToAuthenticate>();
-builder.Services.AddSingleton<ClientWantsToAuthenticateWithJwt>();
-builder.Services.AddSingleton<ClientWantsToRegister>();
-
-builder.Services.AddSingleton<ClientWantsToEnterRoom>();
-builder.Services.AddSingleton<ClientWantsToLeaveRoom>();
-builder.Services.AddSingleton<ClientWantsToLoadOlderMessages>();
-builder.Services.AddSingleton<ClientWantsToSendMessageToRoom>();
-
-builder.Services.AddSingleton<ClientWantsToKnowWhatTopicsTheySubscribeTo>();
-
-builder.Services.AddSingleton<ClientWantsToSubscribeToTimeSeriesData>();
+// builder.Services.AddSingleton<ClientWantsToAuthenticate>();
+// builder.Services.AddSingleton<ClientWantsToAuthenticateWithJwt>();
+// builder.Services.AddSingleton<ClientWantsToRegister>();
+//
+// builder.Services.AddSingleton<ClientWantsToEnterRoom>();
+// builder.Services.AddSingleton<ClientWantsToLeaveRoom>();
+// builder.Services.AddSingleton<ClientWantsToLoadOlderMessages>();
+// builder.Services.AddSingleton<ClientWantsToSendMessageToRoom>();
+//
+// builder.Services.AddSingleton<ClientWantsToKnowWhatTopicsTheySubscribeTo>();
+//
+// builder.Services.AddSingleton<ClientWantsToSubscribeToTimeSeriesData>();
 
 var handlerTypes = new List<Type>();
 foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
@@ -50,7 +50,7 @@ foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
     if (type.BaseType != null && type.BaseType.IsGenericType && 
         type.BaseType.GetGenericTypeDefinition() == typeof(BaseEventHandler<>))
     {
-        //builder.Services.AddSingleton(type);
+        builder.Services.AddSingleton(type);
         handlerTypes.Add(type);
     }
 }
