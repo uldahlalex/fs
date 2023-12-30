@@ -44,7 +44,7 @@ builder.Services.AddSingleton<MqttClient>();
 //
 // builder.Services.AddSingleton<ClientWantsToSubscribeToTimeSeriesData>();
 
-var handlerTypes = new List<Type>();
+var handlerTypes = new HashSet<Type>();
 foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
 {
     if (type.BaseType != null && type.BaseType.IsGenericType && 

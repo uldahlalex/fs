@@ -12,7 +12,7 @@ namespace api;
 
 public class WebsocketServer(IServiceProvider serviceProvider)
 {
-    public static List<Type> HandlerTypes = null!;
+    public static HashSet<Type> HandlerTypes = null!;
     
     public void StartWebsocketServer()
     {
@@ -35,7 +35,7 @@ public class WebsocketServer(IServiceProvider serviceProvider)
                 if (handlerType != null)
                 {
                     // Using dynamic here because the exact handler type is known only at runtime
-                    dynamic handler = serviceProvider.GetRequiredService(handlerType);
+                    dynamic handler = serviceProvider.GetService(handlerType)!;
                     await handler.DeserializeAndInvokeHandler(message, socket);
                 }
                 else
