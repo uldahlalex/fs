@@ -161,7 +161,7 @@ public class WebsocketServerTests
 
             ws.Send(new ClientWantsToAuthenticateDto
             {
-                email = "alex@uldahl.dk",
+                email = "bla@bla.dk",
                 password = "qweqweqwe"
             }.ToJsonString());
             ws.Send(new ClientWantsToEnterRoomDto
@@ -196,7 +196,7 @@ public class WebsocketServerTests
 
             ws.Send(new ClientWantsToAuthenticateDto
             {
-                email = "alex@uldahl.dk",
+                email = "bla@bla.dk",
                 password = "qweqweqwe"
             }.ToJsonString());
             ws.Send(new ClientWantsToSendMessageToRoomDto
@@ -232,7 +232,7 @@ public class WebsocketServerTests
             ws2.OnError += (sender, e) => { Assert.Fail(); };
             var auth = new ClientWantsToAuthenticateDto
             {
-                email = "alex@uldahl.dk",
+                email = "bla@bla.dk",
                 password = "qweqweqwe"
             }.ToJsonString();
             ws.Send(auth);
@@ -272,27 +272,28 @@ public class WebsocketServerTests
             ws2.OnError += (sender, e) => { Assert.Fail(); };
             var auth = new ClientWantsToAuthenticateDto
             {
-                email = "alex@uldahl.dk",
+                email = "bla@bla.dk",
                 password = "qweqweqwe"
             }.ToJsonString();
             ws.Send(auth);
             ws2.Send(auth);
-            await Task.Delay(1000);
+            await Task.Delay(1500);
             var enterRoom = new ClientWantsToEnterRoomDto
             {
                 roomId = 1
             }.ToJsonString();
             ws.Send(enterRoom);
-            await Task.Delay(1000);
+            await Task.Delay(1500);
             ws2.Send(enterRoom);
             var message = new ClientWantsToSendMessageToRoomDto
             {
                 roomId = 1,
                 messageContent = "hey"
             }.ToJsonString();
+            await Task.Delay(1500);
             ws.Send(message);
 
-            await Task.Delay(2000);
+            await Task.Delay(1500);
             Log.Information("Messages: " + messagesReceivedFromServer.ToJsonString());
             messagesReceivedFromServer.Should()
                 .Contain(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));

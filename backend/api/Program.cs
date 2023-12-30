@@ -6,8 +6,6 @@ using api.Externalities;
 using api.Helpers;
 using api.Helpers.Attributes;
 using api.Models.DbModels;
-using Fleck;
-using MQTTnet.Exceptions;
 using Npgsql;
 using Serilog;
 
@@ -52,7 +50,7 @@ foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
     if (type.BaseType != null && type.BaseType.IsGenericType && 
         type.BaseType.GetGenericTypeDefinition() == typeof(BaseEventHandler<>))
     {
-        builder.Services.AddSingleton(type);
+        //builder.Services.AddSingleton(type);
         handlerTypes.Add(type);
     }
 }

@@ -28,8 +28,10 @@ public class WebsocketServer(IServiceProvider serviceProvider)
             string eventType = null;
             try
             {
+                Console.WriteLine(message);
                 eventType = message.DeserializeToModelAndValidate<BaseTransferObject>().eventType;
-                var handlerType = HandlerTypes.FirstOrDefault(t => t.Name + "Dto" == eventType || t.Name == eventType);
+                Console.WriteLine(eventType);
+                var handlerType = HandlerTypes.FirstOrDefault(t => t.Name == eventType);
                 if (handlerType != null)
                 {
                     // Using dynamic here because the exact handler type is known only at runtime

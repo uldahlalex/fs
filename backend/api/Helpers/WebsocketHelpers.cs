@@ -24,13 +24,7 @@ public static class WebsocketHelpers
         throw new AuthenticationException("Unauthorized access.");
     }
 
-    public static void SubscribeToTopic(Guid connectionId, TopicEnums topic)
-    {
-        if (!WebsocketConnections.TopicSubscriptions.ContainsKey(topic))
-            WebsocketConnections.TopicSubscriptions.TryAdd(topic, new ConcurrentBag<Guid>());
 
-        WebsocketConnections.TopicSubscriptions[topic].Add(connectionId);
-    }
 
     public static void UnsubscribeFromTopic(Guid connectionId, TopicEnums topic)
     {

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Net.WebSockets;
 using api.Models;
 using api.Models.DbModels;
 using api.Models.Enums;
@@ -25,7 +27,8 @@ public static class WebsocketExtensions
 
     public static void SubscribeToTopic(this IWebSocketConnection connection, TopicEnums topic)
     {
-        WebsocketHelpers.SubscribeToTopic(connection.ConnectionInfo.Id, topic);
+        var bag = WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>());
+        bag.Add(connection.ConnectionInfo.Id);
     }
 
     public static void UnsubscribeFromTopic(this IWebSocketConnection connection, TopicEnums topic)
