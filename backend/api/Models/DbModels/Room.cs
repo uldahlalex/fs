@@ -1,10 +1,7 @@
-using api.Helpers.Attributes;
-
 namespace api.Models.DbModels;
 
 public class Room
 {
-    [EnforceName("id")] public int id { get; set; }
-
-    [EnforceName("title")] public string? title { get; set; }
+    public int id { get; set; }
+    public string? title { get; set; }
 }

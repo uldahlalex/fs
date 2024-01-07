@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using api.ClientEventHandlers;
-using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.ServerEvents;
 using FluentAssertions;
@@ -153,10 +152,10 @@ public class WebsocketServerTests
     {
         using (var ws = new WebSocket("ws://localhost:8181/"))
         {
-            var messagesReceivedFromServer = new List<BaseTransferObject>();
+            var messagesReceivedFromServer = new List<BaseDto>();
             ws.Connect();
             ws.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseDto>());
             ws.OnError += (sender, e) => { Assert.Fail(); };
 
             ws.Send(new ClientWantsToAuthenticateDto
@@ -188,10 +187,10 @@ public class WebsocketServerTests
     {
         using (var ws = new WebSocket("ws://localhost:8181/"))
         {
-            var messagesReceivedFromServer = new List<BaseTransferObject>();
+            var messagesReceivedFromServer = new List<BaseDto>();
             ws.Connect();
             ws.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseDto>());
             ws.OnError += (sender, e) => { Assert.Fail(); };
 
             ws.Send(new ClientWantsToAuthenticateDto
@@ -220,15 +219,15 @@ public class WebsocketServerTests
         using (var ws = new WebSocket("ws://localhost:8181/"))
         using (var ws2 = new WebSocket("ws://localhost:8181/"))
         {
-            var messagesReceivedFromServer = new List<BaseTransferObject>();
+            var messagesReceivedFromServer = new List<BaseDto>();
             ws.Connect();
             ws2.Connect();
             ws.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseDto>());
             ws.OnError += (sender, e) => { Assert.Fail(); };
 
             ws2.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseDto>());
             ws2.OnError += (sender, e) => { Assert.Fail(); };
             var auth = new ClientWantsToAuthenticateDto
             {
@@ -260,15 +259,15 @@ public class WebsocketServerTests
         using (var ws = new WebSocket("ws://localhost:8181/"))
         using (var ws2 = new WebSocket("ws://localhost:8181/"))
         {
-            var messagesReceivedFromServer = new Collection<BaseTransferObject>();
+            var messagesReceivedFromServer = new Collection<BaseDto>();
             ws.Connect();
             ws2.Connect();
             ws.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseDto>());
             ws.OnError += (sender, e) => { Assert.Fail(); };
 
             ws2.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseTransferObject>());
+                messagesReceivedFromServer.Add(e.Data.DeserializeToModelAndValidate<BaseDto>());
             ws2.OnError += (sender, e) => { Assert.Fail(); };
             var auth = new ClientWantsToAuthenticateDto
             {

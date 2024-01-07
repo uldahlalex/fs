@@ -1,5 +1,3 @@
-using api.Helpers.Attributes;
-
 namespace api.Models.DbModels;
 
 /**
@@ -7,7 +5,6 @@ namespace api.Models.DbModels;
  */
 public class UserRoomJunctions
 {
-    [EnforceName("user")] public int user { get; set; }
-
-    [EnforceName("room")] public int room { get; set; }
+    public int user { get; set; }
+    public int room { get; set; }
 }

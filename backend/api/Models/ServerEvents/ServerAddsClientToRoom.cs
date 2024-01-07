@@ -2,7 +2,7 @@ using api.Models.QueryModels;
 
 namespace api.Models.ServerEvents;
 
-public class ServerAddsClientToRoom : BaseTransferObject
+public class ServerAddsClientToRoom : BaseDto
 {
     public int roomId { get; set; }
     public int liveConnections { get; set; }

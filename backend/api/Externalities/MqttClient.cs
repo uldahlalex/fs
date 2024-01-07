@@ -1,5 +1,5 @@
+using api.Extensions;
 using api.Helpers;
-using api.Helpers.ExtensionMethods;
 using api.Models.DbModels;
 using api.Models.Enums;
 using api.Models.ServerEvents;
@@ -10,7 +10,7 @@ using Serilog;
 
 namespace api.Externalities;
 
-public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServer websocketServer)
+public class MqttClient(TimeSeriesRepository timeSeriesRepository)
 {
     public async Task Handle_Received_Application_Message()
     {
@@ -36,9 +36,9 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, WebsocketServ
             {
                 var message = e.ApplicationMessage.ConvertPayloadToString();
                 Log.Information(message);
-                var timeSeriesDataPoint = message.Deserialize<TimeSeries>();
-                timeSeriesDataPoint.timestamp = DateTimeOffset.UtcNow;
-                var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(timeSeriesDataPoint);
+                var ts = message.DeserializeAndValidate<TimeSeries>();
+                ts.timestamp = DateTimeOffset.UtcNow;
+                var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(ts);
                 var dto = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult };
 
                 WebsocketHelpers.BroadcastObjectToTopicListeners(dto, TopicEnums.TimeSeries);

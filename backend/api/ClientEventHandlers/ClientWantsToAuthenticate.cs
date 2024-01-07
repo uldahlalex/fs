@@ -1,23 +1,25 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.Abstractions;
+using api.Extensions;
 using api.Externalities;
 using api.Helpers;
-using api.Helpers.ExtensionMethods;
+using api.Helpers.Attributes;
 using api.Models;
 using api.Models.ServerEvents;
 using Fleck;
 
 namespace api.ClientEventHandlers;
 
-public class ClientWantsToAuthenticateDto : BaseTransferObject
+public class ClientWantsToAuthenticateDto : BaseDto
 {
     [EmailAddress] [Required] public string? email { get; set; }
 
     [MinLength(6)] [Required] public string? password { get; set; }
 }
 
-public class ClientWantsToAuthenticate(ChatRepository chatRepository) :  BaseEventHandler<ClientWantsToAuthenticateDto>
+[RequireAuthentication]
+public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToAuthenticateDto>
 {
     public override Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
@@ -30,6 +32,4 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) :  BaseEve
         socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
         return Task.CompletedTask;
     }
-    
-    
 }

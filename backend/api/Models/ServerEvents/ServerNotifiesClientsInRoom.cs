@@ -9,7 +9,7 @@ namespace api.Models.ServerEvents;
  * - prolly not, since the client should know how to treat the message
  */
 //todo delete?
-public abstract class ServerNotifiesClientsInRoom : BaseTransferObject
+public abstract class ServerNotifiesClientsInRoom : BaseDto
 {
     public int
         roomId

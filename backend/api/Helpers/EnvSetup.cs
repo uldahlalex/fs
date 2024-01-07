@@ -17,9 +17,7 @@ public static class EnvSetup
 
     public static void SetDefaultEnvVariables()
     {
-        
         foreach (var pair in DefaultEnvValues)
-        {
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(pair.Key)))
             {
                 Environment.SetEnvironmentVariable(pair.Key, pair.Value);
@@ -27,8 +25,8 @@ public static class EnvSetup
             }
             else
             {
-                Log.Information($"Environment variable '{pair.Key}' already set with value: '{pair.Value}'. Skipping default value.");
+                Log.Information(
+                    $"Environment variable '{pair.Key}' already set with value: '{pair.Value}'. Skipping default value.");
             }
-        }
     }
 }

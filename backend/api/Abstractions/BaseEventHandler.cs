@@ -1,35 +1,29 @@
 using System.Reflection;
+using api.Extensions;
 using api.Helpers;
 using api.Helpers.Attributes;
 using api.Models;
 using Fleck;
-using JetBrains.Annotations;
-using Newtonsoft.Json;
 
 namespace api.Abstractions;
 
-public abstract class BaseEventHandler<T> where T : BaseTransferObject
+public abstract class BaseEventHandler<T> where T : BaseDto
 {
-    
-    [UsedImplicitly] //Used for method invocation by the event handler manager
     public string eventType => GetType().Name;
-    
-    [UsedImplicitly]
-    public Task DeserializeAndInvokeHandler(string message, IWebSocketConnection socket)
-    {
-        var dto = JsonConvert.DeserializeObject<T>(message);
-        if (dto == null)
-        {
-            throw new InvalidOperationException("Deserialization failed.");
-        }
-        var handleMethod = GetType().GetMethod("Handle");
-        var requiresAuth = handleMethod!.GetCustomAttribute<RequireAuthenticationAttribute>() != null;
-        if (requiresAuth)
-        {
-            WebsocketHelpers.ExitIfNotAuthenticated(socket, eventType); 
-        }
 
-        return Handle(dto, socket);
+    public Task InvokeHandle(string message, IWebSocketConnection socket)
+    {
+        if (ReferenceEquals(GetType().GetCustomAttributes<RequireAuthenticationAttribute>(), null))
+            socket.ExitIfNotAuthenticated(eventType);
+        try
+        {
+            return Handle(message.DeserializeAndValidate<T>(), socket);
+        }
+        catch (Exception e)
+        {
+            GeneralExceptionHandler.Handle(e, socket, eventType, message);
+            return Task.CompletedTask;
+        }
     }
 
     public abstract Task Handle(T dto, IWebSocketConnection socket);

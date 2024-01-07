@@ -1,22 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
+using api.Extensions;
 using api.Externalities;
 using api.Helpers;
-using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.ServerEvents;
 using Fleck;
 
 namespace api.ClientEventHandlers;
 
-public class ClientWantsToRegisterDto : BaseTransferObject
+public class ClientWantsToRegisterDto : BaseDto
 {
     [EmailAddress] public string? email { get; set; }
 
     [MinLength(6)] public string? password { get; set; }
 }
 
-public class  ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToRegisterDto>
+public class ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToRegisterDto>
 {
     public override Task Handle(ClientWantsToRegisterDto dto, IWebSocketConnection socket)
     {

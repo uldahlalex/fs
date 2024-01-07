@@ -1,6 +1,6 @@
 using api.Abstractions;
+using api.Extensions;
 using api.Externalities;
-using api.Helpers.ExtensionMethods;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;
@@ -8,9 +8,10 @@ using Fleck;
 
 namespace api.ClientEventHandlers;
 
-public class ClientWantsToSubscribeToTimeSeriesDataDto : BaseTransferObject;
+public class ClientWantsToSubscribeToTimeSeriesDataDto : BaseDto;
 
-public class ClientWantsToSubscribeToTimeSeriesData(TimeSeriesRepository timeSeriesRepository) : BaseEventHandler<ClientWantsToSubscribeToTimeSeriesDataDto>
+public class ClientWantsToSubscribeToTimeSeriesData(TimeSeriesRepository timeSeriesRepository)
+    : BaseEventHandler<ClientWantsToSubscribeToTimeSeriesDataDto>
 {
     public override Task Handle(ClientWantsToSubscribeToTimeSeriesDataDto dto, IWebSocketConnection socket)
     {

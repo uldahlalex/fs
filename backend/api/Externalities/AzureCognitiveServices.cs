@@ -1,16 +1,14 @@
-using api.Helpers.ExtensionMethods;
+using api.Extensions;
 using api.Models._3rdPartyTransferModels;
-using JetBrains.Annotations;
 using Serilog;
 
 namespace api.Externalities;
-
 
 public class AzureCognitiveServices
 {
     public async Task<bool> IsToxic(string? message)
     {
-        string BaseUrl = "https://toxicityfilter.cognitiveservices.azure.com/";
+        var BaseUrl = "https://toxicityfilter.cognitiveservices.azure.com/";
 
 
         var _httpClient = new HttpClient();
@@ -29,7 +27,7 @@ public class AzureCognitiveServices
         var response = await stringResponse.Content.ReadAsStringAsync();
         Log.Information(response);
         Console.WriteLine(response);
-        var toxicityResponse = response.Deserialize<ToxicityResponse>();
+        var toxicityResponse = response.DeserializeAndValidate<ToxicityResponse>();
         toxicityResponse.categoriesAnalysis.ForEach(x =>
         {
             Console.WriteLine(x.category);
@@ -41,5 +39,4 @@ public class AzureCognitiveServices
             return true;
         return false;
     }
-    
 }

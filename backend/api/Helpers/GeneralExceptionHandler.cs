@@ -1,4 +1,4 @@
-using api.Helpers.ExtensionMethods;
+using api.Extensions;
 using api.Models.ServerEvents;
 using Fleck;
 using Serilog;

@@ -1,12 +1,9 @@
 using System.Reflection;
-using api;
 using api.Abstractions;
-using api.ClientEventHandlers;
+using api.Extensions;
 using api.Externalities;
 using api.Helpers;
-using api.Helpers.Attributes;
-using api.Models.DbModels;
-using Npgsql;
+using Fleck;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -15,64 +12,34 @@ Log.Logger = new LoggerConfiguration()
 
 EnvSetup.SetDefaultEnvVariables();
 
-EnforceNameCheck.CheckPropertyNames<EndUser>();
-EnforceNameCheck.CheckPropertyNames<Message>();
-EnforceNameCheck.CheckPropertyNames<Room>();
-EnforceNameCheck.CheckPropertyNames<UserRoomJunctions>();
-EnforceNameCheck.CheckPropertyNames<TimeSeries>();
-
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
     sourceBuilder => sourceBuilder.EnableParameterLogging());
 
 builder.Services.AddSingleton<ChatRepository>();
 builder.Services.AddSingleton<TimeSeriesRepository>();
 
-builder.Services.AddSingleton<WebsocketServer>();
 builder.Services.AddSingleton<MqttClient>();
 
-// builder.Services.AddSingleton<ClientWantsToAuthenticate>();
-// builder.Services.AddSingleton<ClientWantsToAuthenticateWithJwt>();
-// builder.Services.AddSingleton<ClientWantsToRegister>();
-//
-// builder.Services.AddSingleton<ClientWantsToEnterRoom>();
-// builder.Services.AddSingleton<ClientWantsToLeaveRoom>();
-// builder.Services.AddSingleton<ClientWantsToLoadOlderMessages>();
-// builder.Services.AddSingleton<ClientWantsToSendMessageToRoom>();
-//
-// builder.Services.AddSingleton<ClientWantsToKnowWhatTopicsTheySubscribeTo>();
-//
-// builder.Services.AddSingleton<ClientWantsToSubscribeToTimeSeriesData>();
+builder.AutomaticServiceAddFromBaseType(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
 
-var handlerTypes = new HashSet<Type>();
-foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
-{
-    if (type.BaseType != null && type.BaseType.IsGenericType && 
-        type.BaseType.GetGenericTypeDefinition() == typeof(BaseEventHandler<>))
-    {
-        builder.Services.AddSingleton(type);
-        handlerTypes.Add(type);
-    }
-}
 
 var app = builder.Build();
 
-try
+var server = new WebSocketServer("ws://0.0.0.0:8181");
+
+void Config(IWebSocketConnection ws)
 {
-    app.Services.GetService<NpgsqlDataSource>().OpenConnection().Close();
-} catch (Exception e)
-{
-    Log.Error(e, "Postgres connection failed. Exiting.");
-    Log.Information("PGCONN: "+Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN"));
+    ws.OnOpen = ws.AddConnection;
+    ws.OnClose = ws.RemoveFromConnections;
+    ws.OnMessage = message => app.InvokeCorrectClientEventHandler(ws, message);
 }
 
-
-WebsocketServer.HandlerTypes = handlerTypes;
-
+server.RestartAfterListenError = true;
+server.ListenerSocket.NoDelay = true;
+server.Start(Config);
 var mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT")!;
 if (!string.IsNullOrEmpty(mqttClientSetting) && mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
-   await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
-
-app.Services.GetService<WebsocketServer>()!.StartWebsocketServer();
-await app.RunAsync();
-
+    await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+app.Run();
