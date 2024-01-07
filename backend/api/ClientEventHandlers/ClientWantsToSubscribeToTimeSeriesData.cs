@@ -1,6 +1,7 @@
 using api.Abstractions;
 using api.Extensions;
 using api.Externalities;
+using api.Helpers.Attributes;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;
@@ -8,6 +9,7 @@ using Fleck;
 
 namespace api.ClientEventHandlers;
 
+[RequireAuthentication]
 public class ClientWantsToSubscribeToTimeSeriesDataDto : BaseDto;
 
 public class ClientWantsToSubscribeToTimeSeriesData(TimeSeriesRepository timeSeriesRepository)

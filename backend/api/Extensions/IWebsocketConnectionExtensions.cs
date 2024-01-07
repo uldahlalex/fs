@@ -23,11 +23,7 @@ public static class WebSocketExtensions
         WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, conn);
     }
 
-    public static void RemoveFromConnections(this IWebSocketConnection ws)
-    {
-        WebsocketConnections.ConnectionPool.TryRemove(ws.ConnectionInfo.Id, out var _);
-    }
-
+  
     public static void SubscribeToTopic(this IWebSocketConnection ws, TopicEnums topic)
     {
         var bag = WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>());
@@ -35,14 +31,6 @@ public static class WebSocketExtensions
     }
 
 
-    public static void SendBaseDto(this IWebSocketConnection websocket, BaseDto dto)
-    {
-        var dtoString = JsonSerializer.Serialize(dto, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-        websocket.Send(dtoString);
-    }
 
     public static void Authenticate(this IWebSocketConnection connection, EndUser userInfo)
     {
@@ -78,16 +66,7 @@ public static class WebSocketExtensions
         return WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
     }
 
-    public static void AddToWebsocketConnections(this IWebSocketConnection connection)
-    {
-        WebsocketConnections.ConnectionPool.TryAdd(connection.ConnectionInfo.Id, new WebsocketMetadata
-        {
-            Socket = connection,
-            IsAuthenticated = false,
-            UserInfo = new EndUser()
-        });
-    }
-
+ 
     public static void RemoveFromWebsocketConnections(this IWebSocketConnection connection)
     {
         WebsocketConnections.ConnectionPool.TryRemove(connection.ConnectionInfo.Id, out var metadata);

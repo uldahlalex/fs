@@ -33,7 +33,7 @@ var server = new WebSocketServer("ws://0.0.0.0:8181");
 void Config(IWebSocketConnection ws)
 {
     ws.OnOpen = ws.AddConnection;
-    ws.OnClose = ws.RemoveFromConnections;
+    ws.OnClose = ws.RemoveFromWebsocketConnections;
     ws.OnError = ex => ex.Handle(ws, null);
     ws.OnMessage = async message => 
     {

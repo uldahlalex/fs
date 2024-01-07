@@ -14,7 +14,7 @@ public class ClientWantsToLeaveRoomDto : BaseDto
     public int roomId { get; set; }
 }
 
-[RequireAuthentication] //todo make role based (only used can leave own connections room)
+[RequireAuthentication] 
 public class ClientWantsToLeaveRoom : BaseEventHandler<ClientWantsToLeaveRoomDto>
 {
     public override Task Handle(ClientWantsToLeaveRoomDto request, IWebSocketConnection socket)
