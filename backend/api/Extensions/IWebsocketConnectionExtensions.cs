@@ -95,18 +95,11 @@ public static class WebSocketExtensions
             connection.UnsubscribeFromTopic(topic);
     }
 
-    public static void ExitIfNotAuthenticated(this IWebSocketConnection socket, string receivedEventType)
+    public static void ExitIfNotAuthenticated(this IWebSocketConnection socket)
     {
-        if (WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id) &&
-            socket.GetMetadata().IsAuthenticated)
-            return; //OK
-
-        socket.SendDto(new ServerSendsErrorMessageToClient
-        {
-            receivedEventType = receivedEventType,
-            errorMessage = "Unauthorized access."
-        });
-        throw new AuthenticationException("Unauthorized access.");
+        if (!WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id) 
+            || !socket.GetMetadata().IsAuthenticated)
+            throw new AuthenticationException("Unauthorized access.");
     }
 
     public static void UnsubscribeFromTopic(this IWebSocketConnection socket, TopicEnums topic)

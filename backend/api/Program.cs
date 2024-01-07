@@ -22,10 +22,11 @@ builder.Services.AddSingleton<TimeSeriesRepository>();
 
 builder.Services.AddSingleton<MqttClient>();
 
-builder.AutomaticServiceAddFromBaseType(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
+var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
 
 
 var app = builder.Build();
+
 
 var server = new WebSocketServer("ws://0.0.0.0:8181");
 
@@ -33,7 +34,18 @@ void Config(IWebSocketConnection ws)
 {
     ws.OnOpen = ws.AddConnection;
     ws.OnClose = ws.RemoveFromConnections;
-    ws.OnMessage = message => app.InvokeCorrectClientEventHandler(ws, message);
+    ws.OnError = ex => ex.Handle(ws, null);
+    ws.OnMessage = async message => 
+    {
+        try
+        {
+            await app.InvokeCorrectClientEventHandler(types, ws, message);
+        }
+        catch (Exception ex)
+        {
+            ex.Handle(ws,  message);
+        }
+    };
 }
 
 server.RestartAfterListenError = true;

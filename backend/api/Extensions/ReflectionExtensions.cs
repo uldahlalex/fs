@@ -1,33 +1,36 @@
 using System.Reflection;
 using api.Models;
 using Fleck;
+using System.Text.Json;
 
 namespace api.Extensions;
 
-public static class UtilityExtensions
+public static class ReflectionExtensions
 {
-    public static void AutomaticServiceAddFromBaseType(this WebApplicationBuilder builder, Assembly assemblyReference,
+    public static HashSet<Type> AddServiceAndReturnAll(this WebApplicationBuilder builder, Assembly assemblyReference,
         Type genericTypeDefinition)
     {
+        HashSet<Type> clientEventHandlers = new HashSet<Type>();
         foreach (var type in assemblyReference.GetTypes())
             if (type.BaseType != null &&
                 type.BaseType.IsGenericType &&
                 type.BaseType.GetGenericTypeDefinition() == genericTypeDefinition)
+            {
                 builder.Services.AddSingleton(type);
-    }
+                clientEventHandlers.Add(type);
+            }
 
-    //todo refactor to make agnostic towrads types
-    public static async void InvokeCorrectClientEventHandler(this WebApplication app, IWebSocketConnection ws,
+        return clientEventHandlers;
+    }
+    
+    public static async Task InvokeCorrectClientEventHandler(this WebApplication app, HashSet<Type> types, IWebSocketConnection ws,
         string message)
     {
         var eventType = message.DeserializeAndValidate<BaseDto>().eventType;
-        var handlerType = Assembly
-            .GetExecutingAssembly()
-            .GetTypes()
-            .FirstOrDefault(t => t.Name.Equals(eventType, StringComparison.OrdinalIgnoreCase));
+        var handlerType = types.FirstOrDefault(t => t.Name.Equals(eventType, StringComparison.OrdinalIgnoreCase));
         if (handlerType == null)
             throw new InvalidOperationException($"Could not find handler for DTO type: {eventType}");
-        dynamic handler = app.Services.GetService(handlerType)!;
-        await handler.InvokeHandle(message, ws);
+        dynamic clientEventServiceClass = app.Services.GetService(handlerType)!;
+        await clientEventServiceClass.InvokeHandle(message, ws);
     }
 }
