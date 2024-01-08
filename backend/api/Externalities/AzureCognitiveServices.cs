@@ -6,7 +6,7 @@ namespace api.Externalities;
 
 public class AzureCognitiveServices
 {
-    public async Task<bool> IsToxic(string? message)
+    public async Task<List<CategoriesAnalysis>> IsToxic(string? message)
     {
         var BaseUrl = "https://toxicityfilter.cognitiveservices.azure.com/";
 
@@ -28,15 +28,9 @@ public class AzureCognitiveServices
         Log.Information(response);
         Console.WriteLine(response);
         var toxicityResponse = response.DeserializeAndValidate<ToxicityResponse>();
-        toxicityResponse.categoriesAnalysis.ForEach(x =>
-        {
-            Console.WriteLine(x.category);
-            Console.WriteLine(x.severity);
-            //Få styr på loggeren i test runneren (både riders og dotnets)
-        });
-
-        if (toxicityResponse.categoriesAnalysis.Any(x => x.severity > 1))
-            return true;
-        return false;
+        return toxicityResponse.categoriesAnalysis;
+        // if (toxicityResponse.categoriesAnalysis.Any(x => x.severity > 1))
+        //     return true;
+        // return false;
     }
 }

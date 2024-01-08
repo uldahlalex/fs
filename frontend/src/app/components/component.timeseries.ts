@@ -32,7 +32,7 @@ export class TimeSeriesComponent {
     type: 'datetime',
   };
 
-  constructor(@Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService) {
+  constructor(public webSocketClientService: WebSocketClientService) {
     this.webSocketClientService.ClientWantsToSubscribeToTimeSeriesData(
       new ClientWantsToSubscribeToTimeSeriesData())
   }

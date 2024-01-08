@@ -22,8 +22,9 @@ import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 import {MessageService} from "primeng/api";
 import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlderTimeSeriesDataToClient";
 import {ApexAxisChartSeries, ApexNonAxisChartSeries} from "ng-apexcharts";
+import {Router} from "@angular/router";
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class WebSocketClientService implements ApiCallServiceInterface {
 
 
@@ -42,7 +43,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
 
-  constructor(public messageService: MessageService) {
+  constructor(public messageService: MessageService, public router: Router) {
     this.rooms.forEach(room => {
       this.roomsWithMessages.set(room.id!, []);
       this.roomsWithConnections.set(room.id!, 0)
@@ -50,8 +51,10 @@ export class WebSocketClientService implements ApiCallServiceInterface {
     this.socketConnection.onopen = () => {
       console.info("connection established");
       let jwt = localStorage.getItem("jwt");
-      if (jwt != '')
+      if (jwt != null && jwt != '')
         this.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticateWithJwt({jwt: jwt!})));
+      else
+        this.router.navigate(['/login']);
     }
     this.socketConnection.onmessage = (event) => {
       let data = JSON.parse(event.data) as BaseTransferObject<any>;
@@ -75,6 +78,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
     this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
     localStorage.setItem("jwt", dto.jwt!);
+    this.router.navigate(['/room/1'])
   }
 
   ServerBroadcastsMessageToClientsInRoom(dto: ServerBroadcastsMessageToClientsInRoom) {
@@ -104,6 +108,8 @@ export class WebSocketClientService implements ApiCallServiceInterface {
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
     this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage});
+    if(JSON.parse(dto.receivedMessage!).eventType == 'ClientWantsToAuthenticateWithJwt')
+      localStorage.removeItem('jwt');
   }
 
 

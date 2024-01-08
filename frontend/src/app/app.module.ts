@@ -5,7 +5,6 @@ import {ComponentRoom} from "./components/component.room";
 import {ComponentLogin} from "./components/component.login";
 import {ApiCallServiceInterface} from "./services/apiCallService.interface";
 import {environment} from "../environments/environment";
-import {ApiCallServiceMock} from "./services/apiCallService.mock";
 import {enableProdMode, InjectionToken, NgModule} from "@angular/core";
 import {WebSocketClientService} from "./services/service.websocketclient";
 import {ComponentSidebar} from "./components/component.sidebar";
@@ -23,10 +22,7 @@ import {NgApexchartsModule} from "ng-apexcharts";
 
 export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
-const ApiServiceProvider = {
-  provide: API_SERVICE_TOKEN,
-  useClass: environment.production ? WebSocketClientService : ApiCallServiceMock,
-};
+
 
 @NgModule({
   imports: [
@@ -58,7 +54,7 @@ const ApiServiceProvider = {
     ComponentLogin,
     TimeSeriesComponent
   ],
-  providers: [ApiServiceProvider, MessageService],
+  providers: [MessageService],
   bootstrap: [ComponentApp]
 })
 export class AppModule {

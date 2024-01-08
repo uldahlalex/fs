@@ -50,8 +50,7 @@ export class ComponentLogin {
   })
   showLogin: boolean = true;
 
-  constructor(
-    @Inject(API_SERVICE_TOKEN) private apiCallService: WebSocketClientService
+  constructor(private apiCallService: WebSocketClientService
   ) {
   }
 

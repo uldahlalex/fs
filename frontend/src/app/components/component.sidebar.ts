@@ -34,7 +34,7 @@ export class ComponentSidebar {
   isOpen: boolean = false;
   dialogText: string = "Show rooms";
 
-  constructor(@Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  constructor( public webSocketClientService: WebSocketClientService
   ) {
   }
 

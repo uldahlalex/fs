@@ -59,7 +59,7 @@ export class ComponentRoom {
   route = inject(ActivatedRoute);
   protected readonly localStorage = localStorage;
 
-  constructor(@Inject(API_SERVICE_TOKEN) public webSocketClientService: WebSocketClientService
+  constructor(public webSocketClientService: WebSocketClientService
   ) {
     this.route.paramMap.subscribe(params => {
       this.roomId = Number.parseInt(params.get('id')!)
