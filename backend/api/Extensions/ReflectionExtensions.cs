@@ -1,7 +1,6 @@
 using System.Reflection;
 using api.Models;
 using Fleck;
-using System.Text.Json;
 
 namespace api.Extensions;
 
@@ -10,7 +9,7 @@ public static class ReflectionExtensions
     public static HashSet<Type> AddServiceAndReturnAll(this WebApplicationBuilder builder, Assembly assemblyReference,
         Type genericTypeDefinition)
     {
-        HashSet<Type> clientEventHandlers = new HashSet<Type>();
+        var clientEventHandlers = new HashSet<Type>();
         foreach (var type in assemblyReference.GetTypes())
             if (type.BaseType != null &&
                 type.BaseType.IsGenericType &&
@@ -22,8 +21,9 @@ public static class ReflectionExtensions
 
         return clientEventHandlers;
     }
-    
-    public static async Task InvokeCorrectClientEventHandler(this WebApplication app, HashSet<Type> types, IWebSocketConnection ws,
+
+    public static async Task InvokeCorrectClientEventHandler(this WebApplication app, HashSet<Type> types,
+        IWebSocketConnection ws,
         string message)
     {
         var eventType = message.DeserializeAndValidate<BaseDto>().eventType;

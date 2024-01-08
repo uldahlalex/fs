@@ -9,9 +9,26 @@ public static class StaticHelpers
 {
     public const string Url = "ws://localhost:8181";
 
+    public static ClientWantsToAuthenticateDto AuthEvent = new()
+    {
+        email = "bla@bla.dk",
+        password = "qweqweqwe"
+    };
+
+    public static ClientWantsToEnterRoomDto EnterRoomEvent = new()
+    {
+        roomId = 1
+    };
+
+    public static ClientWantsToSendMessageToRoomDto SendMessageEvent = new()
+    {
+        roomId = 1,
+        messageContent = "hey"
+    };
+
     public static string ToJsonString(this object o)
     {
-        return JsonSerializer.Serialize(o, new JsonSerializerOptions()
+        return JsonSerializer.Serialize(o, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
@@ -22,28 +39,11 @@ public static class StaticHelpers
         where T : BaseDto
     {
         communication.Add(new Tuple<BaseDto, string>(dto, nameof(ws)));
-        ws.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions()
+        ws.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
-            WriteIndented = true,
+            WriteIndented = true
         }));
         await Task.Delay(200);
     }
-
-    public static ClientWantsToAuthenticateDto AuthEvent = new ClientWantsToAuthenticateDto
-    {
-        email = "bla@bla.dk",
-        password = "qweqweqwe"
-    };
-    
-    public static ClientWantsToEnterRoomDto EnterRoomEvent = new ClientWantsToEnterRoomDto
-    {
-        roomId = 1
-    };
-    
-    public static ClientWantsToSendMessageToRoomDto SendMessageEvent = new ClientWantsToSendMessageToRoomDto
-    {
-        roomId = 1,
-        messageContent = "hey"
-    };
 }

@@ -21,7 +21,7 @@ create table chat.messages
         constraint messages_pk
             primary key,
     messagecontent text,
-    sender         integer default '-1'::integer not null
+    sender         integer default '-1':: integer not null
         constraint sender
         references chat.enduser,
     timestamp      timestamp with time zone,
@@ -37,4 +37,5 @@ create table chat.timeseries
 );
 
 
-INSERT INTO chat.enduser ( email, hash, salt, isbanned) values ('bla@bla.dk', 'Uhq6WdmkqE+b3R84tTzFAprKxAOto3vhUx0HBG4J524=', 'G/Xx5vBlRMrF+oZcQ1vXiQ==', false);
+INSERT INTO chat.enduser (email, hash, salt, isbanned)
+values ('bla@bla.dk', 'Uhq6WdmkqE+b3R84tTzFAprKxAOto3vhUx0HBG4J524=', 'G/Xx5vBlRMrF+oZcQ1vXiQ==', false);

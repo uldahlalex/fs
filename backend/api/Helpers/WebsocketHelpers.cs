@@ -12,8 +12,6 @@ public static class WebsocketHelpers
         if (WebsocketConnections.TopicSubscriptions.TryGetValue(topic, out var connections))
             foreach (var connectionId in connections)
                 if (WebsocketConnections.ConnectionPool.TryGetValue(connectionId, out var socketMetadata))
-                {
                     socketMetadata.Socket!.SendDto(dto);
-                }
     }
 }

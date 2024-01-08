@@ -3,7 +3,6 @@ using api.Models;
 using api.Models.ServerEvents;
 using FluentAssertions;
 using NUnit.Framework;
-using Serilog;
 using Websocket.Client;
 
 namespace Tests.ApiTests;
@@ -11,7 +10,6 @@ namespace Tests.ApiTests;
 [TestFixture]
 public class ExistingRoomGetsMessageWhenUserJoins
 {
-
     [Test]
     public async Task Message_Broadcasting_In_Room_works()
     {

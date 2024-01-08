@@ -1,20 +1,15 @@
-using System.Net.WebSockets;
-using api.ClientEventHandlers;
 using api.Extensions;
 using api.Models;
 using api.Models.ServerEvents;
 using FluentAssertions;
 using NUnit.Framework;
-using Serilog;
 using Websocket.Client;
-using Xunit;
 
 namespace Tests.ApiTests;
 
 [TestFixture]
 public class ExistingClientsInRoomGetJoinedMessageWhenSomeoneEnters
 {
-
     [Test]
     public async Task Existing_Clients_In_Room_Get_Joined_Message_When_Someone_Enters()
     {
@@ -22,19 +17,20 @@ public class ExistingClientsInRoomGetJoinedMessageWhenSomeoneEnters
         using (var ws2 = new WebsocketClient(new Uri(StaticHelpers.Url)))
         {
             var communication = new List<Tuple<BaseDto, string>>();
-            
+
             ws.MessageReceived.Subscribe(msg =>
             {
-                communication.Add(new Tuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
+                communication.Add(
+                    new Tuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
             });
-      
+
             await ws.Start();
             await ws2.Start();
-          
-                  
+
+
             await ws.Do(StaticHelpers.AuthEvent, communication);
             await ws2.Do(StaticHelpers.AuthEvent, communication);
-      
+
             await ws.Do(StaticHelpers.EnterRoomEvent, communication);
             await ws2.Do(StaticHelpers.EnterRoomEvent, communication);
             await Task.Delay(200);

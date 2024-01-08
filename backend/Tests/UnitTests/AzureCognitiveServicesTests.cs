@@ -1,17 +1,16 @@
 using api.Externalities;
 using FluentAssertions;
-using JetBrains.Annotations;
 using NUnit.Framework;
 
 namespace Tests;
 
 [TestFixture]
-public class AzureCognitiveServicesTests 
+public class AzureCognitiveServicesTests
 {
     [TestCase]
     public async Task Test1()
     {
-       new AzureCognitiveServices().IsToxic("I hate you").Result.Should().BeTrue();
+        new AzureCognitiveServices().IsToxic("I hate you").Result.Should().BeTrue();
     }
 
     [TestCase]

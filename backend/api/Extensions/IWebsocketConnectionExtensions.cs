@@ -4,7 +4,6 @@ using System.Text.Json;
 using api.Models;
 using api.Models.DbModels;
 using api.Models.Enums;
-using api.Models.ServerEvents;
 using api.State;
 using Fleck;
 
@@ -23,13 +22,12 @@ public static class WebSocketExtensions
         WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, conn);
     }
 
-  
+
     public static void SubscribeToTopic(this IWebSocketConnection ws, TopicEnums topic)
     {
         var bag = WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>());
         bag.Add(ws.ConnectionInfo.Id);
     }
-
 
 
     public static void Authenticate(this IWebSocketConnection connection, EndUser userInfo)
@@ -66,7 +64,7 @@ public static class WebSocketExtensions
         return WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
     }
 
- 
+
     public static void RemoveFromWebsocketConnections(this IWebSocketConnection connection)
     {
         WebsocketConnections.ConnectionPool.TryRemove(connection.ConnectionInfo.Id, out var metadata);
@@ -76,7 +74,7 @@ public static class WebSocketExtensions
 
     public static void ExitIfNotAuthenticated(this IWebSocketConnection socket)
     {
-        if (!WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id) 
+        if (!WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id)
             || !socket.GetMetadata().IsAuthenticated)
             throw new AuthenticationException("Unauthorized access.");
     }

@@ -1,6 +1,5 @@
 using System.Reflection;
 using api.Extensions;
-using api.Helpers;
 using api.Helpers.Attributes;
 using api.Models;
 using Fleck;
@@ -14,7 +13,7 @@ public abstract class BaseEventHandler<T> where T : BaseDto
     public async Task InvokeHandle(string message, IWebSocketConnection socket)
     {
         if (GetType().GetCustomAttributes<RequireAuthenticationAttribute>().Any())
-             socket.ExitIfNotAuthenticated();
+            socket.ExitIfNotAuthenticated();
         await Handle(message.DeserializeAndValidate<T>(), socket);
     }
 

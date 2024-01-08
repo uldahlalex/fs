@@ -35,7 +35,7 @@ void Config(IWebSocketConnection ws)
     ws.OnOpen = ws.AddConnection;
     ws.OnClose = ws.RemoveFromWebsocketConnections;
     ws.OnError = ex => ex.Handle(ws, null);
-    ws.OnMessage = async message => 
+    ws.OnMessage = async message =>
     {
         try
         {
@@ -43,7 +43,7 @@ void Config(IWebSocketConnection ws)
         }
         catch (Exception ex)
         {
-            ex.Handle(ws,  message);
+            ex.Handle(ws, message);
         }
     };
 }

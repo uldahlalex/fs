@@ -14,7 +14,7 @@ public class ClientWantsToLeaveRoomDto : BaseDto
     public int roomId { get; set; }
 }
 
-[RequireAuthentication] 
+[RequireAuthentication]
 public class ClientWantsToLeaveRoom : BaseEventHandler<ClientWantsToLeaveRoomDto>
 {
     public override Task Handle(ClientWantsToLeaveRoomDto request, IWebSocketConnection socket)
