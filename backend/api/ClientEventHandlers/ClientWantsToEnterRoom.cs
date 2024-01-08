@@ -22,24 +22,21 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
 {
     public override Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)
     {
-        var isValidTopic = Enum.TryParse("ChatRoom" + dto.roomId, out TopicEnums topic);
-        if (!isValidTopic)
-            throw new Exception("Invalid topic");
+        TopicEnums topic = dto.roomId.RoomIdToTopic();
+        socket.SubscribeToTopic(topic);
         WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
             user = socket.GetMetadata().UserInfo,
             roomId = dto.roomId
         }, topic);
-        socket.SubscribeToTopic(topic);
         socket.SendDto(new ServerAddsClientToRoom
         {
             messages = chatRepository.GetPastMessages(dto.roomId),
-            liveConnections =
-                WebsocketConnections.TopicSubscriptions[topic]
-                    .Count,
+            liveConnections = WebsocketConnections.TopicSubscriptions[topic].Count,
             roomId = dto.roomId
         });
         return Task.CompletedTask;
     }
+    
 }

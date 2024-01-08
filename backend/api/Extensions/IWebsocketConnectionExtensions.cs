@@ -11,23 +11,14 @@ namespace api.Extensions;
 
 public static class WebSocketExtensions
 {
-    //3
-
     public static void AddConnection(this IWebSocketConnection ws)
-    {
-        var conn = new WebsocketMetadata
-        {
-            Socket = ws
-        };
-        WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, conn);
-    }
+        => WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, new WebsocketMetadata
+        { Socket = ws });
 
 
     public static void SubscribeToTopic(this IWebSocketConnection ws, TopicEnums topic)
-    {
-        var bag = WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>());
-        bag.Add(ws.ConnectionInfo.Id);
-    }
+        => WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>())
+            .Add(ws.ConnectionInfo.Id);
 
 
     public static void Authenticate(this IWebSocketConnection connection, EndUser userInfo)
@@ -40,29 +31,20 @@ public static class WebSocketExtensions
     }
 
     public static void UnAuthenticate(this IWebSocketConnection connection)
-    {
-        var metadata = connection.GetMetadata();
-        metadata.IsAuthenticated = false;
-    }
+        => connection.GetMetadata().IsAuthenticated = false;
+
 
     public static WebsocketMetadata GetMetadata(this IWebSocketConnection connection)
-    {
-        return WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
-    }
+        => WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
+
 
     public static void SendDto<T>(this IWebSocketConnection socket, T dto) where T : BaseDto
-    {
-        var serialized = JsonSerializer.Serialize(dto, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-        socket.Send(serialized);
-    }
+        => socket.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
+            { PropertyNameCaseInsensitive = true }));
+
 
     public static bool IsInWebsocketConnections(this IWebSocketConnection connection)
-    {
-        return WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
-    }
+        => WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
 
 
     public static void RemoveFromWebsocketConnections(this IWebSocketConnection connection)
