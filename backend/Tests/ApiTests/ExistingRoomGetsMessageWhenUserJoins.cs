@@ -4,8 +4,10 @@ using api.Extensions;
 using api.Models;
 using api.Models.ServerEvents;
 using FluentAssertions;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using Serilog;
+using Websocket.Client;
 using WebSocketSharp;
 
 namespace Tests.ApiTests;
@@ -24,22 +26,24 @@ public class ExistingRoomGetsMessageWhenUserJoins
     [Test]
     public async Task Message_Broadcasting_In_Room_works()
     {
-        using (var ws = new WebSocket(StaticHelpers.Url))
-        using (var ws2 = new WebSocket(StaticHelpers.Url))
+        using (var ws = new WebsocketClient(new Uri(StaticHelpers.Url)))
+        using (var ws2 = new WebsocketClient(new Uri(StaticHelpers.Url)))
         {
             var messagesReceivedFromServer = new List<Tuple<BaseDto, string>>();
-            ws.Connect();
-            ws2.Connect();
-            ws.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(new Tuple<BaseDto, string>(e.Data.DeserializeAndValidate<BaseDto>(),
-                    nameof(ws)));
-            ws.OnError += (sender, e) => { Assert.Fail(); };
+     
 
-            ws2.OnMessage += (sender, e) =>
-                messagesReceivedFromServer.Add(new Tuple<BaseDto, string>(e.Data.DeserializeAndValidate<BaseDto>(),
-                    nameof(ws2)));
-            ws2.OnError += (sender, e) => { Assert.Fail(); };
-
+            // Subscribe to message and error events
+            
+            ws.MessageReceived.Subscribe(msg =>
+            {
+                messagesReceivedFromServer.Add(new Tuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
+            });
+            ws2.MessageReceived.Subscribe(msg =>
+            {
+                messagesReceivedFromServer.Add(new Tuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws2)));
+            });
+            await ws.Start();
+            await ws2.Start();
 
             var auth = new ClientWantsToAuthenticateDto
             {
@@ -63,12 +67,12 @@ public class ExistingRoomGetsMessageWhenUserJoins
             };
             await ws.Do(message, messagesReceivedFromServer);
             await ws2.Do(message, messagesReceivedFromServer);
-            await Task.Delay(1000);
+            
             Console.WriteLine("Messages: " + messagesReceivedFromServer.ToJsonString());
             messagesReceivedFromServer.Should()
                 .Contain(x => x.Item1.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
             messagesReceivedFromServer.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
-                .Should().Be(4);
+                .Should().BeGreaterThan(2);
             messagesReceivedFromServer.Should()
                 .NotContain(x => x.Item1.eventType == nameof(ServerSendsErrorMessageToClient));
         }

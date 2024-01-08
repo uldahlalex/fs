@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 using api.Models;
-using WebSocketSharp;
+using Websocket.Client;
 
 namespace Tests;
 
@@ -18,11 +18,15 @@ public static class StaticHelpers
         });
     }
 
-    public static async Task Do<T>(this WebSocket ws, T dto, List<Tuple<BaseDto, string>> communication) where T : BaseDto
+    public static async Task Do<T>(this WebsocketClient ws, T dto, List<Tuple<BaseDto, string>> communication) where T : BaseDto
     {
         communication.Add(new Tuple<BaseDto, string>(dto, nameof(ws)));
-        ws.Send(dto.ToJsonString());
-        await Task.Delay(1000);
+        ws.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true,
+        }));
+        await Task.Delay(100);
     }
   
 }

@@ -14,6 +14,7 @@ public class ExistingClientsInRoomGetJoinedMessageWhenSomeoneEnters
 {
     
 
+    //todo refactor to websocket.client
     [Test]
     public async Task Existing_Clients_In_Room_Get_Joined_Message_When_Someone_Enters()
     {

@@ -11,6 +11,8 @@ namespace Tests.ApiTests;
 
 public class MustEnterRoomToSendMessage
 {
+    //todo refactor to websocket.client
+
     [Test]
     public async Task Must_Enter_Room_To_Send_Message()
     {
