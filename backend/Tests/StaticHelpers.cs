@@ -22,7 +22,7 @@ public static class StaticHelpers
     {
         communication.Add(new Tuple<BaseDto, string>(dto, nameof(ws)));
         ws.Send(dto.ToJsonString());
-        await Task.Delay(250);
+        await Task.Delay(1000);
     }
   
 }

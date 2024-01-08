@@ -62,12 +62,13 @@ public class ExistingRoomGetsMessageWhenUserJoins
                 messageContent = "hey"
             };
             await ws.Do(message, messagesReceivedFromServer);
-
+            await ws2.Do(message, messagesReceivedFromServer);
+            await Task.Delay(1000);
             Console.WriteLine("Messages: " + messagesReceivedFromServer.ToJsonString());
             messagesReceivedFromServer.Should()
                 .Contain(x => x.Item1.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
             messagesReceivedFromServer.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
-                .Should().Be(2);
+                .Should().Be(4);
             messagesReceivedFromServer.Should()
                 .NotContain(x => x.Item1.eventType == nameof(ServerSendsErrorMessageToClient));
         }

@@ -7,13 +7,12 @@ namespace api.Helpers;
 
 public static class WebsocketHelpers
 {
-    public static void BroadcastObjectToTopicListeners(BaseDto dto, TopicEnums topic)
+    public static void BroadcastObjectToTopicListeners<T>(T dto, TopicEnums topic) where T : BaseDto
     {
         if (WebsocketConnections.TopicSubscriptions.TryGetValue(topic, out var connections))
             foreach (var connectionId in connections)
                 if (WebsocketConnections.ConnectionPool.TryGetValue(connectionId, out var socketMetadata))
                 {
-                    Console.WriteLine(socketMetadata.Socket!.ConnectionInfo.Id);
                     socketMetadata.Socket!.SendDto(dto);
                 }
     }
