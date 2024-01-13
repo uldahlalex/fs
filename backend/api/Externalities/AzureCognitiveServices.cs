@@ -8,11 +8,10 @@ public class AzureCognitiveServices
 {
     public async Task<List<CategoriesAnalysis>> IsToxic(string? message)
     {
-        var BaseUrl = "https://toxicityfilter.cognitiveservices.azure.com/";
+        const string BaseUrl = "https://toxicityfilter.cognitiveservices.azure.com/";
 
 
         var _httpClient = new HttpClient();
-        //_httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
         _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key",
             Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES"));
 
@@ -20,17 +19,11 @@ public class AzureCognitiveServices
         {
             categories = new List<string> { "Hate", "SelfHarm", "Sexual", "Violence" },
             outputType = "FourSeverityLevels",
-            text = message
+            text = message!
         };
         var stringResponse =
             await _httpClient.PostAsJsonAsync(BaseUrl + "contentsafety/text:analyze?api-version=2023-10-01", request);
         var response = await stringResponse.Content.ReadAsStringAsync();
-        Log.Information(response);
-        Console.WriteLine(response);
-        var toxicityResponse = response.DeserializeAndValidate<ToxicityResponse>();
-        return toxicityResponse.categoriesAnalysis;
-        // if (toxicityResponse.categoriesAnalysis.Any(x => x.severity > 1))
-        //     return true;
-        // return false;
+        return response.DeserializeAndValidate<ToxicityResponse>().categoriesAnalysis;
     }
 }

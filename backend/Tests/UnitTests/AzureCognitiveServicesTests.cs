@@ -17,7 +17,8 @@ public class AzureCognitiveServicesTests
     [TestCase]
     public Task Test2()
     {
-        new AzureCognitiveServices().IsToxic("I love you").Result.Any(a => a.severity > 0.8).Should().BeFalse();
+        var enumerable = new AzureCognitiveServices().IsToxic("I love you").Result.Select(a => a.severity);
+        enumerable.Any(a => a > 0.8).Should().BeFalse();
         return Task.CompletedTask;
     }
 }

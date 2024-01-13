@@ -1,4 +1,5 @@
 using api.Extensions;
+using api.Helpers;
 using api.Models;
 using api.Models.ServerEvents;
 using FluentAssertions;
@@ -10,6 +11,9 @@ namespace Tests.ApiTests;
 [TestFixture]
 public class MustEnterRoomToSendMessage
 {
+    
+ 
+    
     [Test]
     public async Task Must_Enter_Room_To_Send_Message()
     {
