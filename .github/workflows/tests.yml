@@ -19,4 +19,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - run: cd backend/Tests && dotnet test
+        env:
+          FULLSTACK_AZURE_COGNITIVE_SERVICES: ${{ secrets.FULLSTACK_AZURE_COGNITIVE_SERVICES }}
       - run: docker-compose down
