@@ -20,7 +20,7 @@ public class ToxicityFilter : ValidationAttribute
         if (result.Any(x => x.severity > 1))
         {
             var dict = result.ToDictionary(x => x.category, x => x.severity);
-            var response = JsonSerializer.Serialize(dict, new JsonSerializerOptions()
+            var response = JsonSerializer.Serialize(dict, new JsonSerializerOptions
             {
                 WriteIndented = true
             });

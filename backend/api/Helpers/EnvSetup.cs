@@ -4,12 +4,6 @@ namespace api.Helpers;
 
 public static class EnvSetup
 {
-    private static bool IsRunningInDocker()
-    {
-        return File.Exists("/.dockerenv");
-    }
-
-    
     private static readonly Dictionary<string, string> DefaultEnvValues = new()
     {
         { "FULLSTACK_START_MQTT_CLIENT", "false" },
@@ -18,10 +12,14 @@ public static class EnvSetup
         {
             "FULLSTACK_PG_CONN", IsRunningInDocker()
                 ? "Server=db;Database=postgres;User Id=postgres;Password=postgres;Port=5432;Pooling=true;MaxPoolSize=3"
-                :
-            "Server=localhost;Database=postgres;User Id=postgres;Password=postgres;Port=5432;Pooling=true;MaxPoolSize=3"
+                : "Server=localhost;Database=postgres;User Id=postgres;Password=postgres;Port=5432;Pooling=true;MaxPoolSize=3"
         }
     };
+
+    private static bool IsRunningInDocker()
+    {
+        return File.Exists("/.dockerenv");
+    }
 
     public static void SetDefaultEnvVariables()
     {

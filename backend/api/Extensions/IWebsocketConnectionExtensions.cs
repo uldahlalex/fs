@@ -12,13 +12,17 @@ namespace api.Extensions;
 public static class WebSocketExtensions
 {
     public static void AddConnection(this IWebSocketConnection ws)
-        => WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, new WebsocketMetadata
-        { Socket = ws });
+    {
+        WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, new WebsocketMetadata
+            { Socket = ws });
+    }
 
 
     public static void SubscribeToTopic(this IWebSocketConnection ws, TopicEnums topic)
-        => WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>())
+    {
+        WebsocketConnections.TopicSubscriptions.GetOrAdd(topic, _ => new ConcurrentBag<Guid>())
             .Add(ws.ConnectionInfo.Id);
+    }
 
 
     public static void Authenticate(this IWebSocketConnection connection, EndUser userInfo)
@@ -31,20 +35,28 @@ public static class WebSocketExtensions
     }
 
     public static void UnAuthenticate(this IWebSocketConnection connection)
-        => connection.GetMetadata().IsAuthenticated = false;
+    {
+        connection.GetMetadata().IsAuthenticated = false;
+    }
 
 
     public static WebsocketMetadata GetMetadata(this IWebSocketConnection connection)
-        => WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
+    {
+        return WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
+    }
 
 
     public static void SendDto<T>(this IWebSocketConnection socket, T dto) where T : BaseDto
-        => socket.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
+    {
+        socket.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
             { PropertyNameCaseInsensitive = true }));
+    }
 
 
     public static bool IsInWebsocketConnections(this IWebSocketConnection connection)
-        => WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
+    {
+        return WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
+    }
 
 
     public static void RemoveFromWebsocketConnections(this IWebSocketConnection connection)

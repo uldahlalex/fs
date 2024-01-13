@@ -10,7 +10,7 @@ public class DataValidationTests
     [TestCase]
     public void Test1()
     {
-        var dto = new ClientWantsToEnterRoomDto()
+        var dto = new ClientWantsToEnterRoomDto
         {
             roomId = -1
         };

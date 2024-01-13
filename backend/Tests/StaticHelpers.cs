@@ -44,6 +44,6 @@ public static class StaticHelpers
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
         }));
-        Task.Delay(1000).Wait();
+        Task.Delay(1500).Wait();
     }
 }

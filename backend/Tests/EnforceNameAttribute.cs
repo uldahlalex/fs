@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Tests;
 
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(AttributeTargets.All)] //todo implement test
 public class EnforceNameAttribute(string name) : ValidationAttribute
 {
     public string Name { get; } = name;

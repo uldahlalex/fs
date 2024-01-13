@@ -5,7 +5,6 @@ using api.Externalities;
 using api.Helpers;
 using api.Helpers.Attributes;
 using api.Models;
-using api.Models.Enums;
 using api.Models.ServerEvents;
 using api.State;
 using Fleck;
@@ -22,7 +21,7 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
 {
     public override Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)
     {
-        TopicEnums topic = dto.roomId.RoomIdToTopic();
+        var topic = dto.roomId.RoomIdToTopic();
         socket.SubscribeToTopic(topic);
         WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
@@ -38,5 +37,4 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
         });
         return Task.CompletedTask;
     }
-    
 }

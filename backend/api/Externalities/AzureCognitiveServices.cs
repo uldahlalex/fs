@@ -1,6 +1,5 @@
 using api.Extensions;
 using api.Models._3rdPartyTransferModels;
-using Serilog;
 
 namespace api.Externalities;
 

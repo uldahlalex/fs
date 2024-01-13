@@ -2,10 +2,6 @@ import {Injectable} from "@angular/core";
 import {BaseDto} from "../models/baseDto";
 import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
-import {ClientWantsToRegister} from "../models/clientWantsToRegister";
-import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
-import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
-import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {
@@ -16,8 +12,6 @@ import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessage
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room, TimeSeries, TimeSeriesApexChartData} from "../models/entities";
 import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
-import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
-import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 import {MessageService} from "primeng/api";
 import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlderTimeSeriesDataToClient";
 import {ApexAxisChartSeries, ApexNonAxisChartSeries} from "ng-apexcharts";

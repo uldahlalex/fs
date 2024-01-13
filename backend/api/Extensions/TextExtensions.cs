@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using api.Models;
 using api.Models.Enums;
 using ArgumentException = System.ArgumentException;
 
@@ -18,7 +17,7 @@ public static class Extensions
         Validator.ValidateObject(obj, new ValidationContext(obj), true);
         return obj;
     }
-    
+
     public static TopicEnums RoomIdToTopic(this int roomId)
     {
         var isValidTopic = Enum.TryParse("ChatRoom" + roomId, out TopicEnums topic);
