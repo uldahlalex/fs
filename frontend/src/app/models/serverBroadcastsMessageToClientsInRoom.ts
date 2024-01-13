@@ -1,7 +1,7 @@
 import {Message} from "./entities";
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 
-export class ServerBroadcastsMessageToClientsInRoom extends BaseTransferObject<ServerBroadcastsMessageToClientsInRoom> {
+export class ServerBroadcastsMessageToClientsInRoom extends BaseDto<ServerBroadcastsMessageToClientsInRoom> {
   roomId?: number;
   message?: Message;
 }

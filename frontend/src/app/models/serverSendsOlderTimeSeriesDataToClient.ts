@@ -1,6 +1,6 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 import {TimeSeries} from "./entities";
 
-export class ServerSendsOlderTimeSeriesDataToClient extends BaseTransferObject<ServerSendsOlderTimeSeriesDataToClient> {
+export class ServerSendsOlderTimeSeriesDataToClient extends BaseDto<ServerSendsOlderTimeSeriesDataToClient> {
   public timeseries: TimeSeries[] = [];
 }

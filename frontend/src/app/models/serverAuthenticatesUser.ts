@@ -1,5 +1,5 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 
-export class ServerAuthenticatesUser extends BaseTransferObject<ServerAuthenticatesUser> {
+export class ServerAuthenticatesUser extends BaseDto<ServerAuthenticatesUser> {
   jwt?: string;
 }

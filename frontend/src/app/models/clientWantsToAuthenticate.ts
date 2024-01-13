@@ -1,6 +1,6 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 
-export class ClientWantsToAuthenticate extends BaseTransferObject<ClientWantsToAuthenticate> {
+export class ClientWantsToAuthenticate extends BaseDto<ClientWantsToAuthenticate> {
   email?: string;
   password?: string;
 }

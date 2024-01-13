@@ -1,6 +1,6 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 
-export class ClientWantsToSendMessageToRoom extends BaseTransferObject<ClientWantsToSendMessageToRoom> {
+export class ClientWantsToSendMessageToRoom extends BaseDto<ClientWantsToSendMessageToRoom> {
   roomId?: number;
   messageContent?: string;
 }

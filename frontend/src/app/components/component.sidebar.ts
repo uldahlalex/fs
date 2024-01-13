@@ -1,8 +1,6 @@
 import {Component, Inject, inject} from "@angular/core";
 import {Router} from "@angular/router";
 import {WebSocketClientService} from "../services/service.websocketclient";
-import {API_SERVICE_TOKEN} from "../app.module";
-
 @Component({
   template: `
     <div style="display: flex; flex-direction: row; justify-content: start;">

@@ -3,10 +3,8 @@ import {ComponentApp} from './components/component.app';
 import {RouterModule} from "@angular/router";
 import {ComponentRoom} from "./components/component.room";
 import {ComponentLogin} from "./components/component.login";
-import {ApiCallServiceInterface} from "./services/apiCallService.interface";
 import {environment} from "../environments/environment";
 import {enableProdMode, InjectionToken, NgModule} from "@angular/core";
-import {WebSocketClientService} from "./services/service.websocketclient";
 import {ComponentSidebar} from "./components/component.sidebar";
 import {ToastModule} from "primeng/toast";
 import {MessageModule} from "primeng/message";
@@ -20,7 +18,6 @@ import {TimeSeriesComponent} from "./components/component.timeseries";
 import {NgApexchartsModule} from "ng-apexcharts";
 
 
-export const API_SERVICE_TOKEN = new InjectionToken<ApiCallServiceInterface>('ApiServiceToken');
 
 
 

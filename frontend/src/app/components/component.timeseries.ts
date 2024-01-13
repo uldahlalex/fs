@@ -1,7 +1,6 @@
 import {Component, Inject} from "@angular/core";
 import {ApexChart, ApexTitleSubtitle, ApexXAxis} from "ng-apexcharts";
 import {WebSocketClientService} from "../services/service.websocketclient";
-import {API_SERVICE_TOKEN} from "../app.module";
 import {ClientWantsToSubscribeToTimeSeriesData} from "../models/ClientWantsToSubscribeToTimeSeriesData";
 
 

@@ -7,8 +7,6 @@ import ago from 's-ago';
 import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
-import {API_SERVICE_TOKEN} from "../app.module";
-
 
 @Component({
   template: `

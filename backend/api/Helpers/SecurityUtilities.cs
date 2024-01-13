@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using api.Models.Exceptions;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -24,7 +25,7 @@ public static class SecurityUtilities
         }
         catch
         {
-            throw new Exception("Authentication failed.");
+            throw new JwtVerificationException("Authentication failed.");
         }
     }
 
@@ -33,7 +34,7 @@ public static class SecurityUtilities
     {
         try
         {
-            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJwtAlgorithm algorithm = new HMACSHA512Algorithm();
             IJsonSerializer serializer = new JsonNetSerializer();
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);

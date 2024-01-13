@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {BaseTransferObject} from "../models/baseTransferObject";
+import {BaseDto} from "../models/baseDto";
 import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
@@ -16,16 +16,16 @@ import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessage
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room, TimeSeries, TimeSeriesApexChartData} from "../models/entities";
 import {ClientWantsToAuthenticateWithJwt} from "../models/clientWantsToAuthenticateWithJwt";
-import {ApiCallServiceInterface} from "./apiCallService.interface";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToLeaveRoom} from "../models/clientWantsToLeaveRoom";
 import {MessageService} from "primeng/api";
 import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlderTimeSeriesDataToClient";
 import {ApexAxisChartSeries, ApexNonAxisChartSeries} from "ng-apexcharts";
 import {Router} from "@angular/router";
+import {ServerRejectsJwt} from "../models/serverRejectsJwt";
 
 @Injectable({providedIn: 'root'})
-export class WebSocketClientService implements ApiCallServiceInterface {
+export class WebSocketClientService  {
 
 
   public roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
@@ -57,7 +57,7 @@ export class WebSocketClientService implements ApiCallServiceInterface {
         this.router.navigate(['/login']);
     }
     this.socketConnection.onmessage = (event) => {
-      let data = JSON.parse(event.data) as BaseTransferObject<any>;
+      let data = JSON.parse(event.data) as BaseDto<any>;
       //@ts-ignore
       this[data.eventType].call(this, data);
     }
@@ -112,6 +112,9 @@ export class WebSocketClientService implements ApiCallServiceInterface {
       localStorage.removeItem('jwt');
   }
 
+  ServerRejectsJwt(dto: ServerRejectsJwt) {
+    localStorage.removeItem('jwt');
+  }
 
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
     this.roomsWithMessages.get(serverSendsOlderMessagesToClient.roomId!)!

@@ -1,4 +1,4 @@
-export class BaseTransferObject<T> {
+export class BaseDto<T> {
   eventType: string;
 
   constructor(init?: Partial<T>) {

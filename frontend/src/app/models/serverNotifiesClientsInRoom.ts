@@ -1,7 +1,7 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 import {EndUser} from "./entities";
 
-export class ServerNotifiesClientsInRoom extends BaseTransferObject<ServerNotifiesClientsInRoom> {
+export class ServerNotifiesClientsInRoom extends BaseDto<ServerNotifiesClientsInRoom> {
   roomId?: number;
   message?: string;
 }

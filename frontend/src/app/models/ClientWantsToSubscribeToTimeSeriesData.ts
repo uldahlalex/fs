@@ -1,5 +1,5 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 
-export class ClientWantsToSubscribeToTimeSeriesData extends BaseTransferObject<ClientWantsToSubscribeToTimeSeriesData> {
+export class ClientWantsToSubscribeToTimeSeriesData extends BaseDto<ClientWantsToSubscribeToTimeSeriesData> {
 
 }

@@ -1,4 +1,5 @@
 using api.Extensions;
+using api.Models.Exceptions;
 using api.Models.ServerEvents;
 using Fleck;
 using Serilog;
@@ -15,6 +16,11 @@ public static class GlobalExceptionHandler
             receivedMessage = message,
             errorMessage = exception.Message
         });
+
+        if (exception is JwtVerificationException)
+        {
+            socket.SendDto(new ServerRejectsClientJwt());
+        }
         //todo prod and dev env separation
     }
 }

@@ -1,5 +1,5 @@
-import {BaseTransferObject} from "./baseTransferObject";
+import {BaseDto} from "./baseDto";
 
-export class ClientWantsToLeaveRoom extends BaseTransferObject<ClientWantsToLeaveRoom> {
+export class ClientWantsToLeaveRoom extends BaseDto<ClientWantsToLeaveRoom> {
   roomId?: number;
 }
