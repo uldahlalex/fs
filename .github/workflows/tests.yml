@@ -21,4 +21,5 @@ jobs:
       - run: cd backend/Tests && dotnet test
         env:
           FULLSTACK_AZURE_COGNITIVE_SERVICES: ${{ secrets.FULLSTACK_AZURE_COGNITIVE_SERVICES }}
+      - run: docker-compose logs
       - run: docker-compose down
