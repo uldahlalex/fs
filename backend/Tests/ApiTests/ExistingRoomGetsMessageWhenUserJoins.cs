@@ -16,38 +16,40 @@ public class ExistingRoomGetsMessageWhenUserJoins
         using (var ws = new WebsocketClient(new Uri(StaticHelpers.Url)))
         using (var ws2 = new WebsocketClient(new Uri(StaticHelpers.Url)))
         {
-            var communicatoin = new List<Tuple<BaseDto, string>>();
+            var communication = new List<Tuple<BaseDto, string>>();
 
             ws.MessageReceived.Subscribe(msg =>
             {
-                communicatoin.Add(
+                communication.Add(
                     new Tuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
             });
             ws2.MessageReceived.Subscribe(msg =>
             {
-                communicatoin.Add(
+                communication.Add(
                     new Tuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws2)));
             });
             await ws.Start();
             await ws2.Start();
 
 
-            await ws.Do(StaticHelpers.AuthEvent, communicatoin);
-            await ws2.Do(StaticHelpers.AuthEvent, communicatoin);
+            await ws.Do(StaticHelpers.AuthEvent, communication);
+            await ws2.Do(StaticHelpers.AuthEvent, communication);
 
 
-            await ws.Do(StaticHelpers.EnterRoomEvent, communicatoin);
-            await ws2.Do(StaticHelpers.EnterRoomEvent, communicatoin);
+            await ws.Do(StaticHelpers.EnterRoomEvent, communication);
+            await ws2.Do(StaticHelpers.EnterRoomEvent, communication);
 
 
-            await ws.Do(StaticHelpers.SendMessageEvent, communicatoin);
-            await ws2.Do(StaticHelpers.SendMessageEvent, communicatoin);
+            await ws.Do(StaticHelpers.SendMessageEvent, communication);
+            await ws2.Do(StaticHelpers.SendMessageEvent, communication);
 
-            communicatoin.Should()
+            await Task.Delay(500);
+
+            communication.Should()
                 .Contain(x => x.Item1.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
-            communicatoin.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
+            communication.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
                 .Should().BeGreaterThan(2);
-            communicatoin.Should()
+            communication.Should()
                 .NotContain(x => x.Item1.eventType == nameof(ServerSendsErrorMessageToClient));
         }
     }
