@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: docker/setup-buildx-action@v3
-      - run: docker-compose up -d && sleep 45
+      - run: docker-compose up -d
       - name: Install dotnet for local test execution
         uses: actions/setup-dotnet@v4
         with:
@@ -22,4 +22,6 @@ jobs:
         env:
           FULLSTACK_AZURE_COGNITIVE_SERVICES: ${{ secrets.FULLSTACK_AZURE_COGNITIVE_SERVICES }}
       - run: docker-compose logs && sleep 5
+        if: always()
       - run: docker-compose down && sleep 5
+        if: always()
