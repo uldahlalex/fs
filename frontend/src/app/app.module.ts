@@ -4,7 +4,7 @@ import {RouterModule} from "@angular/router";
 import {ComponentRoom} from "./components/component.room";
 import {ComponentLogin} from "./components/component.login";
 import {environment} from "../environments/environment";
-import {enableProdMode, InjectionToken, NgModule} from "@angular/core";
+import {enableProdMode, NgModule} from "@angular/core";
 import {ComponentSidebar} from "./components/component.sidebar";
 import {ToastModule} from "primeng/toast";
 import {MessageModule} from "primeng/message";
@@ -16,9 +16,6 @@ import {MessageService} from "primeng/api";
 import {DialogModule} from "primeng/dialog";
 import {TimeSeriesComponent} from "./components/component.timeseries";
 import {NgApexchartsModule} from "ng-apexcharts";
-
-
-
 
 
 @NgModule({

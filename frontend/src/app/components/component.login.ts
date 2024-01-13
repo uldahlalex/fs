@@ -1,8 +1,9 @@
-import {Component, Inject} from "@angular/core";
+import {Component} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToRegister} from "../models/clientWantsToRegister";
 import {ClientWantsToAuthenticate} from "../models/clientWantsToAuthenticate";
+
 @Component({
   template: `
     <div *ngIf="showLogin"
@@ -48,7 +49,7 @@ export class ComponentLogin {
   })
   showLogin: boolean = true;
 
-  constructor(private apiCallService: WebSocketClientService
+  constructor(private webSocketClientService: WebSocketClientService
   ) {
   }
 
@@ -57,10 +58,10 @@ export class ComponentLogin {
   }
 
   login() {
-    this.apiCallService.ClientWantsToAuthenticate(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate));
+    this.webSocketClientService.socketConnection.sendDto(new ClientWantsToAuthenticate(this.loginForm.value as ClientWantsToAuthenticate));
   }
 
   register() {
-    this.apiCallService.ClientWantsToRegister(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister));
+    this.webSocketClientService.socketConnection.sendDto(new ClientWantsToRegister(this.registerForm.value as ClientWantsToRegister));
   }
 }

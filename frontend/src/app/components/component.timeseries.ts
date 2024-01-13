@@ -1,4 +1,4 @@
-import {Component, Inject} from "@angular/core";
+import {Component} from "@angular/core";
 import {ApexChart, ApexTitleSubtitle, ApexXAxis} from "ng-apexcharts";
 import {WebSocketClientService} from "../services/service.websocketclient";
 import {ClientWantsToSubscribeToTimeSeriesData} from "../models/ClientWantsToSubscribeToTimeSeriesData";
@@ -32,8 +32,7 @@ export class TimeSeriesComponent {
   };
 
   constructor(public webSocketClientService: WebSocketClientService) {
-    this.webSocketClientService.ClientWantsToSubscribeToTimeSeriesData(
-      new ClientWantsToSubscribeToTimeSeriesData())
+    this.webSocketClientService.socketConnection.sendDto(new ClientWantsToSubscribeToTimeSeriesData());
   }
 
   clearTemporarily() {

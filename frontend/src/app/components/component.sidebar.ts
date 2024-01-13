@@ -1,6 +1,7 @@
-import {Component, Inject, inject} from "@angular/core";
+import {Component, inject} from "@angular/core";
 import {Router} from "@angular/router";
 import {WebSocketClientService} from "../services/service.websocketclient";
+
 @Component({
   template: `
     <div style="display: flex; flex-direction: row; justify-content: start;">
@@ -32,7 +33,7 @@ export class ComponentSidebar {
   isOpen: boolean = false;
   dialogText: string = "Show rooms";
 
-  constructor( public webSocketClientService: WebSocketClientService
+  constructor(public webSocketClientService: WebSocketClientService
   ) {
   }
 

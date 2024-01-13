@@ -23,9 +23,10 @@ import {ServerSendsOlderTimeSeriesDataToClient} from "../models/serverSendsOlder
 import {ApexAxisChartSeries, ApexNonAxisChartSeries} from "ng-apexcharts";
 import {Router} from "@angular/router";
 import {ServerRejectsJwt} from "../models/serverRejectsJwt";
+import {WebsocketSuperclass} from "../models/WebsocketSuperclass";
 
 @Injectable({providedIn: 'root'})
-export class WebSocketClientService  {
+export class WebSocketClientService {
 
 
   public roomsWithMessages: Map<number, Message[]> = new Map<number, Message[]>();
@@ -41,7 +42,7 @@ export class WebSocketClientService  {
   }];
 
 
-  private socketConnection: WebSocket = new WebSocket(`ws://localhost:8181`);
+  public socketConnection: WebsocketSuperclass = new WebsocketSuperclass(`ws://localhost:8181`);
 
   constructor(public messageService: MessageService, public router: Router) {
     this.rooms.forEach(room => {
@@ -108,7 +109,7 @@ export class WebSocketClientService  {
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
     this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage});
-    if(JSON.parse(dto.receivedMessage!).eventType == 'ClientWantsToAuthenticateWithJwt')
+    if (JSON.parse(dto.receivedMessage!).eventType == 'ClientWantsToAuthenticateWithJwt')
       localStorage.removeItem('jwt');
   }
 
@@ -149,38 +150,38 @@ export class WebSocketClientService  {
 
 
   // CLIENT -> SERVER COMMUNICATION
-
-  ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToRegister));
-  }
-
-  ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToAuthenticate));
-  }
-
-  ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToAuthenticateWithJwt));
-  }
-
-  ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToEnterRoom));
-  }
-
-  ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToLeaveRoom));
-  }
-
-  ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToLoadOlderMessages));
-  }
-
-  ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
-    this.socketConnection.send(JSON.stringify(clientWantsToSendMessageToRoom));
-  }
-
-  ClientWantsToSubscribeToTimeSeriesData(clientWantsToSubscribeToTimeSeriesData: ClientWantsToRegister): void {
-    {
-      this.socketConnection.send(JSON.stringify(clientWantsToSubscribeToTimeSeriesData));
-    }
-  }
+  //i think ill retire all this boilerplate
+  // ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToRegister));
+  // }
+  //
+  // ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToAuthenticate));
+  // }
+  //
+  // ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToAuthenticateWithJwt));
+  // }
+  //
+  // ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToEnterRoom));
+  // }
+  //
+  // ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToLeaveRoom));
+  // }
+  //
+  // ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToLoadOlderMessages));
+  // }
+  //
+  // ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
+  //   this.socketConnection.send(JSON.stringify(clientWantsToSendMessageToRoom));
+  // }
+  //
+  // ClientWantsToSubscribeToTimeSeriesData(clientWantsToSubscribeToTimeSeriesData: ClientWantsToRegister): void {
+  //   {
+  //     this.socketConnection.send(JSON.stringify(clientWantsToSubscribeToTimeSeriesData));
+  //   }
+  // }
 }

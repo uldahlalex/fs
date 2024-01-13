@@ -1,4 +1,4 @@
-import {Component, Inject, inject} from "@angular/core";
+import {Component, inject} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {FormControl} from "@angular/forms";
 import {WebSocketClientService} from "../services/service.websocketclient";
@@ -69,7 +69,7 @@ export class ComponentRoom {
     console.log("entering")
     try {
       let clientWantsToEnterRoom = new ClientWantsToEnterRoom({roomId: this.roomId});
-      this.webSocketClientService.ClientWantsToEnterRoom(clientWantsToEnterRoom);
+      this.webSocketClientService.socketConnection.sendDto(clientWantsToEnterRoom);
     } catch (e) {
       console.log("connection not established, retrying in 1 second")
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -91,11 +91,11 @@ export class ComponentRoom {
       roomId: this.roomId,
       lastMessageId: this.webSocketClientService.roomsWithMessages.get(this.roomId!)![0].id
     })
-    this.webSocketClientService.ClientWantsToLoadOlderMessages(dto);
+    this.webSocketClientService.socketConnection.sendDto(dto);
   }
 
   clientWantsToSendMessageToRoom() {
     let dto = new ClientWantsToSendMessageToRoom({messageContent: this.messageInput.value!, roomId: this.roomId});
-    this.webSocketClientService.ClientWantsToSendMessageToRoom(dto);
+    this.webSocketClientService.socketConnection.sendDto(dto);
   }
 }
