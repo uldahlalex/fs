@@ -28,6 +28,8 @@ public class SignInEnterRoomSendMessage
             await ws.Do(StaticHelpers.EnterRoomEvent, communication);
             await ws.Do(StaticHelpers.SendMessageEvent, communication);
 
+
+            Task.Delay(1000).Wait();
             communication.Should().Contain(x => x.Item1.eventType == nameof(ServerAddsClientToRoom));
             communication.Should().Contain(x => x.Item1.eventType == nameof(ServerAuthenticatesUser));
             communication.Should()

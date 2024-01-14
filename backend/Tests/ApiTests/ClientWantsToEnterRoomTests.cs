@@ -27,6 +27,7 @@ public class MustEnterRoomToSendMessage
             await ws.Do(StaticHelpers.AuthEvent, communication);
             await ws.Do(StaticHelpers.SendMessageEvent, communication);
 
+            Task.Delay(1000).Wait();
             communication.Should().Contain(x => x.Item1.eventType == nameof(ServerAuthenticatesUser));
             communication.Should().Contain(x => x.Item1.eventType == nameof(ServerSendsErrorMessageToClient));
             communication.Should().NotContain(x => x.Item1.eventType == nameof(ServerAddsClientToRoom));

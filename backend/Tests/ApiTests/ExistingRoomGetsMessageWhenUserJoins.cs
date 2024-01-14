@@ -43,7 +43,7 @@ public class ExistingRoomGetsMessageWhenUserJoins
             await ws.Do(StaticHelpers.SendMessageEvent, communication);
             await ws2.Do(StaticHelpers.SendMessageEvent, communication);
 
-
+            Task.Delay(1000).Wait();
             communication.Should()
                 .Contain(x => x.Item1.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
             communication.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
