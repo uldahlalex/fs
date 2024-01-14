@@ -35,15 +35,32 @@ public static class StaticHelpers
         });
     }
 
-    public static async Task Do<T>(this WebsocketClient ws, T dto, List<Tuple<BaseDto, string>> communication)
+    public static async Task Do<T>(this WebsocketClient ws, T dto, List<(BaseDto dto, string websocketClient)> communication, Func<bool> condition)
         where T : BaseDto
     {
-        communication.Add(new Tuple<BaseDto, string>(dto, nameof(ws)));
+        communication.Add(new(dto, nameof(ws)));
         ws.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
         }));
-        Task.Delay(2500).Wait();
+        WaitForCondition(condition).Wait(); //todo await ot .Wait()
+    }
+    
+    public static async Task WaitForCondition(Func<bool> condition)
+    {
+        var startTime = DateTime.UtcNow;
+
+        while (!condition())
+        {
+            var elapsedTime = DateTime.UtcNow - startTime;
+
+            if (elapsedTime > TimeSpan.FromSeconds(10))
+            {
+                throw new TimeoutException("Condition not met within the specified timeout.");
+            }
+
+            Task.Delay(100).Wait();
+        }
     }
 }
