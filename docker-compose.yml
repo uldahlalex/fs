@@ -8,11 +8,12 @@ services:
       - "8181:8181"
     depends_on:
       - db
+      - mqtt-broker
     environment:
       - FULLSTACK_JWT_PRIVATE_KEY=${FULLSTACK_JWT_PRIVATE_KEY}
       - FULLSTACK_PG_CONN=${FULLSTACK_PG_CONN}
       - FULLSTACK_AZURE_COGNITIVE_SERVICES=${FULLSTACK_AZURE_COGNITIVE_SERVICES}
-      - FULLSTACK_START_MQTT_CLIENT=false
+      - FULLSTACK_START_MQTT_CLIENT=true
   db:
     image: postgres:16.1
     environment:
@@ -23,5 +24,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init/01-rebuild.sql:/docker-entrypoint-initdb.d/01-rebuild.sql
+  angular:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+  mqtt-broker:
+    image: eclipse-mosquitto
+    hostname: mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./conf:/mosquitto/config
+      - ./data:/mosquitto/data
+      - ./log:/mosquitto/log
 volumes:
   postgres_data:

@@ -17,8 +17,10 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository)
         var mqttFactory = new MqttFactory();
         var mqttClient = mqttFactory.CreateMqttClient();
 
+        var isDocker = File.Exists("/.dockerenv");
+        var mqttServer = isDocker ? "mqtt-broker" : "localhost";
         var mqttClientOptions = new MqttClientOptionsBuilder()
-            .WithTcpServer("localhost", 1883)
+            .WithTcpServer(mqttServer, 1883)
             .WithProtocolVersion(MqttProtocolVersion.V500)
             .Build();
 
