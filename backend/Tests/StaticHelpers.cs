@@ -27,23 +27,16 @@ public static class StaticHelpers
         messageContent = "hey"
     };
 
-    public static string ToJsonString(this object o)
-    {
-        return JsonSerializer.Serialize(o, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            WriteIndented = true
-        });
-    }
+    // public static List<Func<bool>> AreTheseDtosPresent(this List<BaseDto> history,
+    //     (Type dto, int expectedFrequency)[] conditions)
+    //     => conditions.Select(condition
+    //             => (Func<bool>)(()
+    //                 => history.Count(x
+    //                     => x.GetType() == condition.dto) == condition.expectedFrequency)).ToList();
 
-    public static List<Func<bool>> AreTheseDtosPresent(this List<BaseDto> history,
-        (Type dto, int expectedFrequency)[] conditions)
-        => conditions.Select(condition
-                => (Func<bool>)(()
-                    => history.Count(x
-                        => x.GetType() == condition.dto) == condition.expectedFrequency)).ToList();
-
-    public static Task DoAndWaitUntil<T>(this (WebsocketClient ws, List<BaseDto> communication) pair, T action,
+    public static Task DoAndWaitUntil<T>(
+        this (WebsocketClient ws, List<BaseDto> communication) pair, 
+        T action,
         List<Func<bool>> conditions) where T : BaseDto
     {
         pair.communication.Add(action);
@@ -52,12 +45,12 @@ public static class StaticHelpers
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
         }));
-        pair.ws.WaitForCondition(conditions, pair.communication);
+        WaitForCondition(conditions, pair.communication);
         return Task.CompletedTask;
     }
 
 
-    public static void WaitForCondition(this WebsocketClient socket, List<Func<bool>> conditions, List<BaseDto> communication)
+    private static void WaitForCondition(List<Func<bool>> conditions, List<BaseDto> communication)
     {
         var startTime = DateTime.UtcNow;
         while (conditions.Any(x => !x.Invoke()))
@@ -76,8 +69,6 @@ public static class StaticHelpers
             Task.Delay(100).Wait();
         }
     }
-
-
     public static async Task<(WebsocketClient ws, List<BaseDto> communication)> SetupWsClient(this WebsocketClient ws)
     {
         var communication = new List<BaseDto>();
