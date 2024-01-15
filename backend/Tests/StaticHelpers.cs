@@ -45,12 +45,12 @@ public static class StaticHelpers
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
         }));
-        WaitForCondition(conditions, pair.communication);
+        WaitForCondition(conditions).Wait();
         return Task.CompletedTask;
     }
 
 
-    private static void WaitForCondition(List<Func<bool>> conditions, List<BaseDto> communication)
+    private static Task WaitForCondition(List<Func<bool>> conditions)
     {
         var startTime = DateTime.UtcNow;
         while (conditions.Any(x => !x.Invoke()))
@@ -58,16 +58,12 @@ public static class StaticHelpers
             var elapsedTime = DateTime.UtcNow - startTime;
             if (elapsedTime > TimeSpan.FromSeconds(5))
             {
-                var unmetConditions = conditions
-                    .Select((condition, index) => new { Condition = condition, Index = index })
-                    .Where(x => !x.Condition())
-                    .Select(x => $"Condition {x.Index + 1} (Type: {x.Condition.Method.DeclaringType}, Method: {x.Condition.Method.Name})");
-
-                var currentStatus = string.Join(", ", communication.Select(x => x.GetType().Name));
-                throw new TimeoutException($"Timeout. Unmet conditions: {string.Join(", ", unmetConditions)}. Current status: {currentStatus}");
+                throw new TimeoutException($"Timeout. Unmet conditions");
             }
             Task.Delay(100).Wait();
         }
+
+        return Task.CompletedTask;
     }
     public static async Task<(WebsocketClient ws, List<BaseDto> communication)> SetupWsClient(this WebsocketClient ws)
     {

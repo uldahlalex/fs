@@ -11,7 +11,7 @@ using Websocket.Client;
 namespace Tests.ApiTests;
 
 [TestFixture]
-public class MyDatabaseTests
+public class ApiTests
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
     
@@ -25,25 +25,23 @@ public class MyDatabaseTests
 
             await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, new ()
                 {
-                   
+                   () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
                      
 
                 }
             );
             await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,  new()
             {
-               
+                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
+
             });
 
             await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  new()
-            {
+            { 
+                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 1
+
             });
 
-            Task.Delay(5000).Wait();
-            Console.WriteLine(JsonSerializer.Serialize(wsAndHistory.communication, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            }));
             wsAndHistory.communication.Should().Contain(x => x.eventType == nameof(ServerAuthenticatesUser));
 
         }
