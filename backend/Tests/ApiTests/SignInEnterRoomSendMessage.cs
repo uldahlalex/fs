@@ -16,26 +16,26 @@ public class SignInEnterRoomSendMessage
     {
         using (var ws = new WebsocketClient(new Uri(StaticHelpers.Url)))
         {
-            var communication = new List<(BaseDto dto, string websocketClient)>();
+            var wsAndHistory = await ws.SetupWsClient();
+            
 
-            ws.MessageReceived.Subscribe(msg =>
-            {
-                communication.Add(
-                    new ValueTuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
-            });
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                    (typeof(ServerAuthenticatesUser), 1)
+                ]));
 
-            await ws.Start();
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+            (typeof(ServerAddsClientToRoom), 1),
+            (typeof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom), 1),
+            (typeof(ServerSendsErrorMessageToClient), 0)
 
-    
-            await ws.Do(StaticHelpers.AuthEvent, communication, () => communication.Any(x => x.dto.eventType == nameof(ServerAuthenticatesUser)));
+            ]));
 
-            await ws.Do(StaticHelpers.EnterRoomEvent, communication, () => communication.Any(x => x.dto.eventType == nameof(ServerAddsClientToRoom)));
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,
+                wsAndHistory.communication.AreTheseDtosPresent([
+                    (typeof(ServerBroadcastsMessageToClientsInRoom), 1),
+                    (typeof(ServerSendsErrorMessageToClient), 0)
+                ]));
 
-            await ws.Do(StaticHelpers.SendMessageEvent, communication, () => communication.Any(x => x.dto.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))); 
-
-            communication.Should().Contain(x => x.Item1.eventType == nameof(ServerAddsClientToRoom));
-            communication.Should().Contain(x => x.Item1.eventType == nameof(ServerAuthenticatesUser));
-            communication.Should().Contain(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom));
         }
     }
 }

@@ -16,41 +16,38 @@ public class ExistingRoomGetsMessageWhenUserJoins
         using (var ws = new WebsocketClient(new Uri(StaticHelpers.Url)))
         using (var ws2 = new WebsocketClient(new Uri(StaticHelpers.Url)))
         {
-            var communication = new List<(BaseDto dto, string websocketClient)>();
+            var wsAndHistory = await ws.SetupWsClient();
+            var ws2AndHistory = await ws2.SetupWsClient();
 
-            ws.MessageReceived.Subscribe(msg =>
-            {
-                communication.Add(
-                    new ValueTuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
-            });
-            ws2.MessageReceived.Subscribe(msg =>
-            {
-                communication.Add(
-                    new ValueTuple<BaseDto, string>(msg.Text.DeserializeAndValidate<BaseDto>(), nameof(ws)));
-            });
-            await ws.Start();
-            await ws2.Start();
-
-
-            await ws.Do(StaticHelpers.AuthEvent, communication, () => communication.Any(x => x.Item1.eventType == nameof(ServerAuthenticatesUser)));
-            await ws2.Do(StaticHelpers.AuthEvent, communication, () => communication.Count(x => x.Item1.eventType == nameof(ServerAuthenticatesUser))==2);
-
-
-            await ws.Do(StaticHelpers.EnterRoomEvent, communication, () => communication.Any(x => x.Item1.eventType == nameof(ServerAddsClientToRoom)));
-            await ws2.Do(StaticHelpers.EnterRoomEvent, communication,
-                () => communication.Count(x => x.Item1.eventType == nameof(ServerAddsClientToRoom))==2);
-
-            await ws.Do(StaticHelpers.SendMessageEvent, communication,
-                () => communication.Any(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)));
-            await ws2.Do(StaticHelpers.SendMessageEvent, communication,
-                () => communication.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) >= 3);
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                (typeof(ServerAuthenticatesUser), 1)
+            ]));
+            await ws2AndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                (typeof(ServerAuthenticatesUser), 1)
+            ]));
             
-            communication.Should()
-                .Contain(x => x.Item1.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom));
-            communication.Count(x => x.Item1.eventType == nameof(ServerBroadcastsMessageToClientsInRoom))
-                .Should().BeGreaterThanOrEqualTo(3);
-            communication.Should()
-                .NotContain(x => x.Item1.eventType == nameof(ServerSendsErrorMessageToClient));
+
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                (typeof(ServerAddsClientToRoom), 1),
+                (typeof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom), 1),
+                (typeof(ServerSendsErrorMessageToClient), 0)
+
+            ]));
+            await ws2AndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                (typeof(ServerAddsClientToRoom), 2),
+                (typeof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom), 3),
+                (typeof(ServerSendsErrorMessageToClient), 0)
+
+            ]));
+            
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                (typeof(ServerBroadcastsMessageToClientsInRoom), 2),
+            ]));         
+            await ws2AndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  wsAndHistory.communication.AreTheseDtosPresent([
+                (typeof(ServerBroadcastsMessageToClientsInRoom), 4),
+            ]));
+
+     
         }
     }
 }
