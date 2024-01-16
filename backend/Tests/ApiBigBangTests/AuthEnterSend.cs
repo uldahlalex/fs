@@ -6,6 +6,7 @@ using Testcontainers.PostgreSql;
 namespace Tests.ApiBigBangTests;
 
 [TestFixture]
+[NonParallelizable]
 public class AuthEnterSend
 {
     [OneTimeSetUp]

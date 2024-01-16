@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Tests.UnitTests;
 
 [TestFixture]
-[Parallelizable(ParallelScope.All)]
+[NonParallelizable]
 public class AzureCognitiveServicesTests
 {
     [TestCase]
