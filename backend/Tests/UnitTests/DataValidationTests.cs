@@ -5,6 +5,8 @@ using NUnit.Framework;
 
 namespace Tests.UnitTests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.All)]
 public class DataValidationTests
 {
     [TestCase]

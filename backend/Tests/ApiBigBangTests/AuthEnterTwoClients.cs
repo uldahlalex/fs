@@ -9,8 +9,7 @@ using Websocket.Client;
 namespace Tests.ApiTests;
 
 [TestFixture]
-[Parallelizable(ParallelScope.All)]
-public class ExistingClientsInRoomGetJoinedMessageWhenSomeoneEnters
+public class AuthEnterTwoClients
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
 
@@ -23,27 +22,25 @@ public class ExistingClientsInRoomGetJoinedMessageWhenSomeoneEnters
     var ws2 = await StaticHelpers.SetupWsClient(history);
 
 
-    await ws1.DoAndWaitUntil(StaticHelpers.AuthEvent, history, new()
+    await ws1.DoAndWaitUntil(StaticHelpers.AuthEvent, new()
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
-        }
-    );
-    await ws2.DoAndWaitUntil(StaticHelpers.AuthEvent, history, new()
+        }, history);
+    await ws2.DoAndWaitUntil(StaticHelpers.AuthEvent, new()
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
-        }
-    );
-    await ws1.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history,new()
+        }, history);
+    await ws1.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,new()
     {
         () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
         () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
-    });
-    await ws2.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history, new()
+    }, history);
+    await ws2.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new()
     {
         () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 3,
         () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 2
                 
-    });
+    }, history);
         
     }
     

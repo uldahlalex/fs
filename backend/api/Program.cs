@@ -13,12 +13,14 @@ using Serilog;
 
 
 
-var app = await ApiStartup.StartApi(args);
+var app = await ApiStartup.StartApi();
 app.Run();
 
 public class ApiStartup
 {
-    public static async Task<WebApplication> StartApi(string[] args)
+
+public static int Port = 8181;
+    public static async Task<WebApplication> StartApi()
     {
         Console.WriteLine("ENVIRONMENT: "+Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
         Log.Logger = new LoggerConfiguration()
@@ -28,7 +30,7 @@ public class ApiStartup
 
         EnvSetup.SetDefaultEnvVariables();
 
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder();
 
         builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
             sourceBuilder => sourceBuilder.EnableParameterLogging());
@@ -45,9 +47,10 @@ public class ApiStartup
 
         var app = builder.Build();
 
-
-        var server = new WebSocketServer("ws://0.0.0.0:8181");
-
+        var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!
+            .Equals("Testing") ? 0 : 8181;
+        var server = new WebSocketServer("ws://0.0.0.0:"+port);
+   
         void Config(IWebSocketConnection ws)
         {
             ws.OnOpen = ws.AddConnection;
@@ -71,6 +74,7 @@ public class ApiStartup
         server.RestartAfterListenError = true;
         server.ListenerSocket.NoDelay = true;
         server.Start(Config);
+        Port = server.Port;
         var mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT")!;
         if (!string.IsNullOrEmpty(mqttClientSetting) &&
             mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))

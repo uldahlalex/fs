@@ -12,35 +12,33 @@ using Websocket.Client;
 namespace Tests.ApiTests;
 
 [TestFixture]
-[Parallelizable(ParallelScope.All)]
-public class ApiTests
+public class AuthEnterSend
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
     
     [Test]
-    public async Task Signin_EnterRoom_SendMessage()
+    public async Task Client_Can_Authenticate_Enter_Room_And_Send_Message()
     {
 
         var history = new List<BaseDto>();
         var wsAndHistory = await StaticHelpers.SetupWsClient(history);
 
 
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, history, new ()
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, new ()
                 {
-                   () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
+                    () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
                      
 
-                }
-            );
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history, new()
+                }, history);
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new()
             {
                 () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1,
-            });
+            }, history);
 
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  history,new()
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,new()
             { 
                 () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 1
-            });
+            }, history);
             
         
     }

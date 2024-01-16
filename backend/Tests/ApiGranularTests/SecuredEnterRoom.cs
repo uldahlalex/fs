@@ -12,27 +12,20 @@ using Websocket.Client;
 namespace Tests.ApiTests;
 
 [TestFixture]
-[Parallelizable(ParallelScope.All)]
 public class MustAuthenticateToEnterRoom
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
     
     [Test]
-    public async Task Signin_EnterRoom_SendMessage()
+    public async Task WebSocket_Client_Must_Be_Authenticated_To_Enter_Room()
     {
-
         var history = new List<BaseDto>();
         var wsAndHistory = await StaticHelpers.SetupWsClient(history);
-
-
-        await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history, new ()
-            {
-                () => history.Count(x => x.eventType == nameof(ServerSendsErrorMessageToClient)) == 1
-            }
-        );
-       
-            
-        
+        await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new()
+        {
+            () => history.Count(x => x.eventType == nameof(ServerSendsErrorMessageToClient)) == 1,
+            () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 0,
+        }, history);
     }
 
     [OneTimeSetUp]

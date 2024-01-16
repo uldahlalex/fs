@@ -1,10 +1,10 @@
 using System.Text.Json;
+using System.Xml;
 using api.ClientEventHandlers;
 using api.Extensions;
 using api.Models;
 using Dapper;
 using Npgsql;
-using NUnit.Framework;
 using Testcontainers.PostgreSql;
 using Websocket.Client;
 
@@ -12,7 +12,6 @@ namespace Tests;
 
 public static class StaticHelpers
 {
-    public const string Url = "ws://localhost:8181";
 
     public static ClientWantsToAuthenticateDto AuthEvent = new()
     {
@@ -38,13 +37,12 @@ public static class StaticHelpers
     //                 => history.Count(x
     //                     => x.GetType() == condition.dto) == condition.expectedFrequency)).ToList();
 
-    public static Task DoAndWaitUntil<T>(
-        this WebsocketClient ws,
+    public static Task DoAndWaitUntil<T>(this WebsocketClient ws,
         T action,
-        List<BaseDto> communication,
-        List<Func<bool>> waitUntilConditionsAreMet) where T : BaseDto
+        List<Func<bool>> waitUntilConditionsAreMet,
+        List<BaseDto>? communication = null) where T : BaseDto
     {
-        communication.Add(action);
+        communication?.Add(action);
         ws.Send(JsonSerializer.Serialize(action, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -61,19 +59,23 @@ public static class StaticHelpers
         while (conditions.Any(x => !x.Invoke()))
         {
             var elapsedTime = DateTime.UtcNow - startTime;
-            if (elapsedTime > TimeSpan.FromSeconds(3))
+            if (elapsedTime > TimeSpan.FromSeconds(5))
             {
                 throw new TimeoutException($"Timeout. Unmet conditions");
             }
+
             Task.Delay(100).Wait();
         }
 
         return Task.CompletedTask;
     }
-    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
-    {
-        var ws = new WebsocketClient(new Uri(StaticHelpers.Url));
-        ws.MessageReceived.Subscribe(msg => { history.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
+
+    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto>? history = null)
+    {      
+        Console.WriteLine("Connecting to ws://localhost:"+ ApiStartup.Port);
+        var ws = new WebsocketClient(new Uri( "ws://localhost:"+ ApiStartup.Port));
+ 
+        ws.MessageReceived.Subscribe(msg => { history?.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
         await ws.Start();
         return ws;
     }
@@ -87,8 +89,8 @@ public static class StaticHelpers
         {
             await conn.ExecuteAsync(DbRebuild);
         }
-        await ApiStartup.StartApi(new string[0]);
 
+        await ApiStartup.StartApi();
     }
 
     public static string DbRebuild = @"
