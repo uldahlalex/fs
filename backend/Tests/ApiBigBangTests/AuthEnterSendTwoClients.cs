@@ -3,7 +3,7 @@ using api.Models.ServerEvents;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
-namespace Tests.ApiTests;
+namespace Tests.ApiBigBangTests;
 
 [TestFixture]
 public class AuthEnterSendTwoClients
