@@ -23,10 +23,10 @@ public static class StaticHelpers
             WriteIndented = true
         }));
         var startTime = DateTime.UtcNow;
-        while (waitUntilConditionsAreMet.Any(x => !x.Invoke()))
+        while (waitUntilConditionsAreMet.All(x => !x.Invoke()))
         {
             var elapsedTime = DateTime.UtcNow - startTime;
-            if (elapsedTime > TimeSpan.FromSeconds(5))
+            if (elapsedTime > TimeSpan.FromSeconds(2))
                 throw new TimeoutException("Timeout. Unmet conditions");
 
             Task.Delay(100).Wait();
@@ -36,10 +36,11 @@ public static class StaticHelpers
     }
 
 
-    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto>? history = null)
+    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
     {
-        var ws = new WebsocketClient(new Uri("ws://localhost:" + ApiStartup.Port));
-        ws.MessageReceived.Subscribe(msg => { history?.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
+        Console.WriteLine("Starting websocket client on port " + Environment.GetEnvironmentVariable("FULLSTACK_API_PORT"));
+        var ws = new WebsocketClient(new Uri("ws://localhost:" + Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
+        ws.MessageReceived.Subscribe(msg => { history.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
         await ws.Start();
         return ws;
     }
@@ -50,6 +51,6 @@ public static class StaticHelpers
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
         Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgcontainer.GetConnectionString());
         await new NpgsqlConnection(pgcontainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
-        await ApiStartup.StartApi();
+        ApiStartup.StartApi().Wait();
     }
 }

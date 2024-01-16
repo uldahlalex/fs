@@ -6,7 +6,6 @@ using Testcontainers.PostgreSql;
 namespace Tests.ApiGranularTests;
 
 [TestFixture]
-[NonParallelizable]
 public class MustAuthenticateToEnterRoom
 {
     [OneTimeSetUp]

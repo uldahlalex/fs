@@ -14,11 +14,6 @@ namespace api
 {
     public class ApiStartup
     {
-        public static int Port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!
-            .Equals("Testing")
-            ? 0
-            : 8181;
-
         public static async Task<WebApplication> StartApi()
         {
             Console.WriteLine("ENVIRONMENT: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
@@ -44,8 +39,8 @@ namespace api
 
 
             var app = builder.Build();
-
-            var server = new WebSocketServer("ws://0.0.0.0:" + Port);
+            var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").Equals("Testing") ? 0 : 8181;
+            var server = new WebSocketServer("ws://0.0.0.0:" + port);
 
             void Config(IWebSocketConnection ws)
             {
@@ -70,7 +65,7 @@ namespace api
             server.RestartAfterListenError = true;
             server.ListenerSocket.NoDelay = true;
             server.Start(Config);
-            Port = server.Port;
+            Environment.SetEnvironmentVariable("FULLSTACK_API_PORT",server.Port.ToString());
             var mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT")!;
             if (!string.IsNullOrEmpty(mqttClientSetting) &&
                 mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))

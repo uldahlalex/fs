@@ -6,7 +6,6 @@ using NUnit.Framework;
 namespace Tests.UnitTests;
 
 [TestFixture]
-[NonParallelizable]
 public class DataValidationTests
 {
     [TestCase]

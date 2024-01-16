@@ -6,7 +6,6 @@ using Testcontainers.PostgreSql;
 namespace Tests.ApiBigBangTests;
 
 [TestFixture]
-[NonParallelizable]
 public class AuthEnterSendTwoClients
 {
     [OneTimeSetUp]
@@ -37,7 +36,7 @@ public class AuthEnterSendTwoClients
         }, history);
         await ws2.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
-            () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
+            () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 2
         }, history);
         await ws.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
