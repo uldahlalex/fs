@@ -1,8 +1,8 @@
-using api.Extensions;
-using api.Helpers;
 using api.Models.DbModels;
 using api.Models.Enums;
 using api.Models.ServerEvents;
+using api.StaticHelpers;
+using api.StaticHelpers.ExtensionMethods;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
@@ -43,7 +43,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository)
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(ts);
                 var dto = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult };
 
-                WebsocketHelpers.BroadcastObjectToTopicListeners(dto, TopicEnums.TimeSeries);
+                StaticWebSocketHelpers.BroadcastObjectToTopicListeners(dto, TopicEnums.TimeSeries);
 
                 var pongMessage = new MqttApplicationMessageBuilder()
                     .WithTopic("response_topic")

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using api.Externalities;
 
-namespace api.Helpers.Attributes;
+namespace api.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class ToxicityFilter : ValidationAttribute

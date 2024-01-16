@@ -1,10 +1,10 @@
 using api.Abstractions;
-using api.Extensions;
-using api.Helpers;
-using api.Helpers.Attributes;
+using api.Attributes;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;
+using api.StaticHelpers;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
 namespace api.ClientEventHandlers;
@@ -23,7 +23,7 @@ public class ClientWantsToLeaveRoom : BaseEventHandler<ClientWantsToLeaveRoomDto
         if (!isValidTopic)
             throw new Exception("Invalid topic");
         socket.UnsubscribeFromTopic(topic);
-        WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
+        StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasLeftRoom
             { user = socket.GetMetadata().UserInfo }, topic);
         return Task.CompletedTask;
     }

@@ -11,7 +11,7 @@ public class AuthEnterTwoClients
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.Setup(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -32,20 +32,20 @@ public class AuthEnterTwoClients
         var ws2 = await StaticHelpers.SetupWsClient(history);
 
 
-        await ws1.DoAndWaitUntil(StaticHelpers.AuthEvent, new List<Func<bool>>
+        await ws1.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
         }, history);
-        await ws2.DoAndWaitUntil(StaticHelpers.AuthEvent, new List<Func<bool>>
+        await ws2.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
         }, history);
-        await ws1.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new List<Func<bool>>
+        await ws1.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
         }, history);
-        await ws2.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new List<Func<bool>>
+        await ws2.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 3,
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 2

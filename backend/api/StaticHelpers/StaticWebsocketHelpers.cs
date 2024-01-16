@@ -1,11 +1,11 @@
-using api.Extensions;
 using api.Models;
 using api.Models.Enums;
 using api.State;
+using api.StaticHelpers.ExtensionMethods;
 
-namespace api.Helpers;
+namespace api.StaticHelpers;
 
-public static class WebsocketHelpers
+public static class StaticWebSocketHelpers
 {
     public static void BroadcastObjectToTopicListeners<T>(T dto, TopicEnums topic) where T : BaseDto
     {

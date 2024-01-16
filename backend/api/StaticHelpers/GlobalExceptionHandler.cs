@@ -1,10 +1,10 @@
-using api.Extensions;
 using api.Models.Exceptions;
 using api.Models.ServerEvents;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 using Serilog;
 
-namespace api.Helpers;
+namespace api.StaticHelpers;
 
 public static class GlobalExceptionHandler
 {

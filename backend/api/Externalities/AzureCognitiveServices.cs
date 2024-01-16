@@ -1,5 +1,5 @@
-using api.Extensions;
 using api.Models._3rdPartyTransferModels;
+using api.StaticHelpers.ExtensionMethods;
 
 namespace api.Externalities;
 

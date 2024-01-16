@@ -1,6 +1,6 @@
 using Serilog;
 
-namespace api.Helpers;
+namespace api.StaticHelpers;
 
 public static class EnvSetup
 {

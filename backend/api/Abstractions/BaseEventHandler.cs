@@ -1,7 +1,7 @@
 using System.Reflection;
-using api.Extensions;
-using api.Helpers.Attributes;
+using api.Attributes;
 using api.Models;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
 namespace api.Abstractions;

@@ -11,7 +11,7 @@ public class AuthEnterSendTwoClients
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.Setup(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -30,30 +30,30 @@ public class AuthEnterSendTwoClients
         using var ws = await StaticHelpers.SetupWsClient(history);
         using var ws2 = await StaticHelpers.SetupWsClient(history);
 
-        await ws.DoAndWaitUntil(StaticHelpers.AuthEvent, new List<Func<bool>>
+        await ws.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
         }, history);
-        await ws2.DoAndWaitUntil(StaticHelpers.AuthEvent, new List<Func<bool>>
+        await ws2.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
         }, history);
-        await ws.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new List<Func<bool>>
+        await ws.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
         }, history);
-        await ws2.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new List<Func<bool>>
+        await ws2.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 3,
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 2
         }, history);
 
-        await ws.DoAndWaitUntil(StaticHelpers.SendMessageEvent, new List<Func<bool>>
+        await ws.DoAndWaitUntil(StaticValues.SendMessageEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 2
         }, history);
-        await ws2.DoAndWaitUntil(StaticHelpers.SendMessageEvent, new List<Func<bool>>
+        await ws2.DoAndWaitUntil(StaticValues.SendMessageEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 4
         }, history);

@@ -8,7 +8,7 @@ using api.State;
 using Fleck;
 using Serilog;
 
-namespace api.Extensions;
+namespace api.StaticHelpers.ExtensionMethods;
 
 public static class WebSocketExtensions
 {

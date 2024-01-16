@@ -2,7 +2,7 @@ using System.Reflection;
 using api.Models;
 using Fleck;
 
-namespace api.Extensions;
+namespace api.StaticHelpers.ExtensionMethods;
 
 public static class ReflectionExtensions
 {

@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
-using api.Extensions;
 using api.Externalities;
-using api.Helpers;
 using api.Models;
 using api.Models.ServerEvents;
+using api.StaticHelpers;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
 namespace api.ClientEventHandlers;

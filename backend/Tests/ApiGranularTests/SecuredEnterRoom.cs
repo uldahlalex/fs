@@ -11,7 +11,7 @@ public class MustAuthenticateToEnterRoom
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.Setup(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -28,7 +28,7 @@ public class MustAuthenticateToEnterRoom
     {
         var history = new List<BaseDto>();
         var wsAndHistory = await StaticHelpers.SetupWsClient(history);
-        await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new List<Func<bool>>
+        await wsAndHistory.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerSendsErrorMessageToClient)) == 1,
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 0

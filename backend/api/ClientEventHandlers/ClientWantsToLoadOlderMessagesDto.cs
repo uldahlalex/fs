@@ -1,9 +1,9 @@
 using api.Abstractions;
-using api.Extensions;
+using api.Attributes;
 using api.Externalities;
-using api.Helpers.Attributes;
 using api.Models;
 using api.Models.ServerEvents;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
 namespace api.ClientEventHandlers;

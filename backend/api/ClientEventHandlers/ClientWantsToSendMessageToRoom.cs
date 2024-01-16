@@ -1,13 +1,13 @@
 using api.Abstractions;
-using api.Extensions;
+using api.Attributes;
 using api.Externalities;
-using api.Helpers;
-using api.Helpers.Attributes;
 using api.Models;
 using api.Models.Enums;
 using api.Models.QueryModels;
 using api.Models.ServerEvents;
 using api.State;
+using api.StaticHelpers;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
 namespace api.ClientEventHandlers;
@@ -46,7 +46,7 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             id = insertedMessage.id,
             email = socket.GetMetadata().UserInfo.email
         };
-        WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
+        StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerBroadcastsMessageToClientsInRoom
         {
             message = messageWithUserInfo,
             roomId = dto.roomId

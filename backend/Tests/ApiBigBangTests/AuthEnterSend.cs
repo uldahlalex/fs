@@ -11,7 +11,7 @@ public class AuthEnterSend
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.Setup(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -30,16 +30,16 @@ public class AuthEnterSend
         var wsAndHistory = await StaticHelpers.SetupWsClient(history);
 
 
-        await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, new List<Func<bool>>
+        await wsAndHistory.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
         }, history);
-        await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new List<Func<bool>>
+        await wsAndHistory.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
         }, history);
 
-        await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent, new List<Func<bool>>
+        await wsAndHistory.DoAndWaitUntil(StaticValues.SendMessageEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 1
         }, history);

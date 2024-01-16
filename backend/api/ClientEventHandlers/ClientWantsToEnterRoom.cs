@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
-using api.Extensions;
+using api.Attributes;
 using api.Externalities;
-using api.Helpers;
-using api.Helpers.Attributes;
 using api.Models;
 using api.Models.ServerEvents;
 using api.State;
+using api.StaticHelpers;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
 namespace api.ClientEventHandlers;
@@ -23,7 +23,7 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
     {
         var topic = dto.roomId.RoomIdToTopic();
         socket.SubscribeToTopic(topic);
-        WebsocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+        StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {
             message = "Client joined the room!",
             user = socket.GetMetadata().UserInfo,

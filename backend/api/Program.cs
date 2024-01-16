@@ -1,9 +1,9 @@
 using System.Reflection;
 using api;
 using api.Abstractions;
-using api.Extensions;
 using api.Externalities;
-using api.Helpers;
+using api.StaticHelpers;
+using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 using Serilog;
 
@@ -14,7 +14,10 @@ namespace api
 {
     public class ApiStartup
     {
-        public static int Port = 8181;
+        public static int Port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!
+            .Equals("Testing")
+            ? 0
+            : 8181;
 
         public static async Task<WebApplication> StartApi()
         {
@@ -42,11 +45,7 @@ namespace api
 
             var app = builder.Build();
 
-            var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!
-                .Equals("Testing")
-                ? 0
-                : 8181;
-            var server = new WebSocketServer("ws://0.0.0.0:" + port);
+            var server = new WebSocketServer("ws://0.0.0.0:" + Port);
 
             void Config(IWebSocketConnection ws)
             {

@@ -3,7 +3,7 @@ using System.Text.Json;
 using api.Models.Enums;
 using ArgumentException = System.ArgumentException;
 
-namespace api.Extensions;
+namespace api.StaticHelpers.ExtensionMethods;
 
 //3
 public static class Extensions
