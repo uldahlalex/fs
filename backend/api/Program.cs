@@ -1,28 +1,21 @@
 using System.Reflection;
-using System.Text.Json;
-using System.Xml;
 using api.Abstractions;
 using api.Extensions;
 using api.Externalities;
 using api.Helpers;
-using Dapper;
 using Fleck;
-using Npgsql;
-using NUnit.Framework;
 using Serilog;
-
-
 
 var app = await ApiStartup.StartApi();
 app.Run();
 
 public class ApiStartup
 {
+    public static int Port = 8181;
 
-public static int Port = 8181;
     public static async Task<WebApplication> StartApi()
     {
-        Console.WriteLine("ENVIRONMENT: "+Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+        Console.WriteLine("ENVIRONMENT: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console(
                 outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
@@ -36,7 +29,6 @@ public static int Port = 8181;
             sourceBuilder => sourceBuilder.EnableParameterLogging());
 
 
-
         builder.Services.AddSingleton<ChatRepository>();
         builder.Services.AddSingleton<TimeSeriesRepository>();
 
@@ -48,9 +40,11 @@ public static int Port = 8181;
         var app = builder.Build();
 
         var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!
-            .Equals("Testing") ? 0 : 8181;
-        var server = new WebSocketServer("ws://0.0.0.0:"+port);
-   
+            .Equals("Testing")
+            ? 0
+            : 8181;
+        var server = new WebSocketServer("ws://0.0.0.0:" + port);
+
         void Config(IWebSocketConnection ws)
         {
             ws.OnOpen = ws.AddConnection;
@@ -58,7 +52,7 @@ public static int Port = 8181;
             ws.OnError = ex => ex.Handle(ws, null);
             ws.OnMessage = async message =>
             {
-                if(app.Environment.IsEnvironment("Testing"))
+                if (app.Environment.IsEnvironment("Testing"))
                     Log.Information(message);
                 try
                 {
@@ -70,7 +64,7 @@ public static int Port = 8181;
                 }
             };
         }
-        
+
         server.RestartAfterListenError = true;
         server.ListenerSocket.NoDelay = true;
         server.Start(Config);

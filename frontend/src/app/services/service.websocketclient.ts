@@ -4,9 +4,7 @@ import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
-import {
-  ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-} from "../models/serverNotifiesClientsInRoomSomeoneHasLeftRoom";
+import {ServerNotifiesClientsInRoomSomeoneHasLeftRoom} from "../models/serverNotifiesClientsInRoomSomeoneHasLeftRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room, TimeSeries, TimeSeriesApexChartData} from "../models/entities";

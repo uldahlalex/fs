@@ -19,8 +19,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
-        <PackageReference Include="Testcontainers" Version="3.7.0" />
-        <PackageReference Include="Testcontainers.PostgreSql" Version="3.7.0" />
+        <PackageReference Include="Testcontainers" Version="3.7.0"/>
+        <PackageReference Include="Testcontainers.PostgreSql" Version="3.7.0"/>
         <PackageReference Include="Websocket.Client" Version="5.0.0"/>
     </ItemGroup>
 
