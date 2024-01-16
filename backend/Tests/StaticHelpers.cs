@@ -2,6 +2,10 @@ using System.Text.Json;
 using api.ClientEventHandlers;
 using api.Extensions;
 using api.Models;
+using Dapper;
+using Npgsql;
+using NUnit.Framework;
+using Testcontainers.PostgreSql;
 using Websocket.Client;
 
 namespace Tests;
@@ -37,7 +41,7 @@ public static class StaticHelpers
     public static Task DoAndWaitUntil<T>(
         this (WebsocketClient ws, List<BaseDto> communication) pair, 
         T action,
-        List<Func<bool>> conditions) where T : BaseDto
+        List<Func<bool>> waitUntilConditionsAreMet) where T : BaseDto
     {
         pair.communication.Add(action);
         pair.ws.Send(JsonSerializer.Serialize(action, new JsonSerializerOptions
@@ -45,7 +49,7 @@ public static class StaticHelpers
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
         }));
-        WaitForCondition(conditions).Wait();
+        WaitForCondition(waitUntilConditionsAreMet).Wait();
         return Task.CompletedTask;
     }
 
@@ -56,7 +60,7 @@ public static class StaticHelpers
         while (conditions.Any(x => !x.Invoke()))
         {
             var elapsedTime = DateTime.UtcNow - startTime;
-            if (elapsedTime > TimeSpan.FromSeconds(5))
+            if (elapsedTime > TimeSpan.FromSeconds(3))
             {
                 throw new TimeoutException($"Timeout. Unmet conditions");
             }
@@ -71,6 +75,19 @@ public static class StaticHelpers
         ws.MessageReceived.Subscribe(msg => { communication.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
         await ws.Start();
         return (ws, communication);
+    }
+
+    public static async Task Setup(PostgreSqlContainer pgcontainer)
+    {
+        await pgcontainer.StartAsync();
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgcontainer.GetConnectionString()); //todo
+        using (var conn = new NpgsqlConnection(pgcontainer.GetConnectionString()))
+        {
+            await conn.ExecuteAsync(DbRebuild);
+        }
+        await ApiStartup.StartApi(new string[0]);
+
     }
 
     public static string DbRebuild = @"

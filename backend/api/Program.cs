@@ -7,6 +7,7 @@ using api.Helpers;
 using Dapper;
 using Fleck;
 using Npgsql;
+using NUnit.Framework;
 using Serilog;
 
 var app = await ApiStartup.StartApi(args);
@@ -25,16 +26,9 @@ public class ApiStartup
 
         var builder = WebApplication.CreateBuilder(args);
 
-        // if (builder.Environment.IsEnvironment("Testing"))
-        builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_TEST_PG_CONN")!,
+        builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
             sourceBuilder => sourceBuilder.EnableParameterLogging());
 
-        //
-        // if (builder.Environment.IsDevelopment())
-        // {
-        //     builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
-        //                 sourceBuilder => sourceBuilder.EnableParameterLogging());
-        // }
 
 
         builder.Services.AddSingleton<ChatRepository>();
@@ -57,6 +51,8 @@ public class ApiStartup
             ws.OnError = ex => ex.Handle(ws, null);
             ws.OnMessage = async message =>
             {
+                if(app.Environment.IsEnvironment("Testing"))
+                    Log.Information(message);
                 try
                 {
                     await app.InvokeCorrectClientEventHandler(types, ws, message);
@@ -67,12 +63,7 @@ public class ApiStartup
                 }
             };
         }
-
-        var q = app.Services.GetService<NpgsqlDataSource>().OpenConnection().Query("select * from chat.enduser");
-        Console.WriteLine("FROM PROGRAM.CS"+JsonSerializer.Serialize(q, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        }));
+        
         server.RestartAfterListenError = true;
         server.ListenerSocket.NoDelay = true;
         server.Start(Config);

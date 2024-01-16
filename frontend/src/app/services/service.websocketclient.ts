@@ -5,9 +5,8 @@ import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessag
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
 import {
-  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom,
   ServerNotifiesClientsInRoomSomeoneHasLeftRoom
-} from "../models/serverNotifiesClientsInRoom";
+} from "../models/serverNotifiesClientsInRoomSomeoneHasLeftRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
 import {Message, Room, TimeSeries, TimeSeriesApexChartData} from "../models/entities";
@@ -18,6 +17,9 @@ import {ApexAxisChartSeries, ApexNonAxisChartSeries} from "ng-apexcharts";
 import {Router} from "@angular/router";
 import {ServerRejectsJwt} from "../models/serverRejectsJwt";
 import {WebsocketSuperclass} from "../models/WebsocketSuperclass";
+import {
+  ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
+} from "../models/serverNotifiesClientsInRoomSomeoneHasJoinedRoom";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {

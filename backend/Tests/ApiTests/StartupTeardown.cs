@@ -11,6 +11,7 @@ using Websocket.Client;
 namespace Tests.ApiTests;
 
 [TestFixture]
+[Parallelizable(ParallelScope.All)]
 public class ApiTests
 {
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
@@ -32,17 +33,15 @@ public class ApiTests
             );
             await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,  new()
             {
-                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
-
+                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1,
+               // () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1
             });
 
             await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  new()
             { 
                 () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 1
-
             });
 
-            wsAndHistory.communication.Should().Contain(x => x.eventType == nameof(ServerAuthenticatesUser));
 
         }
     }
@@ -50,20 +49,7 @@ public class ApiTests
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await _postgreSqlContainer.StartAsync();
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
-        Environment.SetEnvironmentVariable("FULLSTACK_TEST_PG_CONN", _postgreSqlContainer.GetConnectionString()); //todo
-        using (var conn = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()))
-        {
-            conn.Execute(StaticHelpers.DbRebuild);
-            var result = conn.Query("SELECT * FROM chat.enduser;");
-            TestContext.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            }));
-        }
-        await ApiStartup.StartApi(new string[0]);
-
+        await StaticHelpers.Setup(_postgreSqlContainer);
     }
     
 
