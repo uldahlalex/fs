@@ -1,3 +1,4 @@
+using api.Models;
 using api.Models.ServerEvents;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
@@ -14,34 +15,40 @@ public class ExistingRoomGetsMessageWhenUserJoins
     [Test]
     public async Task MessageWhenUserJoins()
     {
-        using (var ws = new WebsocketClient(new Uri(StaticHelpers.Url)))
-        {
-            var wsAndHistory = await ws.SetupWsClient();
-            var wsAndHistory2 = await ws.SetupWsClient();
+        var history = new List<BaseDto>();
+        using var ws = await StaticHelpers.SetupWsClient(history);
+        using var ws2 = await StaticHelpers.SetupWsClient(history);
 
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, new()
-                {
-                    () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
-                }
-            );
-            await wsAndHistory2.DoAndWaitUntil(StaticHelpers.AuthEvent, new()
-                {
-                    () => wsAndHistory2.communication.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
-                }
-            );
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new()
+        await ws.DoAndWaitUntil(StaticHelpers.AuthEvent, history, new()
             {
-                () => wsAndHistory.communication.Count(x =>
-                    x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
-                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
-            });
-            await wsAndHistory2.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, new()
+                () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
+            }
+        );
+        await ws2.DoAndWaitUntil(StaticHelpers.AuthEvent, history, new()
             {
-                () => wsAndHistory2.communication.Count(x =>
-                    x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
+                () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
+            }
+        );
+        await ws.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history,new()
+        {
+            () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
+            () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
+        });
+        await ws2.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history, new()
+        {
+            () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 3,
+            () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 2
                 
-            });
-        }
+        });
+        
+        await ws.DoAndWaitUntil(StaticHelpers.SendMessageEvent, history, new()
+        {
+            () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 2,
+        });
+        await ws2.DoAndWaitUntil(StaticHelpers.SendMessageEvent, history, new()
+        {
+            () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 4,
+        });
     }
 
     [OneTimeSetUp]

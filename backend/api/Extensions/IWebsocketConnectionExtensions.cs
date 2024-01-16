@@ -1,11 +1,13 @@
 using System.Collections.Concurrent;
 using System.Security.Authentication;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using api.Models;
 using api.Models.DbModels;
 using api.Models.Enums;
 using api.State;
 using Fleck;
+using Serilog;
 
 namespace api.Extensions;
 
@@ -48,6 +50,8 @@ public static class WebSocketExtensions
 
     public static void SendDto<T>(this IWebSocketConnection socket, T dto) where T : BaseDto
     {
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing")
+            Log.Information(JsonSerializer.Serialize(dto, new JsonSerializerOptions() {WriteIndented = true}));
         socket.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
             { PropertyNameCaseInsensitive = true }));
     }

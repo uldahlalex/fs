@@ -39,12 +39,13 @@ public static class StaticHelpers
     //                     => x.GetType() == condition.dto) == condition.expectedFrequency)).ToList();
 
     public static Task DoAndWaitUntil<T>(
-        this (WebsocketClient ws, List<BaseDto> communication) pair, 
+        this WebsocketClient ws,
         T action,
+        List<BaseDto> communication,
         List<Func<bool>> waitUntilConditionsAreMet) where T : BaseDto
     {
-        pair.communication.Add(action);
-        pair.ws.Send(JsonSerializer.Serialize(action, new JsonSerializerOptions
+        communication.Add(action);
+        ws.Send(JsonSerializer.Serialize(action, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
@@ -69,12 +70,12 @@ public static class StaticHelpers
 
         return Task.CompletedTask;
     }
-    public static async Task<(WebsocketClient ws, List<BaseDto> communication)> SetupWsClient(this WebsocketClient ws)
+    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
     {
-        var communication = new List<BaseDto>();
-        ws.MessageReceived.Subscribe(msg => { communication.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
+        var ws = new WebsocketClient(new Uri(StaticHelpers.Url));
+        ws.MessageReceived.Subscribe(msg => { history.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
         await ws.Start();
-        return (ws, communication);
+        return ws;
     }
 
     public static async Task Setup(PostgreSqlContainer pgcontainer)

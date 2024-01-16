@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Xml;
+using api.Models;
 using api.Models.ServerEvents;
 using Dapper;
 using FluentAssertions;
@@ -19,31 +20,29 @@ public class ApiTests
     [Test]
     public async Task Signin_EnterRoom_SendMessage()
     {
-        using (var ws = new WebsocketClient(new Uri(StaticHelpers.Url)))
-        {
-            var wsAndHistory = await ws.SetupWsClient();
+
+        var history = new List<BaseDto>();
+        var wsAndHistory = await StaticHelpers.SetupWsClient(history);
 
 
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, new ()
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.AuthEvent, history, new ()
                 {
-                   () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
+                   () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
                      
 
                 }
             );
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent,  new()
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.EnterRoomEvent, history, new()
             {
-                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1,
-               // () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1
+                () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1,
             });
 
-            await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  new()
+            await wsAndHistory.DoAndWaitUntil(StaticHelpers.SendMessageEvent,  history,new()
             { 
-                () => wsAndHistory.communication.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 1
+                () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 1
             });
-
-
-        }
+            
+        
     }
 
     [OneTimeSetUp]

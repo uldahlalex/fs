@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Xml;
 using api.Abstractions;
 using api.Extensions;
 using api.Externalities;
@@ -10,6 +11,8 @@ using Npgsql;
 using NUnit.Framework;
 using Serilog;
 
+
+
 var app = await ApiStartup.StartApi(args);
 app.Run();
 
@@ -17,6 +20,7 @@ public class ApiStartup
 {
     public static async Task<WebApplication> StartApi(string[] args)
     {
+        Console.WriteLine("ENVIRONMENT: "+Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console(
                 outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
