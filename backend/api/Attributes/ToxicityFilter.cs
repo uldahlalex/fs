@@ -9,6 +9,8 @@ public class ToxicityFilter : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
+        if(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AZURE_COGNITIVE_SERVICES")))
+            return ValidationResult.Success!;
         var task = ValidateAsync(value);
         task.Wait();
         return task.Result;
@@ -27,6 +29,6 @@ public class ToxicityFilter : ValidationAttribute
             throw new ValidationException(response);
         }
 
-        return ValidationResult.Success;
+        return ValidationResult.Success!;
     }
 }

@@ -23,7 +23,7 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init/01-rebuild.sql:/docker-entrypoint-initdb.d/01-rebuild.sql
+      - ./docker_volumes/postgres/01-rebuild.sql:/docker-entrypoint-initdb.d/01-rebuild.sql
   angular:
     build:
       context: ./frontend/
@@ -39,8 +39,8 @@ services:
       - "1883:1883"
       - "9001:9001"
     volumes:
-      - ./conf:/mosquitto/config
-      - ./data:/mosquitto/data
-      - ./log:/mosquitto/log
+      - ./docker_volumes/mosquitto/conf:/mosquitto/config
+      - ./docker_volumes/mosquitto/data:/mosquitto/data
+      - ./docker_volumes/mosquitto/log:/mosquitto/log
 volumes:
   postgres_data:

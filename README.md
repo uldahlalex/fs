@@ -1,5 +1,15 @@
 ## Example system for Fullstack Development 2024, Business academy southwest
 
+## Quickstart:
+If you have Docker and Docker Compose installed:
+```
+docker-compose up --build
+```
+If you just want to run all tests: 
+```
+docker-compose up --build
+```
+
 ## What does it do?
 
 - Demonstration of realtime chat application + live data presentation from IoT edge devices

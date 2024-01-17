@@ -1,0 +1,12 @@
+#This docker composes uses testcontainers, so it runs docker inside docker for postgres
+#todo fix testcontainers
+version: '3.8'
+services:
+  tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - FULLSTACK_AZURE_COGNITIVE_SERVICES=${FULLSTACK_AZURE_COGNITIVE_SERVICES}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
