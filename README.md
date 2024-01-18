@@ -1,13 +1,24 @@
 ## Example system for Fullstack Development 2024, Business academy southwest
 
 ## Quickstart:
+
 If you have Docker and Docker Compose installed:
+
 ```
 docker-compose up --build
 ```
-If you just want to run all tests: 
+
+Without docker with .NET 8 (will use some default environment variables without certain 3rd party services like Azure
+Cognitive Services):
+
 ```
-docker-compose up --build
+cd backend/api && dotnet run
+```
+
+If you want to run all tests locally with TestContainers for postgresql, have Docker Daemon running and use:
+
+```
+cd backend/Tests && dotnet test
 ```
 
 ## What does it do?

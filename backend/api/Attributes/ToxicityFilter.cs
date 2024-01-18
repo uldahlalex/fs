@@ -9,7 +9,9 @@ public class ToxicityFilter : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        if(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AZURE_COGNITIVE_SERVICES")))
+        if (string.IsNullOrEmpty(
+                Environment.GetEnvironmentVariable(
+                    "AZURE_COGNITIVE_SERVICES"))) //todo always run filter in testing and prod
             return ValidationResult.Success!;
         var task = ValidateAsync(value);
         task.Wait();

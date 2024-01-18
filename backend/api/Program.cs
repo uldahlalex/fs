@@ -23,6 +23,7 @@ namespace api
             {
                 //Shutdown
             }
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console(
                     outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
@@ -71,7 +72,7 @@ namespace api
             server.RestartAfterListenError = true;
             server.ListenerSocket.NoDelay = true;
             server.Start(Config);
-            Environment.SetEnvironmentVariable("FULLSTACK_API_PORT",server.Port.ToString());
+            Environment.SetEnvironmentVariable("FULLSTACK_API_PORT", server.Port.ToString());
             var mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT")!;
             if (!string.IsNullOrEmpty(mqttClientSetting) &&
                 mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))

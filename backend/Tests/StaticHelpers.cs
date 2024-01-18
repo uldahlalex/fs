@@ -11,12 +11,34 @@ namespace Tests;
 
 public static class StaticHelpers
 {
+    public static async Task SetupTestClass(PostgreSqlContainer pgcontainer)
+    {
+        await pgcontainer.StartAsync();
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgcontainer.GetConnectionString());
+        await new NpgsqlConnection(pgcontainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
+        ApiStartup.StartApi().Wait();
+    }
+
+    public static Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
+    {
+        Console.WriteLine("Starting websocket client on port " +
+                          Environment.GetEnvironmentVariable("FULLSTACK_API_PORT"));
+        var ws = new WebsocketClient(new Uri("ws://localhost:" +
+                                             Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
+        ws.MessageReceived.Subscribe(msg => { history.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
+        ws.Start().Wait();
+        if (!ws.IsRunning) throw new InvalidOperationException("Failed to establish a WebSocket connection.");
+        return Task.FromResult(ws);
+    }
+
     public static Task DoAndWaitUntil<T>(this WebsocketClient ws,
         T action,
         List<Func<bool>> waitUntilConditionsAreMet,
-        List<BaseDto>? communication = null) where T : BaseDto
+        List<BaseDto> communication,
+        string? failureToDoMessage = null) where T : BaseDto
     {
-        communication?.Add(action);
+        communication.Add(action);
         ws.Send(JsonSerializer.Serialize(action, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
@@ -27,30 +49,11 @@ public static class StaticHelpers
         {
             var elapsedTime = DateTime.UtcNow - startTime;
             if (elapsedTime > TimeSpan.FromSeconds(2))
-                throw new TimeoutException("Timeout. Unmet conditions");
+                throw new TimeoutException("Timeout. Unmet conditions " + failureToDoMessage);
 
             Task.Delay(100).Wait();
         }
 
         return Task.CompletedTask;
-    }
-
-
-    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
-    {
-        Console.WriteLine("Starting websocket client on port " + Environment.GetEnvironmentVariable("FULLSTACK_API_PORT"));
-        var ws = new WebsocketClient(new Uri("ws://localhost:" + Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
-        ws.MessageReceived.Subscribe(msg => { history.Add(msg.Text!.DeserializeAndValidate<BaseDto>()); });
-        await ws.Start();
-        return ws;
-    }
-
-    public static async Task SetupTestClass(PostgreSqlContainer pgcontainer)
-    {
-        await pgcontainer.StartAsync();
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
-        Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgcontainer.GetConnectionString());
-        await new NpgsqlConnection(pgcontainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
-        ApiStartup.StartApi().Wait();
     }
 }
