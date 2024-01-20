@@ -11,11 +11,11 @@ public class ChatRepository(NpgsqlDataSource source)
     await (await source.OpenConnectionAsync()).QueryAsync<MessageWithSenderEmail>(@"
 SELECT email, messagecontent, sender, messages.id as id, timestamp, room FROM chat.messages
 join chat.enduser on chat.messages.sender = chat.enduser.id
-where chat.messages.id<@lastMessageId and room=@room ORDER BY timestamp DESC LIMIT 5;", new { lastMessageId, room });
+where chat.messages.id<@lastMessageId and room=@room ORDER BY timestamp DESC LIMIT 5;", new { lastMessageId = lastMessageId, room });
         
     
     /// pgSQL: INSERT INTO chat.messages (timestamp, sender, room, messageContent) values (now(), 1, 1, 'test') returning *;
-    public Message InsertMessage(Message message) => source.OpenConnection().QueryFirst<Message>(@$"
+    public async Task<Message> InsertMessage(Message message) => await (await source.OpenConnectionAsync()).QueryFirstAsync<Message>(@$"
 INSERT INTO chat.messages (timestamp, sender, room, messageContent) 
 values (@{nameof(Message.timestamp)}, 
         @{nameof(Message.sender)}, 

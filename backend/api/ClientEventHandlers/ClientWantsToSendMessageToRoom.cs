@@ -24,7 +24,7 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {
-    public override Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
     {
         var topic = dto.roomId.ParseTopicFromRoomId();
         var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue(topic,
@@ -38,7 +38,7 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             sender = socket.GetMetadata().UserInfo.id,
             messageContent = dto.messageContent!
         };
-        var insertedMessage = chatRepository.InsertMessage(message);
+        var insertedMessage = await chatRepository.InsertMessage(message);
         var messageWithUserInfo = new MessageWithSenderEmail //todo this is kinda ugly ngl
         {
             room = insertedMessage.room,
@@ -53,6 +53,5 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             message = messageWithUserInfo,
             roomId = dto.roomId
         }, topic);
-        return Task.CompletedTask;
     }
 }
