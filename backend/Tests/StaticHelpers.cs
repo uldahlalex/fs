@@ -45,7 +45,7 @@ public static class StaticHelpers
             WriteIndented = true
         }));
         var startTime = DateTime.UtcNow;
-        while (waitUntilConditionsAreMet.All(x => !x.Invoke()))
+        while (waitUntilConditionsAreMet.Any(x => !x.Invoke()))
         {
             var elapsedTime = DateTime.UtcNow - startTime;
             if (elapsedTime > TimeSpan.FromSeconds(2))
