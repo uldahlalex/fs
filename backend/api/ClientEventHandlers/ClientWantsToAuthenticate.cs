@@ -22,6 +22,7 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEven
     public override Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
         var user = chatRepository.GetUser(request.email!);
+        if(user.isbanned) throw new AuthenticationException("User is banned");
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong credentials!");
         socket.Authenticate(user);

@@ -14,9 +14,7 @@ public abstract class BaseEventHandler<T> where T : BaseDto
 
     public async Task InvokeHandle(string message, IWebSocketConnection socket)
     {
-        if (!GetType().GetCustomAttributes<RequireAuthenticationAttribute>().Any())
-            return; //not relevant if handler not protected
-        if (!socket.IsAuthenticated())
+        if (GetType().GetCustomAttributes<RequireAuthenticationAttribute>().Any() && socket.IsAuthenticated())
                 throw new AuthenticationException("Unauthorized access.");
         await Handle(message.DeserializeAndValidate<T>(), socket);
     }
