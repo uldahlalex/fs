@@ -7,6 +7,7 @@ namespace api.Externalities;
 
 public class ChatRepository(NpgsqlDataSource source)
 {
+    //todo strongly types + test raw sql string for alle metoder
     public async Task<IEnumerable<MessageWithSenderEmail>> GetPastMessages(int room, int lastMessageId = int.MaxValue) =>
     await (await source.OpenConnectionAsync()).QueryAsync<MessageWithSenderEmail>(@"
 SELECT email, messagecontent, sender, messages.id as id, timestamp, room FROM chat.messages

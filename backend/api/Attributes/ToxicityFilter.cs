@@ -11,7 +11,7 @@ public class ToxicityFilter : ValidationAttribute
     {
         if (string.IsNullOrEmpty(
                 Environment.GetEnvironmentVariable(
-                    "AZURE_COGNITIVE_SERVICES"))) //todo always run filter in testing and prod
+                    "AZURE_COGNITIVE_SERVICES"))) //todo always run filter in testing and prod, but for quickstart in development its okay to leave out
             return ValidationResult.Success!;
         var task = ValidateAsync(value);
         task.Wait();
