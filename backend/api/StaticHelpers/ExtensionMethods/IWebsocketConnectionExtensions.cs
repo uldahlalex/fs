@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Security.Authentication;
 using System.Text.Json;
 using api.Models;
 using api.Models.DbModels;
@@ -42,9 +41,7 @@ public static class WebSocketExtensions
 
 
     public static WebsocketMetadata GetMetadata(this IWebSocketConnection connection)
-    {
-        return WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
-    }
+        => WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
 
 
     public static void SendDto<T>(this IWebSocketConnection socket, T dto) where T : BaseDto
@@ -56,25 +53,17 @@ public static class WebSocketExtensions
     }
 
 
-    public static bool IsInWebsocketConnections(this IWebSocketConnection connection)
-    {
-        return WebsocketConnections.ConnectionPool.ContainsKey(connection.ConnectionInfo.Id);
-    }
-
-
     public static void RemoveFromWebsocketConnections(this IWebSocketConnection connection)
     {
-        WebsocketConnections.ConnectionPool.TryRemove(connection.ConnectionInfo.Id, out var metadata);
+        WebsocketConnections.ConnectionPool.TryRemove(connection.ConnectionInfo.Id, out _);
         foreach (var topic in WebsocketConnections.TopicSubscriptions.Keys)
             connection.UnsubscribeFromTopic(topic);
     }
 
-    public static void ExitIfNotAuthenticated(this IWebSocketConnection socket)
-    {
-        if (!WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id)
-            || !socket.GetMetadata().IsAuthenticated)
-            throw new AuthenticationException("Unauthorized access.");
-    }
+    public static bool IsAuthenticated(this IWebSocketConnection socket)
+        => WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id)
+           && socket.GetMetadata().IsAuthenticated;
+
 
     public static void UnsubscribeFromTopic(this IWebSocketConnection socket, TopicEnums topic)
     {

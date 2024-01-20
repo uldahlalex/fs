@@ -46,7 +46,7 @@ namespace api
 
 
             var app = builder.Build();
-            var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").Equals("Testing") ? 0 : 8181;
+            var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Testing") ? 0 : 8181;
             var server = new WebSocketServer("ws://0.0.0.0:" + port);
 
             void Config(IWebSocketConnection ws)

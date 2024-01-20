@@ -11,12 +11,12 @@ namespace Tests;
 
 public static class StaticHelpers
 {
-    public static async Task SetupTestClass(PostgreSqlContainer pgcontainer)
+    public static async Task SetupTestClass(PostgreSqlContainer pgContainer)
     {
-        await pgcontainer.StartAsync();
+        await pgContainer.StartAsync();
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
-        Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgcontainer.GetConnectionString());
-        await new NpgsqlConnection(pgcontainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
+        Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgContainer.GetConnectionString());
+        await new NpgsqlConnection(pgContainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
         ApiStartup.StartApi().Wait();
     }
 

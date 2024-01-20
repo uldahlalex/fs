@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using api.Models.DbModels;
 using api.Models.Exceptions;
 using JWT;
 using JWT.Algorithms;
@@ -23,14 +24,15 @@ public static class SecurityUtilities
             var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("FULLSTACK_JWT_PRIVATE_KEY"));
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         }
-        catch
+        catch(Exception e)
         {
+            Log.Error(e, "ValidateJwtAndReturnClaims");
             throw new JwtVerificationException("Authentication failed.");
         }
     }
 
 
-    public static string IssueJwt(Dictionary<string, object> claimsPayload)
+    public static string IssueJwt(EndUser user)
     {
         try
         {
@@ -38,12 +40,12 @@ public static class SecurityUtilities
             IJsonSerializer serializer = new JsonNetSerializer();
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-            return encoder.Encode(claimsPayload, Environment.GetEnvironmentVariable("FULLSTACK_JWT_PRIVATE_KEY"));
+            return encoder.Encode(user, Environment.GetEnvironmentVariable("FULLSTACK_JWT_PRIVATE_KEY"));
         }
         catch (Exception e)
         {
             Log.Error(e, "IssueJWT");
-            throw new Exception("User authentication succeeded, but could not create token");
+            throw new InvalidOperationException("User authentication succeeded, but could not create token");
         }
     }
 
@@ -59,7 +61,7 @@ public static class SecurityUtilities
         catch (Exception e)
         {
             Log.Error(e, "Hash");
-            throw new Exception("Failed to hash password");
+            throw new InvalidOperationException("Failed to hash password");
         }
     }
 

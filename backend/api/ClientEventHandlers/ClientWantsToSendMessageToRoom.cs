@@ -25,10 +25,7 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
 {
     public override Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
     {
-        var chatRoomName = "ChatRoom" + dto.roomId;
-        var isValidTopic = Enum.TryParse(chatRoomName, out TopicEnums topic);
-        if (!isValidTopic)
-            throw new Exception("Invalid topic");
+        var topic = dto.roomId.ParseTopicFromRoomId();
         var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue(topic,
             out var topicSubscriptions);
         if (!getValue || !topicSubscriptions!.Contains(socket.ConnectionInfo.Id))

@@ -24,10 +24,8 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEven
         var user = chatRepository.GetUser(request.email!);
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong credentials!");
-        var jwt = SecurityUtilities.IssueJwt(new Dictionary<string, object?>
-            { { "email", user.email }, { "id", user.id } }!);
         socket.Authenticate(user);
-        socket.SendDto(new ServerAuthenticatesUser { jwt = jwt });
+        socket.SendDto(new ServerAuthenticatesUser { jwt = SecurityUtilities.IssueJwt(user) });
         return Task.CompletedTask;
     }
 }

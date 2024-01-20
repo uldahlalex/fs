@@ -21,7 +21,7 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
 {
     public override Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)
     {
-        var topic = dto.roomId.RoomIdToTopic();
+        var topic = dto.roomId.ParseTopicFromRoomId();
         socket.SubscribeToTopic(topic);
         StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
         {

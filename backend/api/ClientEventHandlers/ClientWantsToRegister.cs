@@ -24,8 +24,7 @@ public class ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHan
         var salt = SecurityUtilities.GenerateSalt();
         var hash = SecurityUtilities.Hash(dto.password!, salt);
         var user = chatRepository.InsertUser(dto.email!, hash, salt);
-        var jwt = SecurityUtilities.IssueJwt(
-            new Dictionary<string, object?> { { "email", user.email }, { "id", user.id } });
+        var jwt = SecurityUtilities.IssueJwt(user);
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser
         {

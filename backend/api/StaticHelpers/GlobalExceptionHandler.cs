@@ -17,7 +17,11 @@ public static class GlobalExceptionHandler
             errorMessage = exception.Message
         });
 
-        if (exception is JwtVerificationException) socket.SendDto(new ServerRejectsClientJwt());
+        if (exception is JwtVerificationException)
+        {
+            socket.UnAuthenticate();
+            socket.SendDto(new ServerRejectsClientJwt());
+        }
         //todo prod and dev env separation
     }
 }

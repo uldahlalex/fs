@@ -5,8 +5,7 @@ using ArgumentException = System.ArgumentException;
 
 namespace api.StaticHelpers.ExtensionMethods;
 
-//3
-public static class Extensions
+public static class TextExtensions
 {
     public static T DeserializeAndValidate<T>(this string str)
     {
@@ -18,7 +17,7 @@ public static class Extensions
         return obj;
     }
 
-    public static TopicEnums RoomIdToTopic(this int roomId)
+    public static TopicEnums ParseTopicFromRoomId(this int roomId)
     {
         var isValidTopic = Enum.TryParse("ChatRoom" + roomId, out TopicEnums topic);
         if (!isValidTopic)

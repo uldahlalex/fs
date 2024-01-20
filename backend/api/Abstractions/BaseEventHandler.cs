@@ -1,6 +1,8 @@
 using System.Reflection;
+using System.Security.Authentication;
 using api.Attributes;
 using api.Models;
+using api.State;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
@@ -12,8 +14,10 @@ public abstract class BaseEventHandler<T> where T : BaseDto
 
     public async Task InvokeHandle(string message, IWebSocketConnection socket)
     {
-        if (GetType().GetCustomAttributes<RequireAuthenticationAttribute>().Any())
-            socket.ExitIfNotAuthenticated();
+        if (!GetType().GetCustomAttributes<RequireAuthenticationAttribute>().Any())
+            return; //not relevant if handler not protected
+        if (!socket.IsAuthenticated())
+                throw new AuthenticationException("Unauthorized access.");
         await Handle(message.DeserializeAndValidate<T>(), socket);
     }
 
