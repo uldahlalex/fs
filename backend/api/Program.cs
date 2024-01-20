@@ -29,6 +29,7 @@ public static class ApiStartup
         EnvSetup.SetDefaultEnvVariables();
 
         var builder = WebApplication.CreateBuilder();
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
             sourceBuilder => sourceBuilder.EnableParameterLogging());

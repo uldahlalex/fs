@@ -15,7 +15,7 @@ namespace api.ClientEventHandlers;
 
 public class ClientWantsToSendMessageToRoomDto : BaseDto
 {
-    [ToxicityFilter] public string? messageContent { get; set; }
+    [ToxicityFilterDataAnnotation] public string? messageContent { get; set; }
 
     public int roomId { get; set; }
 }

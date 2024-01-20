@@ -1,16 +1,15 @@
 using api.Models.DbModels;
 using api.Models.Enums;
-using api.Models.ServerEvents;
-using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
+using MediatR;
+using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
-using Serilog;
 
 namespace api.Externalities;
 
-public class MqttClient(TimeSeriesRepository timeSeriesRepository)
+public class MqttClient(TimeSeriesRepository timeSeriesRepository, IMediator mediator)
 {
     public async Task Handle_Received_Application_Message()
     {
@@ -37,13 +36,13 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository)
             try
             {
                 var message = e.ApplicationMessage.ConvertPayloadToString();
-                Log.Information(message);
                 var ts = message.DeserializeAndValidate<TimeSeries>();
                 ts.timestamp = DateTimeOffset.UtcNow;
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(ts);
-                var dto = new ServerBroadcastsTimeSeriesData { timeSeriesDataPoint = insertionResult };
-
-                StaticWebSocketHelpers.BroadcastObjectToTopicListeners(dto, TopicEnums.TimeSeries);
+                await mediator.Publish(new MqttClientWantsToPersistTimeSeriesDataDto()
+                {
+                    TimeSeriesData = insertionResult
+                });
 
                 var pongMessage = new MqttApplicationMessageBuilder()
                     .WithTopic("response_topic")
@@ -56,8 +55,15 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository)
             }
             catch (Exception exc)
             {
-                Log.Logger.Error(exc, "MqttClient");
+                Console.WriteLine(exc.Message);
+                Console.WriteLine(exc.InnerException);
+                Console.WriteLine(exc.StackTrace);
             }
         };
     }
+}
+
+public class MqttClientWantsToPersistTimeSeriesDataDto : INotification
+{
+    public TimeSeries TimeSeriesData { get; set; }
 }

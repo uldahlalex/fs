@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="MediatR.Contracts">
+        <HintPath>..\..\..\..\.nuget\packages\mediatr.contracts\2.0.1\lib\netstandard2.0\MediatR.Contracts.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

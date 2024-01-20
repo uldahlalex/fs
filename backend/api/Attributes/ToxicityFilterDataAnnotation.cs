@@ -5,7 +5,7 @@ using api.Externalities;
 namespace api.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class ToxicityFilter : ValidationAttribute
+public class ToxicityFilterDataAnnotation : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
