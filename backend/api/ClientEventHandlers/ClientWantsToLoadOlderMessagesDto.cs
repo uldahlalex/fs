@@ -18,13 +18,12 @@ public class ClientWantsToLoadOlderMessagesDto : BaseDto
 public class ClientWantsToLoadOlderMessages(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToLoadOlderMessagesDto>
 {
-    public override Task Handle(ClientWantsToLoadOlderMessagesDto dto, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToLoadOlderMessagesDto dto, IWebSocketConnection socket)
     {
-        var messages = chatRepository.GetPastMessages(
+        var messages = await chatRepository.GetPastMessages(
             dto.roomId,
             dto.lastMessageId);
         socket.SendDto(new ServerSendsOlderMessagesToClient
             { messages = messages, roomId = dto.roomId });
-        return Task.CompletedTask;
     }
 }

@@ -19,7 +19,7 @@ public class ClientWantsToEnterRoomDto : BaseDto
 [RequireAuthentication]
 public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToEnterRoomDto>
 {
-    public override Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)
     {
         var topic = dto.roomId.ParseTopicFromRoomId();
         socket.SubscribeToTopic(topic);
@@ -31,10 +31,9 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
         }, topic);
         socket.SendDto(new ServerAddsClientToRoom
         {
-            messages = chatRepository.GetPastMessages(dto.roomId),
+            messages = await chatRepository.GetPastMessages(dto.roomId),
             liveConnections = WebsocketConnections.TopicSubscriptions[topic].Count,
             roomId = dto.roomId
         });
-        return Task.CompletedTask;
     }
 }

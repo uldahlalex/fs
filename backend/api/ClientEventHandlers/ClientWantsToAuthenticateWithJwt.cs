@@ -18,15 +18,14 @@ public class ClientWantsToAuthenticateWithJwtDto : BaseDto
 public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToAuthenticateWithJwtDto>
 {
-    public override Task Handle(ClientWantsToAuthenticateWithJwtDto dto, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToAuthenticateWithJwtDto dto, IWebSocketConnection socket)
     {
         var claims = SecurityUtilities.ValidateJwtAndReturnClaims(dto.jwt!);
-        var user = chatRepository.GetUser(claims["email"]);
+        var user = await chatRepository.GetUser(claims["email"]);
         if (user.isbanned)
             throw new AuthenticationException("User is banned");
         
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser { jwt = dto.jwt });
-        return Task.CompletedTask;
     }
 }

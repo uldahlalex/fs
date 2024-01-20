@@ -18,18 +18,17 @@ public class ClientWantsToRegisterDto : BaseDto
 
 public class ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToRegisterDto>
 {
-    public override Task Handle(ClientWantsToRegisterDto dto, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToRegisterDto dto, IWebSocketConnection socket)
     {
-        if (chatRepository.UserExists(dto.email)) throw new Exception("User already exists!");
+        if (await chatRepository.DoesUserAlreadyExist(dto.email)) throw new Exception("User already exists!");
         var salt = SecurityUtilities.GenerateSalt();
         var hash = SecurityUtilities.Hash(dto.password!, salt);
-        var user = chatRepository.InsertUser(dto.email!, hash, salt);
+        var user = await chatRepository.InsertUser(dto.email!, hash, salt);
         var jwt = SecurityUtilities.IssueJwt(user);
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser
         {
             jwt = jwt
         });
-        return Task.CompletedTask;
     }
 }

@@ -19,14 +19,13 @@ public class ClientWantsToAuthenticateDto : BaseDto
 
 public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToAuthenticateDto>
 {
-    public override Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
-        var user = chatRepository.GetUser(request.email!);
+        var user = await chatRepository.GetUser(request.email!);
         if(user.isbanned) throw new AuthenticationException("User is banned");
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong credentials!");
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser { jwt = SecurityUtilities.IssueJwt(user) });
-        return Task.CompletedTask;
     }
 }

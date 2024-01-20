@@ -2,6 +2,7 @@ using api.Abstractions;
 using api.Attributes;
 using api.Externalities;
 using api.Models;
+using api.Models.DbModels;
 using api.Models.Enums;
 using api.Models.QueryModels;
 using api.Models.ServerEvents;
@@ -30,11 +31,15 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             out var topicSubscriptions);
         if (!getValue || !topicSubscriptions!.Contains(socket.ConnectionInfo.Id))
             throw new Exception("You are not subscribed to this room");
-
-        var insertedMessage =
-            chatRepository.InsertMessage(dto.roomId, socket.GetMetadata().UserInfo.id,
-                dto.messageContent!);
-        var messageWithUserInfo = new MessageWithSenderEmail
+        var message =new Message
+        {
+            timestamp = DateTimeOffset.UtcNow,
+            room = dto.roomId,
+            sender = socket.GetMetadata().UserInfo.id,
+            messageContent = dto.messageContent!
+        };
+        var insertedMessage = chatRepository.InsertMessage(message);
+        var messageWithUserInfo = new MessageWithSenderEmail //todo this is kinda ugly ngl
         {
             room = insertedMessage.room,
             sender = insertedMessage.sender,
