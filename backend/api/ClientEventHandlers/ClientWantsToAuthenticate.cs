@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
@@ -18,7 +19,7 @@ public class ClientWantsToAuthenticateDto : BaseDto
     [MinLength(6)] [Required] public string? password { get; set; }
 }
 
-[RateLimit]
+[RateLimit(5, 60)]
 public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToAuthenticateDto>
 {
     public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)

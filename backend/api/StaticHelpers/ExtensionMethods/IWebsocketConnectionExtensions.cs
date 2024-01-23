@@ -18,13 +18,6 @@ public static class WebSocketExtensions
             new WebsocketMetadata
             {
                 Socket = ws,
-                RateLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions //todo default setup move to helper and inject from invoker
-                {
-                PermitLimit = 3,
-                Window = TimeSpan.FromMinutes(1),
-                AutoReplenishment = true
-                })
-
             });
     }
 

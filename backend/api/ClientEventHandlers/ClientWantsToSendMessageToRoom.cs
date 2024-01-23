@@ -1,5 +1,6 @@
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.DbModels;
@@ -21,6 +22,7 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
 }
 
 [RequireAuthentication]
+[RateLimit(5, 60)]
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {

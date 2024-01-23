@@ -17,12 +17,9 @@ public abstract class BaseEventHandler<T> where T : BaseDto
 
     public async Task InvokeHandle(string message, IWebSocketConnection socket) //todo cancellationtoken
     {
-        if (GetType().GetCustomAttributes<RequireAuthenticationAttribute>().Any())
-            RequireAuthenticationAttribute.ValidateAuthentication(socket);
-        if (GetType().GetCustomAttributes<RateLimitAttribute>().Any())
-            await RateLimitAttribute.ValidateRateLimit(socket);
-        
-        await Handle(message.DeserializeAndValidate<T>(), socket);
+        var dto = message.DeserializeAndValidate<T>();
+        GetType().GetCustomAttributes().OfType<BaseEventFilterAttribute>().Select(x =>  x.Handle<T>(socket, dto));
+        await Handle(dto, socket);
     }
 
     public abstract Task Handle(T dto, IWebSocketConnection socket);
