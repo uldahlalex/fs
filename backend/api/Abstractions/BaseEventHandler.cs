@@ -18,7 +18,10 @@ public abstract class BaseEventHandler<T> where T : BaseDto
     public async Task InvokeHandle(string message, IWebSocketConnection socket) //todo cancellationtoken
     {
         var dto = message.DeserializeAndValidate<T>();
-        GetType().GetCustomAttributes().OfType<BaseEventFilterAttribute>().Select(x =>  x.Handle<T>(socket, dto));
+        foreach (var _ in GetType()
+                     .GetCustomAttributes()
+                     .OfType<BaseEventFilterAttribute>()
+                     .Select(x =>  x.Handle<T>(socket, dto)))
         await Handle(dto, socket);
     }
 
