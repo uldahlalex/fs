@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.Abstractions;
+using api.Attributes;
 using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;

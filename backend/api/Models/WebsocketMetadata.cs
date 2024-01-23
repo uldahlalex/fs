@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using api.Models.DbModels;
 using Fleck;
 
@@ -8,4 +9,5 @@ public class WebsocketMetadata
     public IWebSocketConnection? Socket { get; set; }
     public bool IsAuthenticated { get; set; }
     public EndUser UserInfo { get; set; } = null!;
+    public RateLimiter RateLimiter { get; set; }
 }

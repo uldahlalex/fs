@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 using api.Models;
 using api.Models.DbModels;
 using api.Models.Enums;
@@ -13,8 +14,18 @@ public static class WebSocketExtensions
 {
     public static void AddConnection(this IWebSocketConnection ws)
     {
-        WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, new WebsocketMetadata
-            { Socket = ws });
+        WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, 
+            new WebsocketMetadata
+            {
+                Socket = ws,
+                RateLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+                {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                AutoReplenishment = true
+                })
+
+            });
     }
 
 

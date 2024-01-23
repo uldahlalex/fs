@@ -8,7 +8,6 @@ using Serilog;
 
 var app = await ApiStartup.StartApi();
 app.Run();
-
 public static class ApiStartup
 {
     public static async Task<WebApplication> StartApi()
