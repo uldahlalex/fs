@@ -10,12 +10,11 @@ namespace api.Attributes.EventFilters;
 public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame)
     : BaseEventFilterAttribute
 {
-    public override Task Handle<T>(IWebSocketConnection socket, T dto)
+    public override async Task Handle<T>(IWebSocketConnection socket, T dto)
     {
         var env = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING");
         if (!string.IsNullOrEmpty(env) && env.ToLower().Equals("true"))
-            return Task.CompletedTask;
-
+            return;
         if (!socket.GetMetadata().RateLimitPerEvent.TryGetValue(dto.eventType, out var rateLimiter))
         {
             socket.GetMetadata().RateLimitPerEvent[dto.eventType] = new FixedWindowRateLimiter(
@@ -27,10 +26,8 @@ public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame)
                 });
         }
 
-        var aq = rateLimiter.AcquireAsync().AsTask();
-        aq.Wait();
-        if (aq.Result.IsAcquired)
+        var aq = await rateLimiter.AcquireAsync();
+        if (aq.IsAcquired)
             throw new ValidationException("Rate limit exceeded for event " + dto.eventType);
-        return Task.CompletedTask;
     }
 }
