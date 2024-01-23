@@ -2,5 +2,6 @@ namespace api.Models.Enums;
 
 public enum EnvironmentEnums
 {
-    Testing
+    Testing,
+    Production
 }

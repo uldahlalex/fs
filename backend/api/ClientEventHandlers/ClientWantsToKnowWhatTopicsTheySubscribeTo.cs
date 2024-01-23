@@ -1,5 +1,6 @@
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Models;
 using api.Models.ServerEvents;
 using api.State;
@@ -11,6 +12,7 @@ namespace api.ClientEventHandlers;
 public class ClientWantsToKnowWhatTopicsTheySubscribeToDto : BaseDto;
 
 [RequireAuthentication]
+[RateLimit(5, 60)]
 public class
     ClientWantsToKnowWhatTopicsTheySubscribeTo : BaseEventHandler<ClientWantsToKnowWhatTopicsTheySubscribeToDto>
 {

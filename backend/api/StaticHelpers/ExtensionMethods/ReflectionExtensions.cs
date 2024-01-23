@@ -27,14 +27,9 @@ public static class ReflectionExtensions
     {
         var eventType = message.DeserializeAndValidate<BaseDto>().eventType;
         var handlerType = types.FirstOrDefault(t => t.Name.Equals(eventType, StringComparison.OrdinalIgnoreCase));
-
         if (handlerType == null)
             throw new InvalidOperationException($"Could not find handler for DTO type: {eventType}");
-
         dynamic clientEventServiceClass = app.Services.GetService(handlerType)!;
-        
-
-        // Invoke the handler method
         await clientEventServiceClass.InvokeHandle(message, ws);
     }
 }

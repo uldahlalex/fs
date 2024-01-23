@@ -1,5 +1,6 @@
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
@@ -15,6 +16,7 @@ public class ClientWantsToLoadOlderMessagesDto : BaseDto
 }
 
 [RequireAuthentication]
+[RateLimit(5, 20)]
 public class ClientWantsToLoadOlderMessages(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToLoadOlderMessagesDto>
 {

@@ -1,5 +1,6 @@
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Models;
 using api.Models.Enums;
 using api.Models.ServerEvents;
@@ -14,7 +15,7 @@ public class ClientWantsToLeaveRoomDto : BaseDto
     public int roomId { get; set; }
 }
 
-[RequireAuthentication]
+[RateLimit(600, 60)]
 public class ClientWantsToLeaveRoom : BaseEventHandler<ClientWantsToLeaveRoomDto>
 {
     public override Task Handle(ClientWantsToLeaveRoomDto request, IWebSocketConnection socket)

@@ -1,5 +1,6 @@
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.Enums;
@@ -12,6 +13,7 @@ namespace api.ClientEventHandlers;
 [RequireAuthentication]
 public class ClientWantsToSubscribeToTimeSeriesDataDto : BaseDto;
 
+[RateLimit(5, 60)]
 public class ClientWantsToSubscribeToTimeSeriesData(TimeSeriesRepository timeSeriesRepository)
     : BaseEventHandler<ClientWantsToSubscribeToTimeSeriesDataDto>
 {

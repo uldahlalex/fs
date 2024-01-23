@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
@@ -16,6 +17,7 @@ public class ClientWantsToRegisterDto : BaseDto
     [MinLength(6)] public string? password { get; set; }
 }
 
+[RateLimit(1, 60)]
 public class ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToRegisterDto>
 {
     public override async Task Handle(ClientWantsToRegisterDto dto, IWebSocketConnection socket)

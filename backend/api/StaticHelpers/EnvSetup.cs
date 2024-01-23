@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using api.Models.Enums;
 using Serilog;
 
 namespace api.StaticHelpers;
@@ -26,6 +28,12 @@ public static class EnvSetup
         foreach (var pair in DefaultEnvValues)
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(pair.Key)))
             {
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ==
+                    EnvironmentEnums.Production.ToString())
+                {
+                    Log.Error("Environment variable '{Key}' not found. Exiting.", pair.Key);
+                    Environment.Exit(1);
+                }
                 Environment.SetEnvironmentVariable(pair.Key, pair.Value);
                 Log.Information($"Environment variable '{pair.Key}' not found. Setting default value.");
             }

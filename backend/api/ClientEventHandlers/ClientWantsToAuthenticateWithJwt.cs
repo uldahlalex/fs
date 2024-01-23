@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.Abstractions;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
@@ -15,6 +16,7 @@ public class ClientWantsToAuthenticateWithJwtDto : BaseDto
     [Required] public string? jwt { get; set; }
 }
 
+[RateLimit(6, 60)]
 public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToAuthenticateWithJwtDto>
 {

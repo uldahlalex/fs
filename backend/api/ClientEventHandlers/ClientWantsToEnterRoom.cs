@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
 using api.Attributes;
+using api.Attributes.EventFilters;
 using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
@@ -17,6 +18,7 @@ public class ClientWantsToEnterRoomDto : BaseDto
 }
 
 [RequireAuthentication]
+[RateLimit(10, 60)]
 public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToEnterRoomDto>
 {
     public override async Task Handle(ClientWantsToEnterRoomDto dto, IWebSocketConnection socket)

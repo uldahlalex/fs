@@ -12,19 +12,14 @@ app.Run();
 public static class ApiStartup
 {
     public static async Task<WebApplication> StartApi()
-    {
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Console.WriteLine("ENVIRONMENT: " + environment);
-        if (environment.ToLower().Equals("production") &&
-            string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AZURE_COGNITIVE_SERVICES")))
-        {
-            //Shutdown
-        }
+    {        Log.Logger = new LoggerConfiguration()
+                 .WriteTo.Console(
+                     outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
+                 .CreateLogger();
 
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console(
-                outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
-            .CreateLogger();
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Log.Information("ENVIRONMENT: " + environment);
+
 
         EnvSetup.SetDefaultEnvVariables();
 
