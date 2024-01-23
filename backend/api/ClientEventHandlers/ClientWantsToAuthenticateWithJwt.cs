@@ -21,7 +21,7 @@ public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository)
     public override async Task Handle(ClientWantsToAuthenticateWithJwtDto dto, IWebSocketConnection socket)
     {
         var claims = SecurityUtilities.ValidateJwtAndReturnClaims(dto.jwt!);
-        var user = await chatRepository.GetUser(new FindByEmailParams(claims["email"]));
+        var user =  await chatRepository.GetUser(new FindByEmailParams(claims["email"]));
         if (user.isbanned)
             throw new AuthenticationException("User is banned");
         

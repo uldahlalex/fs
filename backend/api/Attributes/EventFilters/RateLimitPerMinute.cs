@@ -7,27 +7,30 @@ using Fleck;
 namespace api.Attributes.EventFilters;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame)
-    : BaseEventFilterAttribute
+public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame) : BaseEventFilterAttribute
 {
     public override async Task Handle<T>(IWebSocketConnection socket, T dto)
     {
-        var env = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING");
+        var env = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_RATE_RATE_LIMITING");
         if (!string.IsNullOrEmpty(env) && env.ToLower().Equals("true"))
             return;
-        if (!socket.GetMetadata().RateLimitPerEvent.TryGetValue(dto.eventType, out var rateLimiter))
+
+        var metadata = socket.GetMetadata();
+        if (!metadata.RateLimitPerEvent.TryGetValue(dto.eventType, out var rateLimiter))
         {
-            socket.GetMetadata().RateLimitPerEvent[dto.eventType] = new FixedWindowRateLimiter(
-                new FixedWindowRateLimiterOptions
-                {
-                    PermitLimit = eventsPerTimeframe,
-                    Window = TimeSpan.FromSeconds(secondTimeFrame),
-                    AutoReplenishment = true
-                });
+            rateLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = eventsPerTimeframe,
+                Window = TimeSpan.FromSeconds(secondTimeFrame),
+                AutoReplenishment = true
+            });
+            metadata.RateLimitPerEvent[dto.eventType] = rateLimiter;
         }
 
-        var aq = await rateLimiter.AcquireAsync();
-        if (aq.IsAcquired)
+        var lease = await rateLimiter.AcquireAsync(1);
+        if (!lease.IsAcquired)
+        {
             throw new ValidationException("Rate limit exceeded for event " + dto.eventType);
+        }
     }
 }
