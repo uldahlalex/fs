@@ -1,9 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
-using api.Models.Enums;
-using ArgumentException = System.ArgumentException;
 
-namespace api.StaticHelpers.ExtensionMethods;
+namespace Commons;
 
 public static class TextExtensions
 {

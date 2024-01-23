@@ -18,6 +18,7 @@ public class ClientWantsToAuthenticateDto : BaseDto
     [MinLength(6)] [Required] public string? password { get; set; }
 }
 
+[RateLimit]
 public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToAuthenticateDto>
 {
     public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)

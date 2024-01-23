@@ -18,9 +18,9 @@ public static class WebSocketExtensions
             new WebsocketMetadata
             {
                 Socket = ws,
-                RateLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+                RateLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions //todo default setup move to helper and inject from invoker
                 {
-                PermitLimit = 5,
+                PermitLimit = 3,
                 Window = TimeSpan.FromMinutes(1),
                 AutoReplenishment = true
                 })
@@ -57,7 +57,7 @@ public static class WebSocketExtensions
 
     public static void SendDto<T>(this IWebSocketConnection socket, T dto) where T : BaseDto
     {
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing")
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentEnums.Testing.ToString())
             Log.Information(JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true }));
         socket.Send(JsonSerializer.Serialize(dto, new JsonSerializerOptions
             { PropertyNameCaseInsensitive = true }));

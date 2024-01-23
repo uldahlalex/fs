@@ -1,7 +1,9 @@
 using System.Text.Json;
 using api;
 using api.Models;
+using api.Models.Enums;
 using api.StaticHelpers.ExtensionMethods;
+using Commons;
 using Dapper;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -14,7 +16,8 @@ public static class StaticHelpers
     public static async Task SetupTestClass(PostgreSqlContainer pgContainer)
     {
         await pgContainer.StartAsync();
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentEnums.Testing.ToString());
+        Environment.SetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING", "true");
         Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgContainer.GetConnectionString());
         await new NpgsqlConnection(pgContainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
         ApiStartup.StartApi().Wait();

@@ -67,7 +67,7 @@ select count(*) from chat.enduser where email = @{nameof(findByEmailParams.email
     // pgSQL: select * from chat.enduser where email = 'bla';
     public async Task<EndUser>
         GetUser(FindByEmailParams findByEmailParams) //todo fix and also stress-test infra methods
-    {
+    { //todo 2 check no using sync for pool exhaustion
         await using var conn = await source.OpenConnectionAsync();
         return await conn.QueryFirstOrDefaultAsync<EndUser>($@"
                         select 

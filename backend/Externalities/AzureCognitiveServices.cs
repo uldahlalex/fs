@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using api.Models._3rdPartyTransferModels;
-using api.StaticHelpers.ExtensionMethods;
+using Commons;
 
 namespace api.Externalities;
 

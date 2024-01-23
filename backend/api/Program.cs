@@ -1,6 +1,7 @@
 using System.Reflection;
 using api.Abstractions;
 using api.Externalities;
+using api.Models.Enums;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
@@ -43,7 +44,7 @@ public static class ApiStartup
 
 
         var app = builder.Build();
-        var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals("Testing") ? 0 : 8181;
+        var port = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals(EnvironmentEnums.Testing.ToString()) ? 0 : 8181;
         var server = new WebSocketServer("ws://0.0.0.0:" + port);
 
         void Config(IWebSocketConnection ws)

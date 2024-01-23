@@ -1,6 +1,6 @@
 using api.Models.DbModels;
 using api.Models.Enums;
-using api.StaticHelpers.ExtensionMethods;
+using Commons;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using MQTTnet;

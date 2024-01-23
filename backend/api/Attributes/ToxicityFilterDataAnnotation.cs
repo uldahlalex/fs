@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using api.Externalities;
+using Serilog;
 
 namespace api.Attributes;
 
@@ -9,13 +10,22 @@ public class ToxicityFilterDataAnnotation : ValidationAttribute
 {
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        if (string.IsNullOrEmpty(
-                Environment.GetEnvironmentVariable(
-                    "AZURE_COGNITIVE_SERVICES"))) //todo always run filter in testing and prod, but for quickstart in development its okay to leave out
+        var azKey = Environment.GetEnvironmentVariable("AZURE_COGNITIVE_SERVICES")!;
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!;
+
+        if (env.ToLower().Equals("production"))
+        {
+            var task = ValidateAsync(value);
+            task.Wait();
+            return task.Result;
+        } 
+        if (env.ToLower().Equals("development") && string.IsNullOrEmpty(azKey))
+        {
+            Log.Information("Skipping toxicity filter in development mode when no API key is provided");
             return ValidationResult.Success!;
-        var task = ValidateAsync(value);
-        task.Wait();
-        return task.Result;
+        }
+        return ValidationResult.Success!;
+        
     }
 
     private async Task<ValidationResult> ValidateAsync(object value)
