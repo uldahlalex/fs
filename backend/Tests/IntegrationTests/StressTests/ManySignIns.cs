@@ -7,7 +7,8 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.StressTests;
 
-[TestFixture]
+[TestFixture][Parallelizable(ParallelScope.All)]
+
 public class ManySignIns
 {
     [OneTimeSetUp]

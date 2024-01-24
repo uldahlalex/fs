@@ -5,7 +5,8 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.ApiBigBangTests;
 
-[TestFixture]
+[TestFixture][Parallelizable(ParallelScope.All)]
+
 public class AuthEnterSendTwoClients
 {
     [OneTimeSetUp]

@@ -4,7 +4,8 @@ using NUnit.Framework;
 
 namespace Tests.IntegrationTests._3rdPartyIntegrationTests;
 
-[TestFixture]
+[TestFixture][Parallelizable(ParallelScope.All)]
+
 public class AzureCognitiveServicesTests
 {
     [TestCase]
