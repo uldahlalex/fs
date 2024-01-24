@@ -5,7 +5,7 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.ApiGranularTests;
 
-[TestFixture][Parallelizable(ParallelScope.All)]
+[TestFixture][Parallelizable(ParallelScope.None)]
 
 public class RateLimiterTest
 {
