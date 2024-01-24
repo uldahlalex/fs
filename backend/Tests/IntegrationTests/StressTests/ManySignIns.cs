@@ -14,7 +14,7 @@ public class ManyBroadcasts
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer, false);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer, true);
     }
 
 

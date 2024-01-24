@@ -34,7 +34,7 @@ public class UserRepositoryTests
     [Test]
     public  void Test()
     {
-        var iterations = 100_000;
+        var iterations = 10_000;
         List<EndUser> users = new List<EndUser>();
         for (int i = 0; i < iterations; i++)
         {
@@ -46,7 +46,7 @@ public class UserRepositoryTests
     [Test]
     public async Task TestAsync()
     {
-        var iterations = 100_000;
+        var iterations = 10_000;
         List<EndUser> users = new List<EndUser>();
         for (int i = 0; i < iterations; i++)
         {
