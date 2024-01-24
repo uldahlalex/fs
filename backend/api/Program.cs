@@ -38,10 +38,10 @@ namespace api
                 sourceBuilder => sourceBuilder.EnableParameterLogging());
 
 
-            builder.Services.AddSingleton<ChatRepository>();
-            builder.Services.AddSingleton<TimeSeriesRepository>();
+            builder.Services.AddScoped<ChatRepository>();
+            builder.Services.AddScoped<TimeSeriesRepository>();
 
-            builder.Services.AddSingleton<MqttClient>();
+            builder.Services.AddScoped<MqttClient>();
 
             var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
 

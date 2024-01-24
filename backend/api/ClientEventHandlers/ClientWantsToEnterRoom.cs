@@ -33,7 +33,7 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
         }, topic);
         socket.SendDto(new ServerAddsClientToRoom
         {
-            messages = await chatRepository.GetPastMessages(new GetPastMessagesParams(dto.roomId)),
+            messages = chatRepository.GetPastMessages(new GetPastMessagesParams(dto.roomId)),
             liveConnections = WebsocketConnections.TopicSubscriptions[topic].Count,
             roomId = dto.roomId
         });

@@ -22,7 +22,7 @@ public class ClientWantsToLoadOlderMessages(ChatRepository chatRepository)
 {
     public override async Task Handle(ClientWantsToLoadOlderMessagesDto dto, IWebSocketConnection socket)
     {
-        var messages = await chatRepository.GetPastMessages(new GetPastMessagesParams(dto.roomId, dto.lastMessageId));
+        var messages =  chatRepository.GetPastMessages(new GetPastMessagesParams(dto.roomId, dto.lastMessageId));
         socket.SendDto(new ServerSendsOlderMessagesToClient
             { messages = messages, roomId = dto.roomId });
     }

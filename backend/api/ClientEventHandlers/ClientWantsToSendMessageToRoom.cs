@@ -75,7 +75,7 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             sender = socket.GetMetadata().UserInfo.id,
             messageContent = dto.messageContent!
         };
-        var insertedMessage = await chatRepository.InsertMessage(message);
+        var insertedMessage =  chatRepository.InsertMessage(message);
         var messageWithUserInfo = new MessageWithSenderEmail //todo this is kinda ugly ngl
         {
             room = insertedMessage.room,

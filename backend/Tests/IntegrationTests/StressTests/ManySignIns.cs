@@ -32,9 +32,10 @@ public class ManySignIns
         var history = new List<BaseDto>();
         var ws = await StaticHelpers.SetupWsClient(history);
 
-        for (var i = 0; i < numberOfMessages; i++) ws.Send(JsonSerializer.Serialize(StaticValues.AuthEvent));
+        for (var i = 0; i < numberOfMessages; i++) 
+            ws.Send(JsonSerializer.Serialize(StaticValues.AuthEvent));
 
-        while (history.Count() < numberOfMessages) Task.Delay(100).Wait();
+        while (history.Count() < numberOfMessages) Task.Delay(50).Wait();
 
 
         var expectedCount = history.Count(x => x.eventType == nameof(ServerAuthenticatesUser));
