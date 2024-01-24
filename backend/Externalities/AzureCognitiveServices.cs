@@ -26,7 +26,6 @@ public class AzureCognitiveServices
         var stringResponse =
             await _httpClient.PostAsJsonAsync(BaseUrl + "contentsafety/text:analyze?api-version=2023-10-01", request);
         var response = await stringResponse.Content.ReadAsStringAsync();
-        Log.Information(response);
         return response.Deserialize<ToxicityResponse>().categoriesAnalysis;
     }
 }
