@@ -16,7 +16,7 @@ public static class StaticHelpers
     {
         await pgContainer.StartAsync();
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentEnums.Testing.ToString());
-        if (rateLimit) Environment.SetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING", "true");
+        if (rateLimit) Environment.SetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING", rateLimit.ToString());
         Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgContainer.GetConnectionString());
         await new NpgsqlConnection(pgContainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
         ApiStartup.StartApi().Wait();
