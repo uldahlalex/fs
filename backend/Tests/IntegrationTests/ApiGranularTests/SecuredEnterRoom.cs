@@ -5,8 +5,7 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.ApiGranularTests;
 
-[TestFixture][Parallelizable(ParallelScope.All)]
-
+[TestFixture]
 public class MustAuthenticateToEnterRoom
 {
     [OneTimeSetUp]

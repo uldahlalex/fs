@@ -9,8 +9,7 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.RepositoryTests;
 
-[TestFixture][Parallelizable(ParallelScope.All)]
-
+[TestFixture]
 public class UserRepositoryTests
 {
     [OneTimeSetUp]

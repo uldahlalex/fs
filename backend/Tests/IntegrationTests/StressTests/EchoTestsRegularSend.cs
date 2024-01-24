@@ -9,8 +9,7 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.StressTests;
 
-[TestFixture][Parallelizable(ParallelScope.All)]
-
+[TestFixture]
 public class EchoTestRegularSend
 {
     [OneTimeSetUp]

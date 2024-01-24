@@ -6,8 +6,7 @@ using Testcontainers.PostgreSql;
 
 namespace Tests.IntegrationTests.ApiBigBangTests;
 
-[TestFixture][Parallelizable(ParallelScope.All)]
-
+[TestFixture]
 public class AuthEnterSencToxTrigger
 {
     [OneTimeSetUp]
