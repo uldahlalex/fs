@@ -9,7 +9,7 @@ using Testcontainers.PostgreSql;
 namespace Tests.ApiGranularTests;
 
 [TestFixture]
-public class ManyBroadcasts
+public class ManySignIns
 {
     [OneTimeSetUp]
     public async Task OneTimeSetUp()

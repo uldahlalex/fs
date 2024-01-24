@@ -11,7 +11,7 @@ public class RateLimiterTest
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer, false);
     }
 
 
