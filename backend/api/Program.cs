@@ -1,5 +1,7 @@
 using System.Reflection;
+using System.Text.Json;
 using api.Abstractions;
+using api.Attributes;
 using api.Externalities;
 using api.Models.Enums;
 using api.StaticHelpers;
@@ -17,13 +19,15 @@ public static class ApiStartup
                      outputTemplate: "\n{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}\n")
                  .CreateLogger();
 
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        Log.Information("ENVIRONMENT: " + environment);
-
-
         EnvSetup.SetDefaultEnvVariables();
+        
+        Log.Information(JsonSerializer.Serialize(Environment.GetEnvironmentVariables(), new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        }));
 
-        var builder = WebApplication.CreateBuilder();
+        var builder = WebApplication.CreateBuilder();       
+
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,

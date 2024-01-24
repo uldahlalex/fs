@@ -11,16 +11,17 @@ using Fleck;
 
 namespace api.Abstractions;
 
-public abstract class BaseEventHandler<T> where T : BaseDto
+public abstract class BaseEventHandler<T>() where T : BaseDto
 {
     public string eventType => GetType().Name;
 
     public async Task InvokeHandle(string message, IWebSocketConnection socket) //todo cancellationtoken
     {
-        var dto = message.DeserializeAndValidate<T>();
+        var dto = message.Deserialize<T>();
+        await dto.ValidateAsync();
         foreach (var baseEventFilterAttribute in GetType().GetCustomAttributes().OfType<BaseEventFilterAttribute>())
         {
-            baseEventFilterAttribute.Handle(socket, dto).Wait();
+            await baseEventFilterAttribute.Handle(socket, dto);
         }
         await Handle(dto, socket);
     }

@@ -1,6 +1,7 @@
 using api.Models;
 using api.Models.ServerEvents;
 using NUnit.Framework;
+using Serilog;
 using Testcontainers.PostgreSql;
 
 namespace Tests.ApiBigBangTests;
@@ -50,5 +51,6 @@ public class AuthEnterTwoClients
             () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 3,
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 2
         }, history);
+        
     }
 }

@@ -1,6 +1,6 @@
 namespace api.Models;
 
-public class BaseDto
+public class BaseDto : IValidatable
 {
     public BaseDto()
     {
@@ -13,4 +13,14 @@ public class BaseDto
     }
 
     public string eventType { get; set; }
+
+    public virtual Task ValidateAsync()
+    {
+        return Task.CompletedTask;
+    }
+}
+
+public interface IValidatable
+{
+    public Task ValidateAsync();
 }

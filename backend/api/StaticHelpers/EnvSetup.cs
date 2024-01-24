@@ -11,6 +11,7 @@ public static class EnvSetup
         { "FULLSTACK_START_MQTT_CLIENT", "false" },
         { "FULLSTACK_JWT_PRIVATE_KEY", "YourJWTPrivateKey" },
         { "FULLSTACK_AZURE_COGNITIVE_SERVICES", "YourAzureKey" },
+        {"FULLSTACK_SKIP_RATE_LIMITING", "false"},
         {
             "FULLSTACK_PG_CONN", IsRunningInDocker()
                 ? "Server=db;Database=postgres;User Id=postgres;Password=postgres;Port=5432;Pooling=true;MaxPoolSize=3"

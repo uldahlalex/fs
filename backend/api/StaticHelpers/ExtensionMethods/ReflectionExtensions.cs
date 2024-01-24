@@ -25,7 +25,7 @@ public static class ReflectionExtensions
 
     public static async Task InvokeCorrectClientEventHandler(this WebApplication app, HashSet<Type> types, IWebSocketConnection ws, string message)
     {
-        var eventType = message.DeserializeAndValidate<BaseDto>().eventType;
+        var eventType = message.Deserialize<BaseDto>().eventType;
         var handlerType = types.FirstOrDefault(t => t.Name.Equals(eventType, StringComparison.OrdinalIgnoreCase));
         if (handlerType == null)
             throw new InvalidOperationException($"Could not find handler for DTO type: {eventType}");

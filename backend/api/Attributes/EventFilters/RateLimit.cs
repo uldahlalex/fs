@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using api.Abstractions;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
+using Serilog;
 
 namespace api.Attributes.EventFilters;
 
@@ -11,9 +12,14 @@ public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame) : B
 {
     public override async Task Handle<T>(IWebSocketConnection socket, T dto)
     {
-        var env = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_RATE_RATE_LIMITING");
-        if (!string.IsNullOrEmpty(env) && env.ToLower().Equals("true"))
-            return;
+        var env = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING")!;
+        if (env.ToLower().Equals("true"))
+        {
+            Log.Information("SKIP RATE LIMITER: "+env);
+                    await Task.CompletedTask;
+                    return;
+        }
+    
 
         var metadata = socket.GetMetadata();
         if (!metadata.RateLimitPerEvent.TryGetValue(dto.eventType, out var rateLimiter))

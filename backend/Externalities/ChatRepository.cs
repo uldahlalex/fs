@@ -74,8 +74,22 @@ select count(*) from chat.enduser where email = @{nameof(findByEmailParams.email
 
 
     // pgSQL: select * from chat.enduser where email = 'bla';
-    public async Task<EndUser>
+    public EndUser
         GetUser(FindByEmailParams findByEmailParams) //todo fix and also stress-test infra methods
+    {
+         using var conn = source.OpenConnection();
+        return  conn.QueryFirstOrDefault<EndUser>($@"
+                        select 
+                            email as {nameof(EndUser.email)}, 
+                            isbanned as {nameof(EndUser.isbanned)}, 
+                            id as {nameof(EndUser.id)},
+                            hash as {nameof(EndUser.hash)},
+                            salt as {nameof(EndUser.salt)}
+                        from chat.enduser where email = @{nameof(FindByEmailParams.email)};", findByEmailParams) ??
+               throw new KeyNotFoundException("Could not find user with email " + findByEmailParams.email);
+    }   
+    public async Task<EndUser>
+        GetUserAsync(FindByEmailParams findByEmailParams) //todo fix and also stress-test infra methods
     {
         await using var conn = await source.OpenConnectionAsync();
         return await conn.QueryFirstOrDefaultAsync<EndUser>($@"

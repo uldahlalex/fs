@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using api.Models._3rdPartyTransferModels;
 using Commons;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace api.Externalities;
 
@@ -24,6 +26,7 @@ public class AzureCognitiveServices
         var stringResponse =
             await _httpClient.PostAsJsonAsync(BaseUrl + "contentsafety/text:analyze?api-version=2023-10-01", request);
         var response = await stringResponse.Content.ReadAsStringAsync();
-        return response.DeserializeAndValidate<ToxicityResponse>().categoriesAnalysis;
+        Log.Information(response);
+        return response.Deserialize<ToxicityResponse>().categoriesAnalysis;
     }
 }

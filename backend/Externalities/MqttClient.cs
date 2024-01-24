@@ -36,7 +36,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, IMediator med
             try
             {
                 var message = e.ApplicationMessage.ConvertPayloadToString();
-                var ts = message.DeserializeAndValidate<TimeSeries>();
+                var ts = message.Deserialize<TimeSeries>();
                 ts.timestamp = DateTimeOffset.UtcNow;
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(ts);
                 await mediator.Publish(new MqttClientWantsToPersistTimeSeriesDataDto()

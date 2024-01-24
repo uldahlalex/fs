@@ -1,3 +1,4 @@
+using System.Text.Json;
 using api.Abstractions;
 using api.Attributes;
 using api.Attributes.EventFilters;
@@ -11,14 +12,51 @@ using api.State;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
+using Serilog;
+using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace api.ClientEventHandlers;
 
 public class ClientWantsToSendMessageToRoomDto : BaseDto
 {
-    [ToxicityFilterDataAnnotation] public string? messageContent { get; set; }
+    public string? messageContent { get; set; }
 
     public int roomId { get; set; }
+    public override async Task ValidateAsync()
+    {
+        var azKey = Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES");
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (env != null && env.ToLower().Equals("development") && string.IsNullOrEmpty(azKey))
+        {
+            Log.Information("Skipping toxicity filter in development mode when no API key is provided");
+            return;
+        }
+
+        if (Environment.GetEnvironmentVariable("FULLSTACK_SKIP_TOXICITY_FILTER")?.ToLower().Equals("true") ?? false)
+        {
+            Log.Information("Skipping toxicity filter in development mode when no API key is provided");
+            return;
+        }
+
+        // Use await instead of Wait() and Result
+        var result = await new AzureCognitiveServices().IsToxic(messageContent);
+
+        Log.Information(JsonSerializer.Serialize(result, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        }));
+
+        if (result.Any(x => x.severity > 0.5))
+        {
+            var dict = result.ToDictionary(x => x.category, x => x.severity);
+            var response = JsonSerializer.Serialize(dict, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            throw new ValidationException(response);
+        }
+    }
+
 }
 
 [RequireAuthentication]
