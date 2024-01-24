@@ -16,11 +16,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Commons\Commons.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Serilog">
-        <HintPath>..\..\..\..\.nuget\packages\serilog\3.1.2-dev-02097\lib\net7.0\Serilog.dll</HintPath>
-      </Reference>
-    </ItemGroup>
+    
 
 </Project>

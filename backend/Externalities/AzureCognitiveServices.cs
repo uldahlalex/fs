@@ -1,8 +1,6 @@
 using System.Net.Http.Json;
 using api.Models._3rdPartyTransferModels;
 using Commons;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace api.Externalities;
 
