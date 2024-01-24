@@ -18,12 +18,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Commons\Commons.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj"/>
         <ProjectReference Include="..\Externalities\Externalities.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Attributes\PropertyValidation\" />
+        <Folder Include="Attributes\PropertyValidation\"/>
     </ItemGroup>
 
 </Project>

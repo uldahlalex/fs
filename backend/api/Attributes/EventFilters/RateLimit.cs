@@ -15,11 +15,11 @@ public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame) : B
         var env = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING")!;
         if (env.ToLower().Equals("true"))
         {
-            Log.Information("SKIP RATE LIMITER: "+env);
-                    await Task.CompletedTask;
-                    return;
+            Log.Information("SKIP RATE LIMITER: " + env);
+            await Task.CompletedTask;
+            return;
         }
-    
+
 
         var metadata = socket.GetMetadata();
         if (!metadata.RateLimitPerEvent.TryGetValue(dto.eventType, out var rateLimiter))
@@ -33,10 +33,7 @@ public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame) : B
             metadata.RateLimitPerEvent[dto.eventType] = rateLimiter;
         }
 
-        var lease = await rateLimiter.AcquireAsync(1);
-        if (!lease.IsAcquired)
-        {
-            throw new ValidationException("Rate limit exceeded for event " + dto.eventType);
-        }
+        var lease = await rateLimiter.AcquireAsync();
+        if (!lease.IsAcquired) throw new ValidationException("Rate limit exceeded for event " + dto.eventType);
     }
 }

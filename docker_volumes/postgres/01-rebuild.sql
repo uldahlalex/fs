@@ -23,7 +23,7 @@ create table chat.messages
     messagecontent text,
     sender         integer default '-1':: integer not null
         constraint sender
-        references chat.enduser,
+            references chat.enduser,
     timestamp      timestamp with time zone,
     room           integer
 );
