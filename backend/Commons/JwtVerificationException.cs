@@ -1,3 +1,3 @@
-namespace api.Models.Exceptions;
+namespace Commons;
 
 public class JwtVerificationException(string message) : Exception(message);

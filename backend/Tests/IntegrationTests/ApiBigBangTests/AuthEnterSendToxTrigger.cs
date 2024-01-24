@@ -4,7 +4,7 @@ using api.Models.ServerEvents;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
-namespace Tests.ApiBigBangTests;
+namespace Tests.IntegrationTests.ApiBigBangTests;
 
 [TestFixture]
 public class AuthEnterSencToxTrigger
@@ -12,7 +12,7 @@ public class AuthEnterSencToxTrigger
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer, false);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -40,9 +40,8 @@ public class AuthEnterSencToxTrigger
             () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
         }, history);
 
-        await wsAndHistory.DoAndWaitUntil(new ClientWantsToSendMessageToRoomDto()
+        await wsAndHistory.DoAndWaitUntil(new ClientWantsToSendMessageToRoomDto
         {
-
             messageContent = "I hate you",
             roomId = 1
         }, new List<Func<bool>>

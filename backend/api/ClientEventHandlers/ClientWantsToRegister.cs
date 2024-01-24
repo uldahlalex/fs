@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using api.Abstractions;
 using api.Attributes.EventFilters;
-using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
+using Externalities;
+using Externalities.ParameterModels;
 using Fleck;
 
 namespace api.ClientEventHandlers;
@@ -22,7 +23,8 @@ public class ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHan
 {
     public override async Task Handle(ClientWantsToRegisterDto dto, IWebSocketConnection socket)
     {
-        if (await chatRepository.DoesUserAlreadyExist(new FindByEmailParams(dto.email!))) throw new Exception("User already exists!");
+        if (await chatRepository.DoesUserAlreadyExist(new FindByEmailParams(dto.email!)))
+            throw new Exception("User already exists!");
         var salt = SecurityUtilities.GenerateSalt();
         var hash = SecurityUtilities.Hash(dto.password!, salt);
         var user = await chatRepository.InsertUser(new InsertUserParams(dto.email!, hash, salt));

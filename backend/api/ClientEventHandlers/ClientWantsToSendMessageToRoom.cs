@@ -1,16 +1,13 @@
 using System.Text.Json;
 using api.Abstractions;
-using api.Attributes;
 using api.Attributes.EventFilters;
-using api.Externalities;
 using api.Models;
-using api.Models.DbModels;
-using api.Models.Enums;
-using api.Models.QueryModels;
 using api.Models.ServerEvents;
 using api.State;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
+using Externalities;
+using Externalities.QueryModels;
 using Fleck;
 using Serilog;
 using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
@@ -22,6 +19,7 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
     public string? messageContent { get; set; }
 
     public int roomId { get; set; }
+
     public override async Task ValidateAsync()
     {
         var azKey = Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES");
@@ -56,7 +54,6 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
             throw new ValidationException(response);
         }
     }
-
 }
 
 [RequireAuthentication]
@@ -71,7 +68,7 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             out var topicSubscriptions);
         if (!getValue || !topicSubscriptions!.Contains(socket.ConnectionInfo.Id))
             throw new Exception("You are not subscribed to this room");
-        var message =new Message
+        var message = new Message
         {
             timestamp = DateTimeOffset.UtcNow,
             room = dto.roomId,

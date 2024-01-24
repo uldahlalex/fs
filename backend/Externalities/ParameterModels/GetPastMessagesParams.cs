@@ -1,8 +1,8 @@
-namespace api.Externalities;
+namespace Externalities.ParameterModels;
 
 public class GetPastMessagesParams
 {
-    public GetPastMessagesParams(int room, int lastMessageId = Int32.MaxValue)
+    public GetPastMessagesParams(int room, int lastMessageId = int.MaxValue)
     {
         this.room = room;
         this.lastMessageId = lastMessageId;

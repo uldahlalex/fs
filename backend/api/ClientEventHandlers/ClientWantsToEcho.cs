@@ -6,7 +6,7 @@ using Fleck;
 
 namespace api.ClientEventHandlers;
 
-public class ClientWantsToEchoDto :BaseDto
+public class ClientWantsToEchoDto : BaseDto
 {
     public string message { get; set; } = null!;
 }
@@ -15,7 +15,7 @@ public class ClientWantsToEcho : BaseEventHandler<ClientWantsToEchoDto>
 {
     public override Task Handle(ClientWantsToEchoDto dto, IWebSocketConnection socket)
     {
-        socket.SendDto(new ServerEchosClient()
+        socket.SendDto(new ServerEchosClient
         {
             message = dto.message
         });

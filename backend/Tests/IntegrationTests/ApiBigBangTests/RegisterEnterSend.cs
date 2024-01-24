@@ -1,6 +1,5 @@
-namespace Tests.ApiBigBangTests;
+namespace Tests.IntegrationTests.ApiBigBangTests;
 
 public class RegisterEnterSend
 {
-    
 }

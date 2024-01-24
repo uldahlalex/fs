@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using api.Attributes;
 using api.ClientEventHandlers;
 using FluentAssertions;
 using NUnit.Framework;
@@ -28,8 +27,9 @@ public class DataValidationTests
             messageContent = "I hate you",
             roomId = 1
         };
-        Assert.Throws<ValidationException>( () => dto.ValidateAsync().GetAwaiter().GetResult());
+        Assert.Throws<ValidationException>(() => dto.ValidateAsync().GetAwaiter().GetResult());
     }
+
     [TestCase]
     public async Task ToxicityFilterAllows()
     {
@@ -40,6 +40,5 @@ public class DataValidationTests
         };
 
         Assert.DoesNotThrowAsync(() => dto.ValidateAsync());
-
     }
 }

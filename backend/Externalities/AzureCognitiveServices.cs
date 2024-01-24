@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
-using api.Models._3rdPartyTransferModels;
 using Commons;
+using Externalities._3rdPartyTransferModels;
 
-namespace api.Externalities;
+namespace Externalities;
 
 public class AzureCognitiveServices
 {

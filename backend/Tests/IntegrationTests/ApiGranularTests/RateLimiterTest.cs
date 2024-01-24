@@ -3,7 +3,7 @@ using api.Models.ServerEvents;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
-namespace Tests.ApiGranularTests;
+namespace Tests.IntegrationTests.ApiGranularTests;
 
 [TestFixture]
 public class RateLimiterTest
@@ -11,7 +11,7 @@ public class RateLimiterTest
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer, true);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -28,7 +28,7 @@ public class RateLimiterTest
     {
         var history = new List<BaseDto>();
         var ws = await StaticHelpers.SetupWsClient(history);
-        
+
         await ws.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
         {
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
@@ -47,5 +47,4 @@ public class RateLimiterTest
             () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 3
         }, history);
     }
-
 }

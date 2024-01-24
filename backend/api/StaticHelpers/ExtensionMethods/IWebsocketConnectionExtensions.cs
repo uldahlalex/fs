@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using System.Threading.RateLimiting;
 using api.Models;
-using api.Models.DbModels;
 using api.Models.Enums;
 using api.State;
+using Commons;
+using Externalities.QueryModels;
 using Fleck;
 using Serilog;
 
@@ -14,10 +14,10 @@ public static class WebSocketExtensions
 {
     public static void AddConnection(this IWebSocketConnection ws)
     {
-        WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id, 
+        WebsocketConnections.ConnectionPool.TryAdd(ws.ConnectionInfo.Id,
             new WebsocketMetadata
             {
-                Socket = ws,
+                Socket = ws
             });
     }
 
@@ -45,7 +45,9 @@ public static class WebSocketExtensions
 
 
     public static WebsocketMetadata GetMetadata(this IWebSocketConnection connection)
-        => WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
+    {
+        return WebsocketConnections.ConnectionPool[connection.ConnectionInfo.Id];
+    }
 
 
     public static void SendDto<T>(this IWebSocketConnection socket, T dto) where T : BaseDto
@@ -65,8 +67,10 @@ public static class WebSocketExtensions
     }
 
     public static bool IsAuthenticated(this IWebSocketConnection socket)
-        => WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id)
-           && socket.GetMetadata().IsAuthenticated;
+    {
+        return WebsocketConnections.ConnectionPool.ContainsKey(socket.ConnectionInfo.Id)
+               && socket.GetMetadata().IsAuthenticated;
+    }
 
 
     public static void UnsubscribeFromTopic(this IWebSocketConnection socket, TopicEnums topic)

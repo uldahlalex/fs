@@ -1,4 +1,4 @@
-namespace api.Models.DbModels;
+namespace Externalities.QueryModels;
 
 public class TimeSeries
 {

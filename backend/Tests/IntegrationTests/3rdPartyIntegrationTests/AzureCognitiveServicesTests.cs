@@ -1,8 +1,8 @@
-using api.Externalities;
+using Externalities;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Tests._3rdPartyIntegrationTests;
+namespace Tests.IntegrationTests._3rdPartyIntegrationTests;
 
 [TestFixture]
 public class AzureCognitiveServicesTests

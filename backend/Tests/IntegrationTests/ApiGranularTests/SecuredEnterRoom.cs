@@ -3,7 +3,7 @@ using api.Models.ServerEvents;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
-namespace Tests.ApiGranularTests;
+namespace Tests.IntegrationTests.ApiGranularTests;
 
 [TestFixture]
 public class MustAuthenticateToEnterRoom

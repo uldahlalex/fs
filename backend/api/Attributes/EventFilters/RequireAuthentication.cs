@@ -3,7 +3,7 @@ using api.Abstractions;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
 
-namespace api.Attributes;
+namespace api.Attributes.EventFilters;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class RequireAuthenticationAttribute : BaseEventFilterAttribute

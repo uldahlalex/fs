@@ -23,7 +23,8 @@ public static class ReflectionExtensions
         return clientEventHandlers;
     }
 
-    public static async Task InvokeCorrectClientEventHandler(this WebApplication app, HashSet<Type> types, IWebSocketConnection ws, string message)
+    public static async Task InvokeCorrectClientEventHandler(this WebApplication app, HashSet<Type> types,
+        IWebSocketConnection ws, string message)
     {
         var eventType = message.Deserialize<BaseDto>().eventType;
         var handlerType = types.FirstOrDefault(t => t.Name.Equals(eventType, StringComparison.OrdinalIgnoreCase));

@@ -1,4 +1,4 @@
-namespace api.Models.QueryModels;
+namespace Externalities.QueryModels;
 
 public class MessageWithSenderEmail
 {

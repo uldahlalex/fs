@@ -1,5 +1,5 @@
 using System.Threading.RateLimiting;
-using api.Models.DbModels;
+using Externalities.QueryModels;
 using Fleck;
 
 namespace api.Models;

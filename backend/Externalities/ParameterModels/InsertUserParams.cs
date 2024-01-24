@@ -1,4 +1,4 @@
-namespace api.Externalities;
+namespace Externalities.ParameterModels;
 
 public class InsertUserParams
 {

@@ -1,4 +1,4 @@
-using api.Models.DbModels;
+using Externalities.QueryModels;
 
 namespace api.Models.ServerEvents;
 

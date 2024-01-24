@@ -1,4 +1,4 @@
-namespace api.Models.Enums;
+namespace Commons;
 
 public enum EnvironmentEnums
 {

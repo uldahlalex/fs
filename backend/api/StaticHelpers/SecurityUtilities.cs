@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using api.Models.DbModels;
-using api.Models.Exceptions;
+using Commons;
+using Externalities.QueryModels;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -24,7 +24,7 @@ public static class SecurityUtilities
             var json = decoder.Decode(jwt, Environment.GetEnvironmentVariable("FULLSTACK_JWT_PRIVATE_KEY"));
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Log.Error(e, "ValidateJwtAndReturnClaims");
             throw new JwtVerificationException("Authentication failed.");

@@ -1,9 +1,9 @@
-using api.Models.DbModels;
-using api.Models.QueryModels;
 using Dapper;
+using Externalities.ParameterModels;
+using Externalities.QueryModels;
 using Npgsql;
 
-namespace api.Externalities;
+namespace Externalities;
 
 public class ChatRepository(NpgsqlDataSource source)
 {
@@ -12,7 +12,8 @@ public class ChatRepository(NpgsqlDataSource source)
     // where chat.messages.id<1 and room=1 ORDER BY timestamp DESC LIMIT 5;
     public async Task<IEnumerable<MessageWithSenderEmail>>
         GetPastMessages(GetPastMessagesParams getPastMessagesParams)
-    {await using var conn = await source.OpenConnectionAsync();
+    {
+        await using var conn = await source.OpenConnectionAsync();
         return await conn.QueryAsync<MessageWithSenderEmail>(@$"
 SELECT 
     email as {nameof(MessageWithSenderEmail.email)}, 
@@ -30,7 +31,8 @@ ORDER BY timestamp DESC LIMIT 5;", getPastMessagesParams);
 
     // pgSQL: INSERT INTO chat.messages (timestamp, sender, room, messageContent) values (now(), 1, 1, 'test') returning *;
     public async Task<Message> InsertMessage(Message message)
-    {await using var conn = await source.OpenConnectionAsync();
+    {
+        await using var conn = await source.OpenConnectionAsync();
         return await conn.QueryFirstAsync<Message>(@$"
 INSERT INTO chat.messages (timestamp, sender, room, messageContent) 
 values (@{nameof(Message.timestamp)}, 
@@ -48,7 +50,8 @@ returning
 
     // pgSQL: insert into chat.enduser (email, hash, salt, isbanned) values ('bla@bla.dk', 'Uhq6WdmkqE+b3R84tTzFAprKxAOto3vhUx0HBG4J524=', 'G/Xx5vBlRMrF+oZcQ1vXiQ==', false) returning *;
     public async Task<EndUser> InsertUser(InsertUserParams insertUserParams)
-    {await using var conn = await source.OpenConnectionAsync();
+    {
+        await using var conn = await source.OpenConnectionAsync();
         return await conn.QueryFirstOrDefaultAsync<EndUser>(@$"
 insert into chat.enduser (email, hash, salt, isbanned) 
 values (
@@ -77,8 +80,8 @@ select count(*) from chat.enduser where email = @{nameof(findByEmailParams.email
     public EndUser
         GetUser(FindByEmailParams findByEmailParams) //todo fix and also stress-test infra methods
     {
-         using var conn = source.OpenConnection();
-        return  conn.QueryFirstOrDefault<EndUser>($@"
+        using var conn = source.OpenConnection();
+        return conn.QueryFirstOrDefault<EndUser>($@"
                         select 
                             email as {nameof(EndUser.email)}, 
                             isbanned as {nameof(EndUser.isbanned)}, 
@@ -87,7 +90,8 @@ select count(*) from chat.enduser where email = @{nameof(findByEmailParams.email
                             salt as {nameof(EndUser.salt)}
                         from chat.enduser where email = @{nameof(FindByEmailParams.email)};", findByEmailParams) ??
                throw new KeyNotFoundException("Could not find user with email " + findByEmailParams.email);
-    }   
+    }
+
     public async Task<EndUser>
         GetUserAsync(FindByEmailParams findByEmailParams) //todo fix and also stress-test infra methods
     {

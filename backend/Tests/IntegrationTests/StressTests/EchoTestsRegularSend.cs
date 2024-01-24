@@ -7,7 +7,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
-namespace Tests.ApiGranularTests;
+namespace Tests.IntegrationTests.StressTests;
 
 [TestFixture]
 public class EchoTestRegularSend
@@ -15,7 +15,7 @@ public class EchoTestRegularSend
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer, false);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
     }
 
 
@@ -30,23 +30,18 @@ public class EchoTestRegularSend
     [Test]
     public async Task ServerCanEchoManyTimes()
     {
-        int numberOfEchos = 100_000;
+        var numberOfEchos = 100_000;
         var history = new List<BaseDto>();
         var ws = await StaticHelpers.SetupWsClient(history);
         var stopwatch = Stopwatch.StartNew();
         Console.WriteLine("Time the stopwatch started: " + DateTime.Now);
-        for (int i = 0; i < numberOfEchos; i++)
-        {
-            ws.Send(JsonSerializer.Serialize(new ClientWantsToEchoDto()
+        for (var i = 0; i < numberOfEchos; i++)
+            ws.Send(JsonSerializer.Serialize(new ClientWantsToEchoDto
             {
                 message = "test"
             }));
-        }
 
-        while (history.Count() < numberOfEchos)
-        {
-            Task.Delay(50).Wait();
-        }
+        while (history.Count() < numberOfEchos) Task.Delay(50).Wait();
 
         var expectedCount = history.Count(x => x.eventType == nameof(ServerEchosClient));
         expectedCount.Should().Be(numberOfEchos);

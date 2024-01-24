@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Authentication;
 using api.Abstractions;
-using api.Attributes;
 using api.Attributes.EventFilters;
-using api.Externalities;
 using api.Models;
 using api.Models.ServerEvents;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
+using Externalities;
+using Externalities.ParameterModels;
 using Fleck;
 
 namespace api.ClientEventHandlers;
@@ -25,7 +25,7 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEven
     public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
         var user = chatRepository.GetUser(new FindByEmailParams(request.email!));
-        if(user.isbanned) throw new AuthenticationException("User is banned");
+        if (user.isbanned) throw new AuthenticationException("User is banned");
         var expectedHash = SecurityUtilities.Hash(request.password!, user.salt!);
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong credentials!");
         socket.Authenticate(user);

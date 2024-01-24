@@ -1,4 +1,4 @@
-namespace api.Models._3rdPartyTransferModels;
+namespace Externalities._3rdPartyTransferModels;
 
 public class ToxicityRequest
 {

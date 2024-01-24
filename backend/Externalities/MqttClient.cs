@@ -1,13 +1,11 @@
-using api.Models.DbModels;
-using api.Models.Enums;
 using Commons;
+using Externalities.QueryModels;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
 
-namespace api.Externalities;
+namespace Externalities;
 
 public class MqttClient(TimeSeriesRepository timeSeriesRepository, IMediator mediator)
 {
@@ -39,7 +37,7 @@ public class MqttClient(TimeSeriesRepository timeSeriesRepository, IMediator med
                 var ts = message.Deserialize<TimeSeries>();
                 ts.timestamp = DateTimeOffset.UtcNow;
                 var insertionResult = timeSeriesRepository.PersistTimeSeriesDataPoint(ts);
-                await mediator.Publish(new MqttClientWantsToPersistTimeSeriesDataDto()
+                await mediator.Publish(new MqttClientWantsToPersistTimeSeriesDataDto
                 {
                     TimeSeriesData = insertionResult
                 });
