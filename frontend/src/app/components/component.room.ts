@@ -7,6 +7,7 @@ import ago from 's-ago';
 import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMessages";
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
+import {ClientWantsToDeleteMessage} from "../models/clientWantsToDeleteMessage";
 
 @Component({
   template: `
@@ -32,6 +33,7 @@ import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessage
               style="display: inline-block; margin: 10px; padding: 10px; border-radius: 25px;  background: #f3bce6; color: #000000;  max-width: 80%;">
 
               {{ k.messageContent }}
+              <button (click)="DeleteMessage(k.id)">Delete</button>
             </div>
           </div>
           <i title="{{fullDate(k.timestamp)}}">written {{ timestampThis(k.timestamp) }}</i>
@@ -97,5 +99,9 @@ export class ComponentRoom {
   clientWantsToSendMessageToRoom() {
     let dto = new ClientWantsToSendMessageToRoom({messageContent: this.messageInput.value!, roomId: this.roomId});
     this.webSocketClientService.socketConnection.sendDto(dto);
+  }
+
+  DeleteMessage(id: number | undefined) {
+    this.webSocketClientService.socketConnection.sendDto(new ClientWantsToDeleteMessage({messageId: id, roomId: this.roomId}));
   }
 }

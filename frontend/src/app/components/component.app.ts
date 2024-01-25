@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-
+import {ChipModule} from "primeng/chip";
 
 @Component({
   selector: 'app-root',

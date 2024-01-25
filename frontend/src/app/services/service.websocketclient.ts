@@ -4,6 +4,7 @@ import {ServerAddsClientToRoom} from "../models/serverAddsClientToRoom";
 import {ServerSendsOlderMessagesToClient} from "../models/serverSendsOlderMessagesToClient";
 import {ServerBroadcastsMessageToClientsInRoom} from "../models/serverBroadcastsMessageToClientsInRoom";
 import {ServerAuthenticatesUser} from "../models/serverAuthenticatesUser";
+import {ServerDeletesMessage} from "../models/serverDeletesMessage";
 import {ServerNotifiesClientsInRoomSomeoneHasLeftRoom} from "../models/serverNotifiesClientsInRoomSomeoneHasLeftRoom";
 import {ServerSendsErrorMessageToClient} from "../models/serverSendsErrorMessageToClient";
 import {ServerBroadcastsTimeSeriesData} from "../models/serverBroadcastsTimeSeriesData";
@@ -40,17 +41,27 @@ export class WebSocketClientService {
   public socketConnection: WebsocketSuperclass = new WebsocketSuperclass(environment.url);
 
   constructor(public messageService: MessageService, public router: Router) {
+   try {
+     //todo global solution
+     this.handleEvent()
+   } catch (e) {
+     console.log(e)
+   }
+
+
+  }
+  handleEvent() {
     this.rooms.forEach(room => {
       this.roomsWithMessages.set(room.id!, []);
       this.roomsWithConnections.set(room.id!, 0)
     });
     this.socketConnection.onopen = () => {
-      console.info("connection established");
       let jwt = localStorage.getItem("jwt");
-      if (jwt != null && jwt != '')
-        this.socketConnection.send(JSON.stringify(new ClientWantsToAuthenticateWithJwt({jwt: jwt!})));
-      else
-        this.router.navigate(['/login']);
+      if (jwt != null && jwt != '') {
+        this.socketConnection.sendDto(new ClientWantsToAuthenticateWithJwt({jwt: jwt!}));
+        this.messageService.add({ life: 2000, severity: 'success', summary: 'i am alive', detail: 'Server connection is open!'});
+
+      } else this.router.navigate(['/login']);
     }
     this.socketConnection.onmessage = (event) => {
       let data = JSON.parse(event.data) as BaseDto<any>;
@@ -58,12 +69,31 @@ export class WebSocketClientService {
       this[data.eventType].call(this, data);
     }
     this.socketConnection.onerror = (event) => {
-      this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: 'Connection error!'});
+      this.messageService.add({ life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try every 5 seconds...'});
     }
     this.socketConnection.onclose = (event) => {
-      this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: 'Connection closed!'});
+      this.messageService.add({ life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try every 5 seconds...'});
+
+      this.reestablishConnection();
+
+
     }
   }
+
+
+  reestablishConnection() {
+    //todo resource draining stuff
+    if(this.socketConnection == undefined || this.socketConnection.readyState != 1) {
+      this.messageService.add({key: "connlost", life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try every 5 seconds...'})
+      this.socketConnection = new WebsocketSuperclass(environment.url);
+      this.handleEvent();
+      this.socketConnection.sendDto(new ClientWantsToAuthenticateWithJwt({jwt: localStorage.getItem('jwt')!}));
+      setTimeout(() => this.reestablishConnection(), 2000);
+    }
+
+
+    }
+
 
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
     this.roomsWithMessages.set(dto.roomId!, dto.messages!.reverse());
@@ -109,6 +139,7 @@ export class WebSocketClientService {
   }
 
   ServerRejectsJwt(dto: ServerRejectsJwt) {
+    this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: "Jwt has been rejected!"});
     localStorage.removeItem('jwt');
   }
 
@@ -141,6 +172,12 @@ export class WebSocketClientService {
       data: transformation
     }];
 
+  }
+
+  ServerDeletesMessage(serverDeletesMessage: ServerDeletesMessage) {
+    this.messageService.add({life: 2000, severity: 'info', summary: '🗑️', detail: "Someone deleted a message from one of your chats!"})
+    var messages = this.roomsWithMessages.get(serverDeletesMessage.roomId!)!.filter(message => message.id != serverDeletesMessage.messageId!)
+    this.roomsWithMessages.set(serverDeletesMessage.roomId!, messages);
   }
 
 

@@ -57,7 +57,7 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
 }
 
 [RequireAuthentication]
-[RateLimit(5, 60)]
+[RateLimit(10, 60)]
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {

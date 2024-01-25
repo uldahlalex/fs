@@ -16,31 +16,33 @@ import {MessageService} from "primeng/api";
 import {DialogModule} from "primeng/dialog";
 import {TimeSeriesComponent} from "./components/component.timeseries";
 import {NgApexchartsModule} from "ng-apexcharts";
+import {ChipModule} from "primeng/chip";
 
 
 @NgModule({
-  imports: [
-    BrowserModule,
-    CommonModule,
-    ToastModule,
-    MessageModule,
-    BrowserAnimationsModule,
-    ReactiveFormsModule,
-    NgApexchartsModule,
-    FormsModule,
-    RouterModule.forRoot([
-      {
-        path: 'room/:id', component: ComponentRoom
-      },
-      {
-        path: 'login', component: ComponentLogin
-      },
-      {
-        path: 'timeseries', component: TimeSeriesComponent
-      }
-    ]),
-    DialogModule
-  ],
+    imports: [
+        BrowserModule,
+        CommonModule,
+        ToastModule,
+        MessageModule,
+        BrowserAnimationsModule,
+        ReactiveFormsModule,
+        NgApexchartsModule,
+        FormsModule,
+        RouterModule.forRoot([
+            {
+                path: 'room/:id', component: ComponentRoom
+            },
+            {
+                path: 'login', component: ComponentLogin
+            },
+            {
+                path: 'timeseries', component: TimeSeriesComponent
+            }
+        ]),
+        DialogModule,
+        ChipModule
+    ],
   declarations: [
     ComponentApp,
     ComponentRoom,

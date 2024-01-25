@@ -55,15 +55,16 @@ returning
     {
         using var conn = source.OpenConnection();
         return conn.QueryFirstOrDefault<EndUser>(@$"
-insert into chat.enduser (email, hash, salt, isbanned) 
+insert into chat.enduser (email, hash, salt, isbanned, isadmin) 
 values (
         @{nameof(InsertUserParams.email)}, 
         @{nameof(InsertUserParams.hash)}, 
         @{nameof(InsertUserParams.salt)}, 
-        false) 
+        false, false) 
 returning 
     email as {nameof(EndUser.email)}, 
     isbanned as {nameof(EndUser.isbanned)}, 
+    isadmin as {nameof(EndUser.isadmin)},
     id as {nameof(EndUser.id)};", insertUserParams)
                ?? throw new InvalidOperationException("Insertion and retrieval failed");
     }
@@ -86,8 +87,26 @@ select count(*) from chat.enduser where email = @{nameof(findByEmailParams.email
                             isbanned as {nameof(EndUser.isbanned)}, 
                             id as {nameof(EndUser.id)},
                             hash as {nameof(EndUser.hash)},
-                            salt as {nameof(EndUser.salt)}
+                            salt as {nameof(EndUser.salt)},
+                            isadmin as {nameof(EndUser.isadmin)}
                         from chat.enduser where email = @{nameof(FindByEmailParams.email)};", findByEmailParams) ??
                throw new KeyNotFoundException("Could not find user with email " + findByEmailParams.email);
+    }
+
+    public bool IsMessageOwner(IsMessageOwnerParams isMessageOwnerParams)
+    {
+        using var conn = source.OpenConnection();
+        return conn.ExecuteScalar<int>(@$"
+SELECT userid FROM chat.enduser 
+JOIN chat.messages m on enduser.id = m.sender 
+WHERE m.id = @messageid;", isMessageOwnerParams) == isMessageOwnerParams.userId;
+    }
+
+    public void DeleteMessage(DeleteMessageParams deleteMessageParams)
+    {
+        using (var conn = source.OpenConnection())
+        {
+            conn.Execute("DELETE FROM chat.messages WHERE id = @messageid;", deleteMessageParams);
+        }
     }
 }

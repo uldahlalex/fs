@@ -13,7 +13,8 @@ create table chat.enduser
     email    text,
     hash     text,
     salt     text,
-    isbanned boolean default false
+    isbanned boolean default false,
+    isadmin boolean default false
 );
 create table chat.messages
 (
@@ -37,5 +38,5 @@ create table chat.timeseries
 );
 
 
-INSERT INTO chat.enduser (email, hash, salt, isbanned)
-values ('bla@bla.dk', 'Uhq6WdmkqE+b3R84tTzFAprKxAOto3vhUx0HBG4J524=', 'G/Xx5vBlRMrF+oZcQ1vXiQ==', false);
+INSERT INTO chat.enduser (email, hash, salt, isbanned, isadmin)
+values ('bla@bla.dk', 'Uhq6WdmkqE+b3R84tTzFAprKxAOto3vhUx0HBG4J524=', 'G/Xx5vBlRMrF+oZcQ1vXiQ==', false, true);

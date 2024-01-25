@@ -2,6 +2,11 @@ import {BaseDto} from "./baseDto";
 
 export class WebsocketSuperclass extends WebSocket {
   sendDto(dto: BaseDto<any>) {
-    this.send(JSON.stringify(dto));
+    try {
+      this.send(JSON.stringify(dto));
+    } catch (e) {
+      console.log(e)
+    }
+
   }
 }

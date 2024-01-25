@@ -6,6 +6,8 @@ import {WebSocketClientService} from "../services/service.websocketclient";
   template: `
     <div style="display: flex; flex-direction: row; justify-content: start;">
       <h3>Controls</h3>
+      <p-chip *ngIf="webSocketClientService.socketConnection.readyState == 1" label="Connection established"></p-chip>
+      <p-chip *ngIf="webSocketClientService.socketConnection.readyState != 1" label="No connection!"></p-chip>
 
     </div>
 
