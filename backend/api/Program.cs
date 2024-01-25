@@ -5,8 +5,10 @@ using api.Abstractions;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
 using Commons;
+using Dapper;
 using Externalities;
 using Fleck;
+using Npgsql;
 using Serilog;
 
 var app = await ApiStartup.StartApi();
@@ -34,25 +36,36 @@ namespace api
 
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-            builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
-                sourceBuilder => sourceBuilder.EnableParameterLogging());
+            if (builder.Environment.IsProduction())
+            {
+                builder.Services.AddNpgsqlDataSource(
+                    Utilities.ProperlyFormattedConnectionString!);
+            }
+            else
+            {
+                builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
+                    sourceBuilder => sourceBuilder.EnableParameterLogging());
+            }
 
 
-            builder.Services.AddScoped<ChatRepository>();
-            builder.Services.AddScoped<TimeSeriesRepository>();
+            builder.Services.AddSingleton<ChatRepository>();
+            builder.Services.AddSingleton<TimeSeriesRepository>();
 
-            builder.Services.AddScoped<MqttClient>();
+            builder.Services.AddSingleton<MqttClient>();
 
             var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
 
 
             var app = builder.Build();
-            var port =
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")!.Equals(
-                    EnvironmentEnums.Testing.ToString())
-                    ? 0
-                    : 8181;
-            var server = new WebSocketServer("ws://0.0.0.0:" + port);
+            if (Environment.GetCommandLineArgs().Contains("--rebuild-db"))
+                app.Services.GetService<NpgsqlDataSource>()!.OpenConnection().Execute(StaticValues.DbRebuild);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("Not found");
+            if (string.IsNullOrEmpty(env))
+                throw new Exception("Must have ASPNETCORE_ENVIRONMENT");
+            var port = env.Equals(EnvironmentEnums.Development.ToString())
+                ? 8181
+                : 0;
+            var server = new WebSocketServer("ws://0.0.0.0:"+port);
 
             void Config(IWebSocketConnection ws)
             {
@@ -76,11 +89,14 @@ namespace api
             server.RestartAfterListenError = true;
             server.ListenerSocket.NoDelay = true;
             server.Start(Config);
+
             Environment.SetEnvironmentVariable("FULLSTACK_API_PORT", server.Port.ToString());
             var mqttClientSetting = Environment.GetEnvironmentVariable("FULLSTACK_START_MQTT_CLIENT")!;
             if (!string.IsNullOrEmpty(mqttClientSetting) &&
                 mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
                 await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
+            
+            app.MapGet("/", () => "You have successfully discovered an endpoint");
             return app;
         }
     }

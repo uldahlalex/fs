@@ -1,6 +1,6 @@
 using api.ClientEventHandlers;
 
-namespace Tests;
+namespace api;
 
 public class StaticValues
 {

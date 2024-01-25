@@ -22,8 +22,6 @@
         <ProjectReference Include="..\Externalities\Externalities.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Attributes\PropertyValidation\"/>
-    </ItemGroup>
+
 
 </Project>

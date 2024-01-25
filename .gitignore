@@ -5,3 +5,6 @@ backend/backend.sln.DotSettings.user
 .env
 log
 data
+frontend/firebase.json
+frontend/.firebaserc
+frontend/.firebase/hosting.ZGlzdC9mcm9udGVuZC9icm93c2Vy.cache

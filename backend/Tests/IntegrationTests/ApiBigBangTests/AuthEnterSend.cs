@@ -1,3 +1,4 @@
+using api;
 using api.Models;
 using api.Models.ServerEvents;
 using NUnit.Framework;

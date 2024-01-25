@@ -16,7 +16,7 @@ public static class ReflectionExtensions
                 type.BaseType.IsGenericType &&
                 type.BaseType.GetGenericTypeDefinition() == genericTypeDefinition)
             {
-                builder.Services.AddScoped(type);
+                builder.Services.AddSingleton(type);
                 clientEventHandlers.Add(type);
             }
 
@@ -31,15 +31,10 @@ public static class ReflectionExtensions
         if (handlerType == null)
             throw new InvalidOperationException($"Could not find handler for DTO type: {eventType}");
 
-        using (var scope = app.Services.CreateScope()) // Create a scope
-        {
-            var scopedServiceProvider = scope.ServiceProvider;
-            dynamic clientEventServiceClass = scopedServiceProvider.GetService(handlerType); // Resolve the service within the scope
-            if (clientEventServiceClass == null)
-                throw new InvalidOperationException($"Could not resolve service for type: {handlerType}");
+        dynamic clientEventServiceClass = app.Services.GetService(handlerType);
+        if (clientEventServiceClass == null)
+            throw new InvalidOperationException($"Could not resolve service for type: {handlerType}");
 
-            await clientEventServiceClass.InvokeHandle(message, ws);
-        }
+        await clientEventServiceClass.InvokeHandle(message, ws);
     }
-
 }

@@ -1,33 +1,41 @@
-## Example system for Fullstack Development 2024, Business academy southwest
+## Experimental playground sample system for Fullstack Development 2024, Business academy southwest
 
-## Quickstart:
+## Graphical system overview
 
-If you have Docker and Docker Compose installed:
+![Diagram Description](fs.png)
+
+#### Diagram explanation can be found in the bottom of README.
+
+## What is it?
+
+When settling on technologies, style and architecture, I spend some time experimenting to find a fit where I will create a sample app - this is that.
+
+Naturally, some of the contents end up not being part of the actual course contents, since I deem they don't fit into the scope, but I might still leave the code in here.
+
+### Try the deployed version:
+The current version can be used here: (link coming soon)
+
+## Quickstart: Run Locally
+
+### With Docker and Docker Compose installed:
 
 ```
 docker-compose up --build
 ```
 
-Without docker with .NET 8 (will use some default environment variables without certain 3rd party services like Azure
+### Without docker. With .NET 8 CLI: 
+(will use some default environment variables without certain 3rd party services like Azure
 Cognitive Services):
 
 ```
-cd backend/api && dotnet run
-```
-
-If you want to run all tests locally with TestContainers for postgresql, have Docker Daemon running and use:
-
-```
-cd backend/Tests && dotnet test
+cd backend/api && dotnet run --rebuild-db
 ```
 
 ## What does it do?
 
 - Demonstration of realtime chat application + live data presentation from IoT edge devices
 
-## Graphical system overview
 
-![Diagram Description](fs.png)
 
 xml file for graphical representation: (draw.io): [fs.xml](fs.xml)
 

@@ -18,6 +18,7 @@ import {WebsocketSuperclass} from "../models/WebsocketSuperclass";
 import {
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
 } from "../models/serverNotifiesClientsInRoomSomeoneHasJoinedRoom";
+import {environment} from "../../environments/environment";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -36,7 +37,7 @@ export class WebSocketClientService {
   }];
 
 
-  public socketConnection: WebsocketSuperclass = new WebsocketSuperclass(`ws://localhost:8181`);
+  public socketConnection: WebsocketSuperclass = new WebsocketSuperclass(environment.url);
 
   constructor(public messageService: MessageService, public router: Router) {
     this.rooms.forEach(room => {

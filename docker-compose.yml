@@ -2,8 +2,8 @@ version: '3.8'
 services:
   webapi:
     build:
-      context: ./backend/api/
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile.dev
     ports:
       - "8181:8181"
     depends_on:
