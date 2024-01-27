@@ -29,6 +29,6 @@ public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository)
             throw new AuthenticationException("User is banned");
 
         socket.Authenticate(user);
-        socket.SendDto(new ServerAuthenticatesUser { jwt = dto.jwt });
+        socket.SendDto(new ServerAuthenticatesUserFromJwt());
     }
 }

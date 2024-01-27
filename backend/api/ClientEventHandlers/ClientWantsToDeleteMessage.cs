@@ -2,6 +2,7 @@ using api.Abstractions;
 using api.Attributes.EventFilters;
 using api.Models;
 using api.Models.ServerEvents;
+using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
 using Externalities;
 using Fleck;
@@ -30,6 +31,10 @@ public class ClientWantsToDeleteMessage(ChatRepository chatRepository) : BaseEve
         }
 
         chatRepository.DeleteMessage(new DeleteMessageParams() {messageId = dto.messageId});
-        socket.SendDto(new ServerDeletesMessage() {messageId = dto.messageId, roomId = dto.roomId});
+        StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerDeletesMessage()
+        {
+            messageId = dto.messageId,
+            roomId = dto.roomId
+        }, dto.roomId.ParseTopicFromRoomId());
     }
 }

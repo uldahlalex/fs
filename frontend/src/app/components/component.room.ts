@@ -68,15 +68,9 @@ export class ComponentRoom {
   }
 
   async enterRoom() {
-    console.log("entering")
-    try {
       let clientWantsToEnterRoom = new ClientWantsToEnterRoom({roomId: this.roomId});
       this.webSocketClientService.socketConnection.sendDto(clientWantsToEnterRoom);
-    } catch (e) {
-      console.log("connection not established, retrying in 1 second")
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      this.enterRoom();
-    }
+
   }
 
   timestampThis(timestamp: string | undefined) {

@@ -1,12 +1,31 @@
-import {BaseDto} from "./baseDto";
+import { BaseDto } from "./baseDto";
+import {ClientWantsToAuthenticateWithJwt} from "./clientWantsToAuthenticateWithJwt";
 
 export class WebsocketSuperclass extends WebSocket {
-  sendDto(dto: BaseDto<any>) {
-    try {
-      this.send(JSON.stringify(dto));
-    } catch (e) {
-      console.log(e)
-    }
+  private messageQueue: Array<BaseDto<any>> = [];
 
+  constructor(address: string) {
+    super(address);
+    this.onopen = this.handleOpen.bind(this);
   }
+
+  sendDto(dto: BaseDto<any>) {
+    console.log("Sending: "+JSON.stringify(dto));
+    if (this.readyState === WebSocket.OPEN) {
+      this.send(JSON.stringify(dto));
+    } else {
+      this.messageQueue.push(dto);
+    }
+  }
+
+  private handleOpen() {
+    while (this.messageQueue.length > 0) {
+      this.sendDto(new ClientWantsToAuthenticateWithJwt({jwt:localStorage.getItem('jwt')!}));
+      const dto = this.messageQueue.shift();
+      if (dto) {
+        this.send(JSON.stringify(dto));
+      }
+    }
+  }
+
 }

@@ -20,6 +20,8 @@ import {
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
 } from "../models/serverNotifiesClientsInRoomSomeoneHasJoinedRoom";
 import {environment} from "../../environments/environment";
+import {UtilityServices} from "./utility.services";
+import {log} from "@angular-devkit/build-angular/src/builders/ssr-dev-server";
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -38,61 +40,52 @@ export class WebSocketClientService {
   }];
 
 
-  public socketConnection: WebsocketSuperclass = new WebsocketSuperclass(environment.url);
+  public socketConnection: WebsocketSuperclass;
 
-  constructor(public messageService: MessageService, public router: Router) {
-   try {
-     //todo global solution
-     this.handleEvent()
-   } catch (e) {
-     console.log(e)
-   }
-
-
-  }
-  handleEvent() {
-    this.rooms.forEach(room => {
+  constructor(public messageService: MessageService,
+              public utilities: UtilityServices,
+              public router: Router) {
+this.socketConnection = new WebsocketSuperclass(environment.url);
+this.rooms.forEach(room => {
       this.roomsWithMessages.set(room.id!, []);
       this.roomsWithConnections.set(room.id!, 0)
     });
-    this.socketConnection.onopen = () => {
-      let jwt = localStorage.getItem("jwt");
-      if (jwt != null && jwt != '') {
-        this.socketConnection.sendDto(new ClientWantsToAuthenticateWithJwt({jwt: jwt!}));
-        this.messageService.add({ life: 2000, severity: 'success', summary: 'i am alive', detail: 'Server connection is open!'});
+     this.handleEvent()
+  }
+  handleEvent() {
 
-      } else this.router.navigate(['/login']);
-    }
     this.socketConnection.onmessage = (event) => {
-      let data = JSON.parse(event.data) as BaseDto<any>;
+      const data = JSON.parse(event.data) as BaseDto<any>;
       //@ts-ignore
       this[data.eventType].call(this, data);
     }
-    this.socketConnection.onerror = (event) => {
-      this.messageService.add({ life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try every 5 seconds...'});
-    }
-    this.socketConnection.onclose = (event) => {
-      this.messageService.add({ life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try every 5 seconds...'});
-
-      this.reestablishConnection();
-
-
-    }
+    this.socketConnection.onerror = (event) => console.log(event)//this.reestablishConnection(); //todo
+    this.socketConnection.onclose = (event) => console.log(event)//.reestablishConnection();
   }
 
 
-  reestablishConnection() {
-    //todo resource draining stuff
-    if(this.socketConnection == undefined || this.socketConnection.readyState != 1) {
-      this.messageService.add({key: "connlost", life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try every 5 seconds...'})
-      this.socketConnection = new WebsocketSuperclass(environment.url);
-      this.handleEvent();
-      this.socketConnection.sendDto(new ClientWantsToAuthenticateWithJwt({jwt: localStorage.getItem('jwt')!}));
-      setTimeout(() => this.reestablishConnection(), 2000);
-    }
-
-
-    }
+  // reestablishConnection() {
+  //   const maxAttempts = 5;
+  //   let attempts = 0;
+  //
+  //   const tryReconnect = () => {
+  //     if (this.socketConnection == undefined || this.socketConnection.readyState !== WebSocket.OPEN) {
+  //       if (attempts < maxAttempts) {
+  //         this.messageService.add({ life: 2000, severity: 'error', summary: 'hello?', detail: 'no connection! Will re-try...'});
+  //         this.socketConnection = new WebsocketSuperclass(environment.url);
+  //         this.handleEvent();
+  //         this.socketConnection.sendDto(new ClientWantsToAuthenticateWithJwt({jwt: localStorage.getItem('jwt')!}));
+  //
+  //         attempts++;
+  //         setTimeout(tryReconnect, 2000);
+  //       } else {
+  //         this.messageService.add({ life: 2000, severity: 'error', summary: 'Connection Failed', detail: 'Max reconnection attempts reached'});
+  //       }
+  //     }
+  //   };
+  //
+  //   tryReconnect();
+  // }
 
 
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
@@ -104,6 +97,10 @@ export class WebSocketClientService {
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
     this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
     localStorage.setItem("jwt", dto.jwt!);
+    this.router.navigate(['/room/1'])
+  }
+  ServerAuthenticatesUserFromJwt(dto: ServerAuthenticatesUser) {
+    this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
     this.router.navigate(['/room/1'])
   }
 
@@ -133,14 +130,12 @@ export class WebSocketClientService {
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
-    this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage});
-    if (JSON.parse(dto.receivedMessage!).eventType == 'ClientWantsToAuthenticateWithJwt')
-      localStorage.removeItem('jwt');
+    this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage}); //todo implement with err handler
   }
 
   ServerRejectsJwt(dto: ServerRejectsJwt) {
     this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: "Jwt has been rejected!"});
-    localStorage.removeItem('jwt');
+    localStorage.removeItem('jwt'); //todo
   }
 
   ServerSendsOlderMessagesToClient(serverSendsOlderMessagesToClient: ServerSendsOlderMessagesToClient) {
@@ -176,44 +171,9 @@ export class WebSocketClientService {
 
   ServerDeletesMessage(serverDeletesMessage: ServerDeletesMessage) {
     this.messageService.add({life: 2000, severity: 'info', summary: '🗑️', detail: "Someone deleted a message from one of your chats!"})
-    var messages = this.roomsWithMessages.get(serverDeletesMessage.roomId!)!.filter(message => message.id != serverDeletesMessage.messageId!)
+    const messages = this.roomsWithMessages.get(serverDeletesMessage.roomId!)!.filter(message => message.id != serverDeletesMessage.messageId!)
     this.roomsWithMessages.set(serverDeletesMessage.roomId!, messages);
   }
 
 
-  // CLIENT -> SERVER COMMUNICATION
-  //i think ill retire all this boilerplate
-  // ClientWantsToRegister(clientWantsToRegister: ClientWantsToRegister): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToRegister));
-  // }
-  //
-  // ClientWantsToAuthenticate(clientWantsToAuthenticate: ClientWantsToAuthenticate): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToAuthenticate));
-  // }
-  //
-  // ClientWantsToAuthenticateWithJwt(clientWantsToAuthenticateWithJwt: ClientWantsToAuthenticateWithJwt): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToAuthenticateWithJwt));
-  // }
-  //
-  // ClientWantsToEnterRoom(clientWantsToEnterRoom: ClientWantsToEnterRoom): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToEnterRoom));
-  // }
-  //
-  // ClientWantsToLeaveRoom(clientWantsToLeaveRoom: ClientWantsToLeaveRoom): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToLeaveRoom));
-  // }
-  //
-  // ClientWantsToLoadOlderMessages(clientWantsToLoadOlderMessages: ClientWantsToLoadOlderMessages): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToLoadOlderMessages));
-  // }
-  //
-  // ClientWantsToSendMessageToRoom(clientWantsToSendMessageToRoom: ClientWantsToSendMessageToRoom): void {
-  //   this.socketConnection.send(JSON.stringify(clientWantsToSendMessageToRoom));
-  // }
-  //
-  // ClientWantsToSubscribeToTimeSeriesData(clientWantsToSubscribeToTimeSeriesData: ClientWantsToRegister): void {
-  //   {
-  //     this.socketConnection.send(JSON.stringify(clientWantsToSubscribeToTimeSeriesData));
-  //   }
-  // }
 }

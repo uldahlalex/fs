@@ -4,7 +4,7 @@ import {RouterModule} from "@angular/router";
 import {ComponentRoom} from "./components/component.room";
 import {ComponentLogin} from "./components/component.login";
 import {environment} from "../environments/environment";
-import {enableProdMode, NgModule} from "@angular/core";
+import {enableProdMode, ErrorHandler, NgModule} from "@angular/core";
 import {ComponentSidebar} from "./components/component.sidebar";
 import {ToastModule} from "primeng/toast";
 import {MessageModule} from "primeng/message";
@@ -17,6 +17,7 @@ import {DialogModule} from "primeng/dialog";
 import {TimeSeriesComponent} from "./components/component.timeseries";
 import {NgApexchartsModule} from "ng-apexcharts";
 import {ChipModule} from "primeng/chip";
+import {GlobalErrorHandlerService} from "./services/global.errorhandler.service";
 
 
 @NgModule({
@@ -50,7 +51,9 @@ import {ChipModule} from "primeng/chip";
     ComponentLogin,
     TimeSeriesComponent
   ],
-  providers: [MessageService],
+  providers: [MessageService, {
+      provide: ErrorHandler, useClass: GlobalErrorHandlerService
+  }],
   bootstrap: [ComponentApp]
 })
 export class AppModule {
