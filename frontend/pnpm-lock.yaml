@@ -41,6 +41,9 @@ dependencies:
   primeng:
     specifier: ^17.4.0
     version: 17.4.0(@angular/common@17.1.1)(@angular/core@17.1.1)(@angular/forms@17.1.1)(rxjs@7.8.1)(zone.js@0.14.3)
+  reconnecting-websocket:
+    specifier: ^4.4.0
+    version: 4.4.0
   rxjs:
     specifier: ~7.8.1
     version: 7.8.1
@@ -5445,6 +5448,10 @@ packages:
     dependencies:
       picomatch: 2.3.1
     dev: true
+
+  /reconnecting-websocket@4.4.0:
+    resolution: {integrity: sha512-D2E33ceRPga0NvTDhJmphEgJ7FUYF0v4lr1ki0csq06OdlxKfugGzN0dSkxM/NfqCxYELK4KcaTOUOjTV6Dcng==}
+    dev: false
 
   /reflect-metadata@0.1.14:
     resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}

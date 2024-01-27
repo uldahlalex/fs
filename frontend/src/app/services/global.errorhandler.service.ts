@@ -16,7 +16,7 @@ export class GlobalErrorHandlerService implements ErrorHandler{
     }
 
     else {
-      this.messageService.add({severity: 'error',  detail: error.message});
+      //this.messageService.add({severity: 'error',  detail: error.message});
     }
   }
 

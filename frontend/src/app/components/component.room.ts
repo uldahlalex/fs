@@ -24,21 +24,18 @@ import {ClientWantsToDeleteMessage} from "../models/clientWantsToDeleteMessage";
       flex-direction: column;
       overflow-y: scroll; max-height: 300px;
 ">
-      <div *ngIf="roomId">
-        <div *ngFor="let k of webSocketClientService.roomsWithMessages.get(roomId)"
-             style="display: flex; flex-direction: row; justify-content: space-between;">
+      <div *ngFor="let k of webSocketClientService.roomsWithMessages.get(roomId!)"
+           style="display: flex; flex-direction: row; justify-content: space-between;">
 
-          <div><b>{{ k.email }}</b> says:<br>
-            <div
-              style="display: inline-block; margin: 10px; padding: 10px; border-radius: 25px;  background: #f3bce6; color: #000000;  max-width: 80%;">
+        <div><b>{{ k.email }}</b> says:<br>
+          <div style="position: relative; display: flex; margin: 5px; padding: 5px; border-radius: 15px; background: #f3bce6; color: #000000; max-width: 100%;">
 
-              {{ k.messageContent }}
-              <button (click)="DeleteMessage(k.id)">Delete</button>
-            </div>
+            <button style="position: absolute; top: 0; right: 0; color: black; background: transparent; border: none;" (click)="DeleteMessage(k.id)">💣</button>
+            <p>{{ k.messageContent }}</p>
+
           </div>
-          <i title="{{fullDate(k.timestamp)}}">written {{ timestampThis(k.timestamp) }}</i>
         </div>
-
+        <i title="{{fullDate(k.timestamp)}}">written {{ timestampThis(k.timestamp) }}</i>
       </div>
 
 
