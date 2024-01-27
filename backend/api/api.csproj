@@ -22,6 +22,9 @@
         <ProjectReference Include="..\Externalities\Externalities.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <FileAssociation Include="speech.wav"/>
+    </ItemGroup>
 
 
 </Project>

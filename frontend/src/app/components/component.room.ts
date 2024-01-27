@@ -14,8 +14,6 @@ import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBas
   template: `
 
     <h3>Main Content</h3>
-
-    <img *ngIf="webSocketClientService.img!=undefined" [src]="webSocketClientService.img" alt="Base64 Image">
     <div style="display: flex; flex-direction: row; justify-content: space-between; ">
       <button (click)="loadOlderMessages()" style="height: 100%;">Load older messages...</button>
       <div>Currently live in room: {{ webSocketClientService.roomsWithConnections.get(roomId!) }}</div>
@@ -30,9 +28,9 @@ import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBas
            style="display: flex; flex-direction: row; justify-content: space-between;">
 
         <div><b>{{ k.email }}</b> says:<br>
-          <div style="position: relative; display: flex; margin: 5px; padding: 5px; border-radius: 15px; background: #f3bce6; color: #000000; max-width: 100%;">
+          <div style="position: relative; display: flex; margin: 15px; padding: 5px; border-radius: 25px; background: #2eb4ea; color: #000000; max-width: 100%;">
 
-            <button style="position: absolute; top: 0; right: 0; color: black; background: transparent; border: none;" (click)="DeleteMessage(k.id)">❌</button>
+            <button style="position: absolute; top: 0; right: 0; color: black; background: transparent; border: none;" (click)="DeleteMessage(k.id)">🚮</button>
             <p>{{ k.messageContent }}</p>
 
           </div>
@@ -46,15 +44,6 @@ import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBas
     <div style="display: flex; flex-direction: row; justify-content: center;">
       <input [formControl]="messageInput" placeholder="Write something interesting" style="height: 100%;">
       <button (click)="clientWantsToSendMessageToRoom()" style="height: 100%;">insert</button>
-      <input
-        hidden
-        type="file"
-        #uploader
-        (change)="uploadFile($event)"
-      />
-      <button (click)="uploader.click()">
-        Upload
-      </button>
     </div>
 
 
@@ -107,13 +96,5 @@ export class ComponentRoom {
     this.webSocketClientService.socketConnection.sendDto(new ClientWantsToDeleteMessage({messageId: id, roomId: this.roomId}));
   }
 
-  uploadFile($event: Event) {
-    let file = ($event.target as HTMLInputElement).files![0];
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      let base64EncodedData = reader.result!.toString().split(',')[1];
-      this.webSocketClientService.socketConnection.sendDto(new ClientWantsToSendBase64EncodedData({base64EncodedData: base64EncodedData}));
-    };
-  }
+
 }

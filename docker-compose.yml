@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "8181:8181"
+      - "5000:5000"
     depends_on:
       - db
       - mqtt-broker
@@ -14,6 +15,7 @@ services:
       - FULLSTACK_PG_CONN=${FULLSTACK_PG_CONN}
       - FULLSTACK_AZURE_COGNITIVE_SERVICES=${FULLSTACK_AZURE_COGNITIVE_SERVICES}
       - FULLSTACK_START_MQTT_CLIENT=true
+      - FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH=${FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH}
   db:
     image: postgres:16.1
     environment:

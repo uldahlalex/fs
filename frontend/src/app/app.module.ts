@@ -5,7 +5,7 @@ import {ComponentRoom} from "./components/component.room";
 import {ComponentLogin} from "./components/component.login";
 import {environment} from "../environments/environment";
 import {enableProdMode, ErrorHandler, NgModule} from "@angular/core";
-import {ComponentSidebar} from "./components/component.sidebar";
+import {ComponentMenu} from "./components/component.menu";
 import {ToastModule} from "primeng/toast";
 import {MessageModule} from "primeng/message";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
@@ -18,6 +18,7 @@ import {TimeSeriesComponent} from "./components/component.timeseries";
 import {NgApexchartsModule} from "ng-apexcharts";
 import {ChipModule} from "primeng/chip";
 import {GlobalErrorHandlerService} from "./services/global.errorhandler.service";
+import {ComponentNontextualdata} from "./components/component.nontextualdata";
 
 
 @NgModule({
@@ -39,15 +40,20 @@ import {GlobalErrorHandlerService} from "./services/global.errorhandler.service"
             },
             {
                 path: 'timeseries', component: TimeSeriesComponent
-            }
+            },
+          {
+            path: 'nontextualdata', component: ComponentNontextualdata
+          }
         ]),
         DialogModule,
-        ChipModule
+        ChipModule,
+
     ],
   declarations: [
     ComponentApp,
     ComponentRoom,
-    ComponentSidebar,
+    ComponentNontextualdata,
+    ComponentMenu,
     ComponentLogin,
     TimeSeriesComponent
   ],

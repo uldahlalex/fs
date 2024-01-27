@@ -10,7 +10,7 @@ using Testcontainers.PostgreSql;
 namespace Tests.IntegrationTests.StressTests;
 
 [TestFixture]
-public class EchoTestRegularSend
+public class ApiOnlyThroughputTest
 {
     [OneTimeSetUp]
     public async Task OneTimeSetUp()

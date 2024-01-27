@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.28"/>
         <PackageReference Include="MediatR" Version="12.2.0"/>
+        <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.34.1" />
         <PackageReference Include="MQTTnet" Version="4.3.3.952"/>
         <PackageReference Include="Npgsql" Version="8.0.1"/>
     </ItemGroup>

@@ -8,6 +8,7 @@ using Commons;
 using Dapper;
 using Externalities;
 using Fleck;
+using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Serilog;
 
@@ -52,6 +53,7 @@ namespace api
             builder.Services.AddSingleton<TimeSeriesRepository>();
 
             builder.Services.AddSingleton<MqttClient>();
+            builder.Services.AddSingleton<AzureCognitiveServices>();
 
             var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
 
@@ -96,7 +98,7 @@ namespace api
                 mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
                 await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
             
-            app.MapGet("/", () => "You have successfully discovered an endpoint");
+            app.MapGet("/", async ([FromServices] AzureCognitiveServices az) =>  await az.File());
             return app;
         }
     }

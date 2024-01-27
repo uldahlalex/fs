@@ -1,4 +1,21 @@
 
+# Use an appropriate base image
+FROM python:3.8
+
+RUN openssl version
+# Update package lists
+RUN apt-get update
+
+# Install any necessary dependencies
+# For example, you might need build-essential, libssl-dev, or other packages
+# RUN apt-get install -y build-essential libssl-dev
+
+# Download and install the specific version of OpenSSL
+RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb
+RUN dpkg -i libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb
+
+RUN openssl version
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
@@ -12,4 +29,5 @@ RUN dotnet build "api/api.csproj"
 
 WORKDIR /src/api
 EXPOSE 8181
+EXPOSE 5000
 ENTRYPOINT ["dotnet", "run", "--rebuild-db"]

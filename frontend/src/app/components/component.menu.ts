@@ -1,4 +1,4 @@
-import {Component, inject} from "@angular/core";
+import {Component, inject, signal} from "@angular/core";
 import {Router} from "@angular/router";
 import {WebSocketClientService} from "../services/service.websocketclient";
 
@@ -23,12 +23,13 @@ import {WebSocketClientService} from "../services/service.websocketclient";
         </ul>
       </p-dialog>
       <button (click)="goToTimeSeriesDashboard()">Show time series data</button>
+      <button (click)="goToNonTextualData()">Non-textual data API</button>
 
     </div>
   `,
   selector: "app-sidebar",
 })
-export class ComponentSidebar {
+export class ComponentMenu {
   router: Router = inject(Router);
   isOpen: boolean = false;
   dialogText: string = "Show rooms";
@@ -56,5 +57,9 @@ export class ComponentSidebar {
 
   goToTimeSeriesDashboard() {
     this.router.navigate(['/timeseries']);
+  }
+
+  goToNonTextualData() {
+    this.router.navigate(['/nontextualdata']);
   }
 }

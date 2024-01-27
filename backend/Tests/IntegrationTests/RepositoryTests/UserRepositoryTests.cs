@@ -46,13 +46,5 @@ public class UserRepositoryTests
         users.Count.Should().Be(iterations);
     }
 
-    [Test]
-    public async Task TestAsync()
-    {
-        var iterations = 10_000;
-        var users = new List<EndUser>();
-        for (var i = 0; i < iterations; i++)
-            users.Add( _chatRepository.GetUser(new FindByEmailParams("bla@bla.dk")));
-        users.Count.Should().Be(iterations);
-    }
+   
 }

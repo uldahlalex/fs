@@ -7,6 +7,9 @@ import {ClientWantsToSubscribeToTimeSeriesData} from "../models/ClientWantsToSub
 @Component({
   template: `
 
+    <h1>Time series dashboard demo</h1>
+    <h2>Use MQTT edge device to transmit data</h2>
+    <h3>(see graphic representation in README.md</h3>
     <div style="text-align:center">
       <apx-chart [series]="webSocketClientService.series!" [chart]="chart!" [title]="title!"
                  [xaxis]="xaxis"></apx-chart>
