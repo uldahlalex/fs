@@ -23,7 +23,6 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker_volumes/postgres/01-rebuild.sql:/docker-entrypoint-initdb.d/01-rebuild.sql
   angular:
     build:
       context: ./frontend/

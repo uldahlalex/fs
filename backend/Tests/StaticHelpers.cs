@@ -1,8 +1,10 @@
 using System.Text.Json;
 using api;
 using api.Models;
+using api.StaticHelpers;
 using Commons;
 using Dapper;
+using Externalities;
 using Npgsql;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
@@ -18,7 +20,7 @@ public static class StaticHelpers
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentEnums.Testing.ToString());
         Environment.SetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING", skipRateLimit.ToString().ToLower());
         Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgContainer.GetConnectionString());
-        await new NpgsqlConnection(pgContainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
+        Utilities.ExecuteRebuildFromSqlScript();
         ApiStartup.StartApi().Wait();
     }
 

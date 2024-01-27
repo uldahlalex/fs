@@ -58,7 +58,7 @@ namespace api
 
             var app = builder.Build();
             if (Environment.GetCommandLineArgs().Contains("--rebuild-db"))
-                app.Services.GetService<NpgsqlDataSource>()!.OpenConnection().Execute(StaticValues.DbRebuild);
+                Utilities.ExecuteRebuildFromSqlScript();
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("Not found");
             if (string.IsNullOrEmpty(env))
                 throw new Exception("Must have ASPNETCORE_ENVIRONMENT");

@@ -12,4 +12,4 @@ RUN dotnet build "api/api.csproj"
 
 WORKDIR /src/api
 EXPOSE 8181
-ENTRYPOINT ["dotnet", "run"]
+ENTRYPOINT ["dotnet", "run", "--rebuild-db"]

@@ -1,4 +1,4 @@
-namespace Externalities;
+namespace Externalities.ParameterModels;
 
 public class IsMessageOwnerParams
 {

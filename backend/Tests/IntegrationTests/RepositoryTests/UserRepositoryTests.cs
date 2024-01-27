@@ -1,4 +1,5 @@
 using api;
+using api.StaticHelpers;
 using Dapper;
 using Externalities;
 using Externalities.ParameterModels;
@@ -7,6 +8,7 @@ using FluentAssertions;
 using Npgsql;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
+using Utilities = Externalities.Utilities;
 
 namespace Tests.IntegrationTests.RepositoryTests;
 
@@ -17,7 +19,7 @@ public class UserRepositoryTests
     public async Task OneTimeSetUp()
     {
         await _postgreSqlContainer.StartAsync();
-        await new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()).ExecuteAsync(StaticValues.DbRebuild);
+        Utilities.ExecuteRebuildFromSqlScript(_postgreSqlContainer.GetConnectionString());
         _chatRepository = new ChatRepository(
             new NpgsqlDataSourceBuilder(
                 _postgreSqlContainer.GetConnectionString()).Build());
@@ -39,7 +41,8 @@ public class UserRepositoryTests
     {
         var iterations = 10_000;
         var users = new List<EndUser>();
-        for (var i = 0; i < iterations; i++) users.Add(_chatRepository.GetUser(new FindByEmailParams("bla@bla.dk")));
+        for (var i = 0; i < iterations; i++) 
+            users.Add(_chatRepository.GetUser(new FindByEmailParams("bla@bla.dk")));
         users.Count.Should().Be(iterations);
     }
 
