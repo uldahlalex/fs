@@ -1,6 +1,5 @@
 import {ErrorHandler, Injectable} from "@angular/core";
 import {MessageService} from "primeng/api";
-import {NoJwtError} from "../../errors/custom-errors";
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +10,7 @@ export class GlobalErrorHandlerService implements ErrorHandler{
   }
 
   handleError(error: any): void {
-    if (error instanceof NoJwtError) {
-      this.messageService.add({severity: 'error', detail: error.customMessage});
-    }
-
-    else {
-      //this.messageService.add({severity: 'error',  detail: error.message});
-    }
+      this.messageService.add({severity: 'error',  detail: error.message});
   }
 
 

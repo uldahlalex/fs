@@ -19,7 +19,7 @@ import {
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
 } from "../models/serverNotifiesClientsInRoomSomeoneHasJoinedRoom";
 import {environment} from "../../environments/environment";
-import {UtilityServices} from "./utility.services";
+
 
 @Injectable({providedIn: 'root'})
 export class WebSocketClientService {
@@ -41,7 +41,6 @@ export class WebSocketClientService {
   public socketConnection: WebsocketSuperclass;
 
   constructor(public messageService: MessageService,
-              public utilities: UtilityServices,
               public router: Router) {
     this.socketConnection = new WebsocketSuperclass(environment.url);
     this.rooms.forEach(room => {
@@ -64,17 +63,16 @@ export class WebSocketClientService {
   ServerAddsClientToRoom(dto: ServerAddsClientToRoom) {
     this.roomsWithMessages.set(dto.roomId!, dto.messages!.reverse());
     this.roomsWithConnections.set(dto.roomId!, dto.liveConnections!);
-    this.messageService.add({life: 2000, severity: 'success', summary: 'Success', detail: 'Welcome to room, '});
   }
 
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
-    this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
+    this.messageService.add({life: 2000,  detail: 'Authentication successful!'});
     localStorage.setItem("jwt", dto.jwt!);
     this.router.navigate(['/room/1'])
   }
 
   ServerAuthenticatesUserFromJwt(dto: ServerAuthenticatesUser) {
-    this.messageService.add({life: 2000, summary: 'Success', detail: 'Authentication successful!'});
+    this.messageService.add({life: 2000, summary: 'success', detail: 'Authentication successful!'});
     this.router.navigate(['/room/1'])
   }
 
@@ -86,7 +84,6 @@ export class WebSocketClientService {
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom(dto: ServerNotifiesClientsInRoomSomeoneHasJoinedRoom) {
     this.messageService.add({
       life: 2000,
-      severity: 'warning',
       summary: '🧨',
       detail: "New user joined: " + dto.user?.email
     });
@@ -96,7 +93,6 @@ export class WebSocketClientService {
   ServerNotifiesClientsInRoomSomeoneHasLeftRoom(dto: ServerNotifiesClientsInRoomSomeoneHasLeftRoom) {
     this.messageService.add({
       life: 2000,
-      severity: 'warning',
       summary: '👋',
       detail: dto.user?.email + " left the room!"
     });
@@ -104,7 +100,7 @@ export class WebSocketClientService {
   }
 
   ServerSendsErrorMessageToClient(dto: ServerSendsErrorMessageToClient) {
-    this.messageService.add({life: 2000, severity: 'error', summary: 'Error', detail: dto.errorMessage}); //todo implement with err handler
+    this.messageService.add({life: 2000, severity: 'error', summary: '⚠️', detail: dto.errorMessage}); //todo implement with err handler
   }
 
   ServerRejectsJwt(dto: ServerRejectsJwt) {

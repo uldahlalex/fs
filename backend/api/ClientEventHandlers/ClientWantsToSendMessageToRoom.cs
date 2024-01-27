@@ -6,7 +6,9 @@ using api.Models.ServerEvents;
 using api.State;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
+using Commons;
 using Externalities;
+using Externalities._3rdPartyTransferModels;
 using Externalities.QueryModels;
 using Fleck;
 using Serilog;
@@ -35,29 +37,34 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
             Log.Information("Skipping toxicity filter in development mode when no API key is provided");
             return;
         }
-
-        // Use await instead of Wait() and Result
-        var result = await new AzureCognitiveServices().IsToxic(messageContent);
-
-        Log.Information(JsonSerializer.Serialize(result, new JsonSerializerOptions
+        try
         {
-            WriteIndented = true
-        }));
+             var analysis =await new AzureCognitiveServices().GetToxicityAnalysis(messageContent);
+             var result =analysis.Deserialize<ToxicityResponse>().categoriesAnalysis;
+             if (result.Any(x => x.severity > 0.5))
+             {
+                 var dict = result.ToDictionary(x => x.category, x => x.severity);
+                 var response = JsonSerializer.Serialize(dict, new JsonSerializerOptions
+                 {
+                     WriteIndented = true
+                 });
+                 Log.Information("Client message was filtered by toxicity filter: " + messageContent +". Analysis result: " + response);
 
-        if (result.Any(x => x.severity > 0.5))
+                 throw new ValidationException(response);
+             }
+             
+        } 
+        catch (System.ArgumentException e)
         {
-            var dict = result.ToDictionary(x => x.category, x => x.severity);
-            var response = JsonSerializer.Serialize(dict, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-            throw new ValidationException(response);
+            Log.Error(e, "Failed to perform toxicity filtering on message! Sending anyways, you're in dev mode so who cares");
         }
+
+      
     }
 }
 
 [RequireAuthentication]
-[RateLimit(10, 60)]
+[RateLimit(60, 60)]
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {
