@@ -8,12 +8,14 @@ import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMe
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToDeleteMessage} from "../models/clientWantsToDeleteMessage";
+import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBase64EncodedData";
 
 @Component({
   template: `
 
     <h3>Main Content</h3>
 
+    <img *ngIf="webSocketClientService.img!=undefined" [src]="webSocketClientService.img" alt="Base64 Image">
     <div style="display: flex; flex-direction: row; justify-content: space-between; ">
       <button (click)="loadOlderMessages()" style="height: 100%;">Load older messages...</button>
       <div>Currently live in room: {{ webSocketClientService.roomsWithConnections.get(roomId!) }}</div>
@@ -44,6 +46,15 @@ import {ClientWantsToDeleteMessage} from "../models/clientWantsToDeleteMessage";
     <div style="display: flex; flex-direction: row; justify-content: center;">
       <input [formControl]="messageInput" placeholder="Write something interesting" style="height: 100%;">
       <button (click)="clientWantsToSendMessageToRoom()" style="height: 100%;">insert</button>
+      <input
+        hidden
+        type="file"
+        #uploader
+        (change)="uploadFile($event)"
+      />
+      <button (click)="uploader.click()">
+        Upload
+      </button>
     </div>
 
 
@@ -94,5 +105,15 @@ export class ComponentRoom {
 
   DeleteMessage(id: number | undefined) {
     this.webSocketClientService.socketConnection.sendDto(new ClientWantsToDeleteMessage({messageId: id, roomId: this.roomId}));
+  }
+
+  uploadFile($event: Event) {
+    let file = ($event.target as HTMLInputElement).files![0];
+    let reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      let base64EncodedData = reader.result!.toString().split(',')[1];
+      this.webSocketClientService.socketConnection.sendDto(new ClientWantsToSendBase64EncodedData({base64EncodedData: base64EncodedData}));
+    };
   }
 }

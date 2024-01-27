@@ -19,6 +19,7 @@ import {
   ServerNotifiesClientsInRoomSomeoneHasJoinedRoom
 } from "../models/serverNotifiesClientsInRoomSomeoneHasJoinedRoom";
 import {environment} from "../../environments/environment";
+import {ServerSendsBase64EncodedData} from "../models/serverSendsBase64EncodedData";
 
 
 @Injectable({providedIn: 'root'})
@@ -39,6 +40,7 @@ export class WebSocketClientService {
 
 
   public socketConnection: WebsocketSuperclass;
+  img: any;
 
   constructor(public messageService: MessageService,
               public router: Router) {
@@ -148,6 +150,17 @@ export class WebSocketClientService {
     })
     const messages = this.roomsWithMessages.get(serverDeletesMessage.roomId!)!.filter(message => message.id != serverDeletesMessage.messageId!)
     this.roomsWithMessages.set(serverDeletesMessage.roomId!, messages);
+  }
+
+  ServerSendsBase64EncodedData(serverSendsBase64EncodedData: ServerSendsBase64EncodedData) {
+    this.messageService.add({
+      life: 2000,
+      severity: 'info',
+      summary: '📎',
+      detail: "Someone sent a file!"
+    })
+    this.img = "data:image/jpeg;base64,"+serverSendsBase64EncodedData.base64EncodedData;
+
   }
 
 

@@ -10,8 +10,8 @@ export class GlobalErrorHandlerService implements ErrorHandler{
   }
 
   handleError(error: any): void {
+    console.log(error);
       this.messageService.add({severity: 'error',  detail: error.message});
   }
-
 
 }
