@@ -89,7 +89,6 @@ namespace api
             }
 
             server.RestartAfterListenError = true;
-            server.ListenerSocket.NoDelay = true;
             server.Start(Config);
 
             Environment.SetEnvironmentVariable("FULLSTACK_API_PORT", server.Port.ToString());

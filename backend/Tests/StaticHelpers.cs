@@ -14,26 +14,27 @@ namespace Tests;
 
 public static class StaticHelpers
 {
-    public static async Task SetupTestClass(PostgreSqlContainer pgContainer, bool skipRateLimit = false)
+    public static async Task SetupTestClass(PostgreSqlContainer pgContainer, bool skipRateLimit = false, bool skipToxFilter = false)
     {
         await pgContainer.StartAsync();
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentEnums.Testing.ToString());
         Environment.SetEnvironmentVariable("FULLSTACK_SKIP_RATE_LIMITING", skipRateLimit.ToString().ToLower());
+        Environment.SetEnvironmentVariable("FULLSTACK_SKIP_TOX_FILTER", skipToxFilter.ToString().ToLower());
         Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", pgContainer.GetConnectionString());
         Utilities.ExecuteRebuildFromSqlScript();
-        ApiStartup.StartApi().Wait();
+        await ApiStartup.StartApi();
     }
 
-    public static Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
+    public static async Task<WebsocketClient> SetupWsClient(List<BaseDto> history)
     {
         Console.WriteLine("Starting websocket client on port " +
                           Environment.GetEnvironmentVariable("FULLSTACK_API_PORT"));
         var ws = new WebsocketClient(new Uri("ws://localhost:" +
                                              Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
         ws.MessageReceived.Subscribe(msg => { history.Add(msg.Text!.Deserialize<BaseDto>()); });
-        ws.Start().Wait();
+        await ws.Start();
         if (!ws.IsRunning) throw new InvalidOperationException("Failed to establish a WebSocket connection.");
-        return Task.FromResult(ws);
+        return ws;
     }
 
     public static Task DoAndWaitUntil<T>(this WebsocketClient ws,
@@ -43,11 +44,11 @@ public static class StaticHelpers
         string? failureToDoMessage = null) where T : BaseDto
     {
         communication.Add(action);
-        ws.Send(JsonSerializer.Serialize(action, new JsonSerializerOptions
+        ws.SendInstant(JsonSerializer.Serialize(action, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             WriteIndented = true
-        }));
+        })).Wait();
         var startTime = DateTime.UtcNow;
         while (waitUntilConditionsAreMet.Any(x => !x.Invoke()))
         {

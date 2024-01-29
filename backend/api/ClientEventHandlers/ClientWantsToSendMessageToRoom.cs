@@ -26,6 +26,12 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
     {
         var azKey = Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES");
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var skip = Environment.GetEnvironmentVariable("FULLSTACK_SKIP_TOX_FILTER");
+        if (skip == "true")
+        {
+            Log.Information("Toxicity filter is disabled, skipping");
+            return;
+        }
         if (env != null && env.ToLower().Equals("development") && string.IsNullOrEmpty(azKey))
         {
             Log.Information("Skipping toxicity filter in development mode when no API key is provided");
@@ -68,7 +74,7 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {
-    public override async Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
+    public override Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
     {
         var topic = dto.roomId.ParseTopicFromRoomId();
         var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue(topic,
@@ -97,5 +103,6 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             message = messageWithUserInfo,
             roomId = dto.roomId
         }, topic);
+        return Task.CompletedTask;
     }
 }

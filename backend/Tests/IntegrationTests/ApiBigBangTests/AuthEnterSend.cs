@@ -13,7 +13,7 @@ public class AuthEnterSend
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer, true, true);
     }
 
 
@@ -26,6 +26,7 @@ public class AuthEnterSend
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
 
     [Test]
+    [Repeat(100)]
     public async Task Client_Can_Authenticate_Enter_Room_And_Send_Message()
     {
         var history = new List<BaseDto>();

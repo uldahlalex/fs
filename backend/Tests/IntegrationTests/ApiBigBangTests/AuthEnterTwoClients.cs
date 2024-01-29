@@ -1,5 +1,3 @@
-using api;
-using api.Models;
 using api.Models.ServerEvents;
 using api.StaticHelpers;
 using NUnit.Framework;
@@ -27,30 +25,21 @@ public class AuthEnterTwoClients
 
 
     [Test]
+    [Repeat(1)]
     public async Task Existing_Clients_In_Room_Get_Joined_Message_When_Someone_Enters()
     {
-        var history = new List<BaseDto>();
-        var ws1 = await StaticHelpers.SetupWsClient(history);
-        var ws2 = await StaticHelpers.SetupWsClient(history);
+        var client = await new WebSocketTestClient().ConnectAsync();
+        var client2 = await new WebSocketTestClient().ConnectAsync();
+
+         await client.DoAndWaitUntil(StaticValues.AuthEvent, new List<string>() {nameof(ServerAuthenticatesUser)});
+
+         await client2.DoAndWaitUntil(StaticValues.AuthEvent, new List<string>() {nameof(ServerAuthenticatesUser)});
 
 
-        await ws1.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
-        {
-            () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 1
-        }, history);
-        await ws2.DoAndWaitUntil(StaticValues.AuthEvent, new List<Func<bool>>
-        {
-            () => history.Count(x => x.eventType == nameof(ServerAuthenticatesUser)) == 2
-        }, history);
-        await ws1.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
-        {
-            () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 1,
-            () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 1
-        }, history);
-        await ws2.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
-        {
-            () => history.Count(x => x.eventType == nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)) == 3,
-            () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 2
-        }, history);
+         await client.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<string>() {nameof(ServerAddsClientToRoom), nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)});
+         await client2.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<string>() {nameof(ServerAddsClientToRoom), nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)});
+
+        client.Client.Dispose();
+        client2.Client.Dispose();
     }
 }

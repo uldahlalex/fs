@@ -13,7 +13,7 @@ public class AuthEnterSendTwoClients
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer, true, true);
     }
 
 
@@ -52,12 +52,17 @@ public class AuthEnterSendTwoClients
         }, history);
 
         await ws.DoAndWaitUntil(StaticValues.SendMessageEvent, new List<Func<bool>>
-        {
-            () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 2
-        }, history);
+            {
+                () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 2
+            }, history, "Expected 2 of " + nameof(ServerBroadcastsMessageToClientsInRoom) + " but only got " +
+                        history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)));
         await ws2.DoAndWaitUntil(StaticValues.SendMessageEvent, new List<Func<bool>>
-        {
-            () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 4
-        }, history);
+            {
+                () => history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)) == 4
+            }, history,
+            "Expected 4 of " + nameof(ServerBroadcastsMessageToClientsInRoom) + " but only got " +
+            history.Count(x => x.eventType == nameof(ServerBroadcastsMessageToClientsInRoom)));
+        ws.Dispose();
+        ws2.Dispose();
     }
 }

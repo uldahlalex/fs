@@ -22,7 +22,7 @@ public class ClientWantsToAuthenticateDto : BaseDto
 [RateLimit(3, 60)]
 public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEventHandler<ClientWantsToAuthenticateDto>
 {
-    public override async Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
+    public override Task Handle(ClientWantsToAuthenticateDto request, IWebSocketConnection socket)
     {
         var user = chatRepository.GetUser(new FindByEmailParams(request.email!));
         if (user.isbanned) throw new AuthenticationException("User is banned");
@@ -30,5 +30,6 @@ public class ClientWantsToAuthenticate(ChatRepository chatRepository) : BaseEven
         if (!expectedHash.Equals(user.hash)) throw new AuthenticationException("Wrong credentials!");
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser { jwt = SecurityUtilities.IssueJwt(user) });
+        return Task.CompletedTask;
     }
 }
