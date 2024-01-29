@@ -1,55 +1,25 @@
 using System.Text.Json;
 using api.Models;
-using Commons;
 using Websocket.Client;
+
+namespace Tests;
 
 public class WebSocketTestClient
 {
     public readonly WebsocketClient Client;
-    private readonly Dictionary<string, TaskCompletionSource<BaseDto>> _waitingTasks = new();
-    private readonly Dictionary<string, List<BaseDto>> _messageBuffer = new();
+    public readonly List<BaseDto> ReceivedMessages = new();
 
     public WebSocketTestClient()
     {
-        Client = new WebsocketClient(new Uri("ws://localhost:" +
-                                             Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
-        Client.MessageReceived.Subscribe(OnMessageReceived);
-    }
-
-
-    public async Task<List<BaseDto>>  DoAndWaitUntil<T>(T action, List<string> expectedEvents,  TimeSpan? timeout = null) where T : BaseDto
-    {
-        // Send the action
-        Send(action);
-        var responses = new List<BaseDto>();
-
-        foreach (var eventType in expectedEvents)
+        Client = new WebsocketClient(new Uri("ws://localhost:"+Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
+        Client.MessageReceived.Subscribe(msg => 
         {
-            var response = await WaitForEventAsync(eventType);
-            responses.Add(response);
-        }
-        return responses;
-    }
-
-    private void OnMessageReceived(ResponseMessage message)
-    {
-        var eventDto = message.Text.Deserialize<BaseDto>();
-        var eventType = eventDto.eventType;
-
-        // Check if there's a waiting task for this event
-        if (_waitingTasks.TryGetValue(eventType, out var tcs))
-        {
-            tcs.SetResult(eventDto);
-            _waitingTasks.Remove(eventType);
-        }
-        else
-        {
-            // If no task is waiting, buffer the message
-            if (!_messageBuffer.ContainsKey(eventType))
-                _messageBuffer[eventType] = new List<BaseDto>();
-
-            _messageBuffer[eventType].Add(eventDto);
-        }
+            var dto = JsonSerializer.Deserialize<BaseDto>(msg.Text); // Adjust deserialization as needed
+            lock (ReceivedMessages)
+            {
+                ReceivedMessages.Add(dto);
+            }
+        });
     }
 
     public async Task<WebSocketTestClient> ConnectAsync()
@@ -65,25 +35,29 @@ public class WebSocketTestClient
         Client.Send(serialized);
     }
 
-    public Task<BaseDto> WaitForEventAsync(string eventType)
+    public async Task DoAndAssert<T>(T? action = null, Func<List<BaseDto>, bool>? condition = null) where T : BaseDto
     {
-        // Check if the event is already in the buffer
-        if (_messageBuffer.TryGetValue(eventType, out var messages) && messages.Any())
+        if(action != null)
+            Send(action);
+
+        if(condition == null)
+            return;
+        var startTime = DateTime.UtcNow;
+        while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(5))
         {
-            var message = messages.First();
-            messages.RemoveAt(0); // Remove the message from the buffer
-            return Task.FromResult(message);
+            lock (ReceivedMessages)
+            {
+                if (condition(ReceivedMessages))
+                {
+                    return; 
+                }
+            }
+
+            await Task.Delay(100); 
         }
 
-        var tcs = new TaskCompletionSource<BaseDto>();
-
-        {
-            var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(2)).Token;
-            cancellationToken.Register(() => { tcs.TrySetCanceled(); });
-
-
-            _waitingTasks[eventType] = tcs;
-            return tcs.Task;
-        }
+        throw new TimeoutException($"Condition not met: ");
     }
+    
+
 }

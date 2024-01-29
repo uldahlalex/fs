@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using api;
 using api.Models;
@@ -28,19 +29,19 @@ public class ManySignIns
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
 
     [Test]
-    public async Task ServerCanHandleManyRequestsFromSameConnection()
+    public async Task ServerCanHandleManyRequestsFromSameConnection() //todo problems when above 5000
     {
+        var ws = await new WebSocketTestClient().ConnectAsync();
         var numberOfMessages = 1000;
-        var history = new List<BaseDto>();
-        var ws = await StaticHelpers.SetupWsClient(history);
-
-        for (var i = 0; i < numberOfMessages; i++) 
-            ws.Send(JsonSerializer.Serialize(StaticValues.AuthEvent));
-
-        while (history.Count() < numberOfMessages) Task.Delay(50).Wait();
-
-
-        var expectedCount = history.Count(x => x.eventType == nameof(ServerAuthenticatesUser));
-        expectedCount.Should().Be(numberOfMessages);
+        var stopwatch = Stopwatch.StartNew();
+        Console.WriteLine("Time the stopwatch started: " + DateTime.Now);
+        for (var i = 0; i < numberOfMessages-1; i++) 
+            await ws.DoAndAssert(StaticValues.AuthEvent);
+        await ws.DoAndAssert(StaticValues.AuthEvent, receivedMessages =>
+        {
+            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerAuthenticatesUser))) == numberOfMessages;
+        });
+        Console.WriteLine("TIME FOR "+numberOfMessages+" ECHOS: " + stopwatch.ElapsedMilliseconds + " milliseconds");
+        Console.WriteLine("Time the stopwatch stopped: " + DateTime.Now);
     }
 }

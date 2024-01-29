@@ -3,6 +3,7 @@ using System.Text.Json;
 using api.ClientEventHandlers;
 using api.Models;
 using api.Models.ServerEvents;
+using api.StaticHelpers;
 using FluentAssertions;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
@@ -15,7 +16,7 @@ public class ApiOnlyThroughputTest
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer, true, true);
     }
 
 
@@ -30,23 +31,20 @@ public class ApiOnlyThroughputTest
     [Test]
     public async Task ServerCanEchoManyTimes()
     {
-        var numberOfEchos = 100_000;
-        var history = new List<BaseDto>();
-        var ws = await StaticHelpers.SetupWsClient(history);
+        var ws = await new WebSocketTestClient().ConnectAsync();
+        var numberOfMessages = 100_000;
         var stopwatch = Stopwatch.StartNew();
         Console.WriteLine("Time the stopwatch started: " + DateTime.Now);
-        for (var i = 0; i < numberOfEchos; i++)
-            ws.Send(JsonSerializer.Serialize(new ClientWantsToEchoDto
-            {
-                message = "test"
-            }));
+        for (var i = 0; i < numberOfMessages-1; i++)
+            await ws.DoAndAssert(new ClientWantsToEchoDto());
 
-        while (history.Count() < numberOfEchos) Task.Delay(50).Wait();
+        await ws.DoAndAssert(new ClientWantsToEchoDto(), receivedMessages =>
+        {
+            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerEchosClient))) == numberOfMessages;
+        });
+        
 
-        var expectedCount = history.Count(x => x.eventType == nameof(ServerEchosClient));
-        expectedCount.Should().Be(numberOfEchos);
-        stopwatch.Stop();
-        Console.WriteLine("TIME FOR 1000 ECHOS: " + stopwatch.ElapsedMilliseconds + " milliseconds");
+        Console.WriteLine("TIME FOR "+numberOfMessages+" ECHOS: " + stopwatch.ElapsedMilliseconds + " milliseconds");
         Console.WriteLine("Time the stopwatch stopped: " + DateTime.Now);
     }
 }

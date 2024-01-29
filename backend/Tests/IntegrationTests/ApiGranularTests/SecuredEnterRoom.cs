@@ -13,7 +13,7 @@ public class MustAuthenticateToEnterRoom
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        await StaticHelpers.SetupTestClass(_postgreSqlContainer);
+        await StaticHelpers.SetupTestClass(_postgreSqlContainer, true, true);
     }
 
 
@@ -26,14 +26,19 @@ public class MustAuthenticateToEnterRoom
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder().Build();
 
     [Test]
+    [Repeat(50)]
     public async Task WebSocket_Client_Must_Be_Authenticated_To_Enter_Room()
     {
-        var history = new List<BaseDto>();
-        var wsAndHistory = await StaticHelpers.SetupWsClient(history);
-        await wsAndHistory.DoAndWaitUntil(StaticValues.EnterRoomEvent, new List<Func<bool>>
+        var client = await new WebSocketTestClient().ConnectAsync();
+        await client.DoAndAssert(StaticValues.SendMessageEvent, dtos =>
         {
-            () => history.Count(x => x.eventType == nameof(ServerSendsErrorMessageToClient)) == 1,
-            () => history.Count(x => x.eventType == nameof(ServerAddsClientToRoom)) == 0
-        }, history);
+            return dtos.Any(x => x.eventType.Equals(nameof(ServerSendsErrorMessageToClient))) 
+                   && dtos.Count(x => x.eventType.Equals(nameof(ServerAuthenticatesUser))) == 0
+                   && dtos.Count(x => x.eventType.Equals(nameof(ServerAddsClientToRoom))) == 0
+                   && dtos.Count(x => x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 0;
+        });
+       
+        
+        client.Client.Dispose();
     }
 }
