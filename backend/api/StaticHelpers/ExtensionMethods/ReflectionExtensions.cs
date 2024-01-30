@@ -1,4 +1,5 @@
 using System.Reflection;
+using api.Abstractions;
 using api.Models;
 using Commons;
 using Fleck;
@@ -7,14 +8,13 @@ namespace api.StaticHelpers.ExtensionMethods;
 
 public static class ReflectionExtensions
 {
-    public static HashSet<Type> AddServiceAndReturnAll(this WebApplicationBuilder builder, Assembly assemblyReference,
-        Type genericTypeDefinition)
+    public static HashSet<Type> AddServiceAndReturnAll(this WebApplicationBuilder builder, Assembly assemblyReference)
     {
         var clientEventHandlers = new HashSet<Type>();
         foreach (var type in assemblyReference.GetTypes())
             if (type.BaseType != null &&
                 type.BaseType.IsGenericType &&
-                type.BaseType.GetGenericTypeDefinition() == genericTypeDefinition)
+                type.BaseType.GetGenericTypeDefinition() == typeof(BaseEventHandler<>))
             {
                 builder.Services.AddSingleton(type);
                 clientEventHandlers.Add(type);

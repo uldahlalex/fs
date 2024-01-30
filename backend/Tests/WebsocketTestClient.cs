@@ -11,7 +11,8 @@ public class WebSocketTestClient
 
     public WebSocketTestClient()
     {
-        Client = new WebsocketClient(new Uri("ws://localhost:"+Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
+        Client = new WebsocketClient(new Uri("ws://localhost:"+
+                                             Environment.GetEnvironmentVariable("FULLSTACK_API_PORT")));
         Client.MessageReceived.Subscribe(msg => 
         {
             var dto = JsonSerializer.Deserialize<BaseDto>(msg.Text); // Adjust deserialization as needed

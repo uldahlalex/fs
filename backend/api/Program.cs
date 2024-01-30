@@ -55,7 +55,7 @@ namespace api
             builder.Services.AddSingleton<MqttClient>();
             builder.Services.AddSingleton<AzureCognitiveServices>();
 
-            var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly(), typeof(BaseEventHandler<>));
+            var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly());
 
 
             var app = builder.Build();

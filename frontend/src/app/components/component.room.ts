@@ -18,27 +18,30 @@ import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBas
       <button (click)="loadOlderMessages()" style="height: 100%;">Load older messages...</button>
       <div>Currently live in room: {{ webSocketClientService.roomsWithConnections.get(roomId!) }}</div>
     </div>
-
     <div style="
       display: flex;
       flex-direction: column;
       overflow-y: scroll; max-height: 300px;
 ">
       <div *ngFor="let k of webSocketClientService.roomsWithMessages.get(roomId!)"
-           style="display: flex; flex-direction: row; justify-content: space-between;">
+           [ngStyle]="jwtDecoded.email == k.email ? {'justify-content': 'flex-start'} : {'justify-content': 'flex-end'}"
+           style="display: flex; flex-direction: row;">
 
-        <div><b>{{ k.email }}</b> says:<br>
-          <div style="position: relative; display: flex; margin: 15px; padding: 5px; border-radius: 25px; background: #2eb4ea; color: #000000; max-width: 100%;">
+        <div>
+          <i title="{{fullDate(k.timestamp)}}"> {{ timestampThis(k.timestamp) }}</i>
+<br>
+          <b *ngIf="jwtDecoded.email != k.email">{{ k.email }} says:</b>
+          <b *ngIf="jwtDecoded.email == k.email">You:</b>
+
+          <br>
+          <div [ngStyle]="jwtDecoded.email == k.email ? {'background-color': '#2eb4ea'} : {'background-color': 'grey'} " style="position: relative; display: flex; margin: 15px; padding: 5px; border-radius: 25px; color: #000000; max-width: 100%;">
 
             <button style="position: absolute; top: 0; right: 0; color: black; background: transparent; border: none;" (click)="DeleteMessage(k.id)">🚮</button>
             <p>{{ k.messageContent }}</p>
 
           </div>
         </div>
-        <i title="{{fullDate(k.timestamp)}}">written {{ timestampThis(k.timestamp) }}</i>
       </div>
-
-
     </div>
 
     <div style="display: flex; flex-direction: row; justify-content: center;">
@@ -54,14 +57,27 @@ export class ComponentRoom {
   messageInput = new FormControl('');
   roomId: number | undefined;
   route = inject(ActivatedRoute);
-  protected readonly localStorage = localStorage;
+  jwtDecoded;
 
   constructor(public webSocketClientService: WebSocketClientService
   ) {
+    this.jwtDecoded = this.parseJwt(localStorage.getItem("jwt")!);
+    console.log(this.jwtDecoded)
+    console.log(this.jwtDecoded.email)
     this.route.paramMap.subscribe(params => {
       this.roomId = Number.parseInt(params.get('id')!)
       if (this.webSocketClientService.roomsWithConnections.get(this.roomId) == 0) this.enterRoom();
     });
+  }
+
+   parseJwt ( token: string) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
   }
 
   async enterRoom() {
