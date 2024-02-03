@@ -30,8 +30,8 @@ public class ClientWantsToDeleteMessage(ChatRepository chatRepository) : BaseEve
                     "You must be either admin or owner of the message to delete it");
         }
 
-        chatRepository.DeleteMessage(new DeleteMessageParams() {messageId = dto.messageId});
-        StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerDeletesMessage()
+        chatRepository.DeleteMessage(new DeleteMessageParams { messageId = dto.messageId });
+        StaticWebSocketHelpers.BroadcastObjectToTopicListeners(new ServerDeletesMessage
         {
             messageId = dto.messageId,
             roomId = dto.roomId

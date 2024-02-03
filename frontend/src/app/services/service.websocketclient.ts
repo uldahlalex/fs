@@ -68,7 +68,7 @@ export class WebSocketClientService {
   }
 
   ServerAuthenticatesUser(dto: ServerAuthenticatesUser) {
-    this.messageService.add({life: 2000,  detail: 'Authentication successful!'});
+    this.messageService.add({life: 2000, detail: 'Authentication successful!'});
     localStorage.setItem("jwt", dto.jwt!);
     this.router.navigate(['/room/1'])
   }
@@ -159,7 +159,7 @@ export class WebSocketClientService {
       summary: '📎',
       detail: "Someone sent a file!"
     })
-    this.img = "data:image/jpeg;base64,"+serverSendsBase64EncodedData.base64EncodedData;
+    this.img = "data:image/jpeg;base64," + serverSendsBase64EncodedData.base64EncodedData;
 
   }
 

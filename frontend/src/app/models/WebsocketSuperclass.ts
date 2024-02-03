@@ -1,7 +1,6 @@
-import { BaseDto } from "./baseDto";
+import {BaseDto} from "./baseDto";
 import {ClientWantsToAuthenticateWithJwt} from "./clientWantsToAuthenticateWithJwt";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import {MessageService} from "primeng/api";
 
 export class WebsocketSuperclass extends ReconnectingWebSocket {
   private messageQueue: Array<BaseDto<any>> = [];
@@ -12,7 +11,7 @@ export class WebsocketSuperclass extends ReconnectingWebSocket {
   }
 
   sendDto(dto: BaseDto<any>) {
-    console.log("Sending: "+JSON.stringify(dto));
+    console.log("Sending: " + JSON.stringify(dto));
     if (this.readyState === WebSocket.OPEN) {
       this.send(JSON.stringify(dto));
     } else {
@@ -22,8 +21,8 @@ export class WebsocketSuperclass extends ReconnectingWebSocket {
 
   private handleOpen() {
     let jwt = localStorage.getItem('jwt');
-    if(jwt && jwt != '')
-      this.sendDto(new ClientWantsToAuthenticateWithJwt({jwt:jwt}));
+    if (jwt && jwt != '')
+      this.sendDto(new ClientWantsToAuthenticateWithJwt({jwt: jwt}));
     //attempt to rejoin current room
     while (this.messageQueue.length > 0) {
 

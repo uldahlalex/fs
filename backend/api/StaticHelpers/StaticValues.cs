@@ -4,9 +4,6 @@ namespace api.StaticHelpers;
 
 public static class StaticValues
 {
-
-  
-    
     public static ClientWantsToAuthenticateDto AuthEvent = new()
     {
         email = "bla@bla.dk",

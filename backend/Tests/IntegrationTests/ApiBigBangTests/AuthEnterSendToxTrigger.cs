@@ -1,6 +1,7 @@
 using api.ClientEventHandlers;
 using api.Models.ServerEvents;
 using api.StaticHelpers;
+using lib;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
@@ -27,33 +28,32 @@ public class AuthEnterSendToxTrigger
     [Test]
     public async Task ToxicityFilterRejectsMessage()
     {
-        
         var client = await new WebSocketTestClient().ConnectAsync();
-        await client.DoAndAssert(StaticValues.AuthEvent, receivedMessages =>
-        {
-            return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAuthenticatesUser)));
-        });
-        
-           
+        await client.DoAndAssert(StaticValues.AuthEvent,
+            receivedMessages =>
+            {
+                return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAuthenticatesUser)));
+            });
+
+
         await client.DoAndAssert(StaticValues.EnterRoomEvent, receivedMessages =>
         {
             return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAddsClientToRoom))) &&
                    receivedMessages.Any(x =>
                        x.eventType.Equals(nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)));
         });
-          
-        await client.DoAndAssert(new ClientWantsToSendMessageToRoomDto()
+
+        await client.DoAndAssert(new ClientWantsToSendMessageToRoomDto
         {
             messageContent = "I hate you",
             roomId = 1
         }, receivedMessages =>
         {
-            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 0 
+            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 0
                    && receivedMessages.Any(x => x.eventType.Equals(nameof(ServerSendsErrorMessageToClient)));
         });
-     
+
 
         client.Client.Dispose();
-
     }
 }

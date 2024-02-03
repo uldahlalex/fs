@@ -9,7 +9,8 @@ public class AzureCognitiveServices
 {
     public async Task<string> GetToxicityAnalysis(string? message)
     {
-        const string URL = "https://toxicityfilter.cognitiveservices.azure.com/contentsafety/text:analyze?api-version=2023-10-01";
+        const string URL =
+            "https://toxicityfilter.cognitiveservices.azure.com/contentsafety/text:analyze?api-version=2023-10-01";
         var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key",
             Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES"));
@@ -29,28 +30,23 @@ public class AzureCognitiveServices
             Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH"));
         return "";
     }
-    
+
     public async Task Realtime()
     {
-        var speechConfig = SpeechConfig.FromSubscription(Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH"), "northeurope");
+        var speechConfig =
+            SpeechConfig.FromSubscription(
+                Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH"), "northeurope");
         using var audioConfig = AudioConfig.FromWavFileInput("/home/alex/source/fs/backend/api/speech.wav");
         using var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
         var stopRecognition = new TaskCompletionSource<int>();
-        speechRecognizer.Recognizing += (s, e) =>
-        {
-            Console.WriteLine($"RECOGNIZING: Text={e.Result.Text}");
-        };
+        speechRecognizer.Recognizing += (s, e) => { Console.WriteLine($"RECOGNIZING: Text={e.Result.Text}"); };
 
         speechRecognizer.Recognized += (s, e) =>
         {
             if (e.Result.Reason == ResultReason.RecognizedSpeech)
-            {
                 Console.WriteLine($"RECOGNIZED: Text={e.Result.Text}");
-            }
             else if (e.Result.Reason == ResultReason.NoMatch)
-            {
-                Console.WriteLine($"NOMATCH: Speech could not be recognized.");
-            }
+                Console.WriteLine("NOMATCH: Speech could not be recognized.");
         };
 
         speechRecognizer.Canceled += (s, e) =>
@@ -61,7 +57,7 @@ public class AzureCognitiveServices
             {
                 Console.WriteLine($"CANCELED: ErrorCode={e.ErrorCode}");
                 Console.WriteLine($"CANCELED: ErrorDetails={e.ErrorDetails}");
-                Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
+                Console.WriteLine("CANCELED: Did you set the speech resource key and region values?");
             }
 
             stopRecognition.TrySetResult(0);
@@ -72,14 +68,11 @@ public class AzureCognitiveServices
             Console.WriteLine("\n    Session stopped event.");
             stopRecognition.TrySetResult(0);
         };
-        Task.WaitAny(new[] { stopRecognition.Task });
+        Task.WaitAny(stopRecognition.Task);
     }
 
     public async Task File()
     {
-        
-
-
         static void OutputSpeechRecognitionResult(SpeechRecognitionResult speechRecognitionResult)
         {
             switch (speechRecognitionResult.Reason)
@@ -88,7 +81,7 @@ public class AzureCognitiveServices
                     Console.WriteLine($"RECOGNIZED: Text={speechRecognitionResult.Text}");
                     break;
                 case ResultReason.NoMatch:
-                    Console.WriteLine($"NOMATCH: Speech could not be recognized.");
+                    Console.WriteLine("NOMATCH: Speech could not be recognized.");
                     break;
                 case ResultReason.Canceled:
                     var cancellation = CancellationDetails.FromResult(speechRecognitionResult);
@@ -98,19 +91,21 @@ public class AzureCognitiveServices
                     {
                         Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
                         Console.WriteLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
-                        Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
+                        Console.WriteLine("CANCELED: Did you set the speech resource key and region values?");
                     }
 
                     break;
             }
         }
-        
-        var speechConfig = SpeechConfig.FromSubscription(Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH"), "northeurope");
+
+        var speechConfig =
+            SpeechConfig.FromSubscription(
+                Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES_SPEECH"), "northeurope");
         Console.WriteLine(speechConfig.SubscriptionKey);
         Console.WriteLine(speechConfig.Region);
-            speechConfig.SetProperty("CONFIG_MAX_CRL_SIZE_KB", "15000");
-            speechConfig.SetProperty("OPENSSL_CONTINUE_ON_CRL_DOWNLOAD_FAILURE", "true");
-            speechConfig.SetProperty("OPENSSL_DISABLE_CRL_CHECK", "true");
+        speechConfig.SetProperty("CONFIG_MAX_CRL_SIZE_KB", "15000");
+        speechConfig.SetProperty("OPENSSL_CONTINUE_ON_CRL_DOWNLOAD_FAILURE", "true");
+        speechConfig.SetProperty("OPENSSL_DISABLE_CRL_CHECK", "true");
 
         using var audioConfig = AudioConfig.FromWavFileInput("speech.wav");
         audioConfig.SetProperty("CONFIG_MAX_CRL_SIZE_KB", "15000");
@@ -118,12 +113,11 @@ public class AzureCognitiveServices
 
         speechConfig.SpeechRecognitionLanguage = "en-US";
 
-     
+
         using var speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
-    
+
         var speechRecognitionResult = await speechRecognizer.RecognizeOnceAsync();
         OutputSpeechRecognitionResult(speechRecognitionResult);
-
     }
 }

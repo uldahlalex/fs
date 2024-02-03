@@ -8,7 +8,6 @@ import {ClientWantsToLoadOlderMessages} from "../models/clientWantsToLoadOlderMe
 import {ClientWantsToEnterRoom} from "../models/clientWantsToEnterRoom";
 import {ClientWantsToSendMessageToRoom} from "../models/clientWantsToSendMessageToRoom";
 import {ClientWantsToDeleteMessage} from "../models/clientWantsToDeleteMessage";
-import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBase64EncodedData";
 
 @Component({
   template: `
@@ -29,14 +28,17 @@ import {ClientWantsToSendBase64EncodedData} from "../models/clientWantsToSendBas
 
         <div>
           <i title="{{fullDate(k.timestamp)}}"> {{ timestampThis(k.timestamp) }}</i>
-<br>
+          <br>
           <b *ngIf="jwtDecoded.email != k.email">{{ k.email }} says:</b>
           <b *ngIf="jwtDecoded.email == k.email">You:</b>
 
           <br>
-          <div [ngStyle]="jwtDecoded.email == k.email ? {'background-color': '#2eb4ea'} : {'background-color': 'grey'} " style="position: relative; display: flex; margin: 15px; padding: 5px; border-radius: 25px; color: #000000; max-width: 100%;">
+          <div [ngStyle]="jwtDecoded.email == k.email ? {'background-color': '#2eb4ea'} : {'background-color': 'grey'} "
+               style="position: relative; display: flex; margin: 15px; padding: 5px; border-radius: 25px; color: #000000; max-width: 100%;">
 
-            <button style="position: absolute; top: 0; right: 0; color: black; background: transparent; border: none;" (click)="DeleteMessage(k.id)">🚮</button>
+            <button style="position: absolute; top: 0; right: 0; color: black; background: transparent; border: none;"
+                    (click)="DeleteMessage(k.id)">🚮
+            </button>
             <p>{{ k.messageContent }}</p>
 
           </div>
@@ -70,10 +72,10 @@ export class ComponentRoom {
     });
   }
 
-   parseJwt ( token: string) {
+  parseJwt(token: string) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
@@ -81,10 +83,9 @@ export class ComponentRoom {
   }
 
 
-
   async enterRoom() {
-      let clientWantsToEnterRoom = new ClientWantsToEnterRoom({roomId: this.roomId});
-      this.webSocketClientService.socketConnection.sendDto(clientWantsToEnterRoom);
+    let clientWantsToEnterRoom = new ClientWantsToEnterRoom({roomId: this.roomId});
+    this.webSocketClientService.socketConnection.sendDto(clientWantsToEnterRoom);
 
   }
 
@@ -111,7 +112,10 @@ export class ComponentRoom {
   }
 
   DeleteMessage(id: number | undefined) {
-    this.webSocketClientService.socketConnection.sendDto(new ClientWantsToDeleteMessage({messageId: id, roomId: this.roomId}));
+    this.webSocketClientService.socketConnection.sendDto(new ClientWantsToDeleteMessage({
+      messageId: id,
+      roomId: this.roomId
+    }));
   }
 
 

@@ -36,15 +36,11 @@ namespace api
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
             if (builder.Environment.IsProduction())
-            {
                 builder.Services.AddNpgsqlDataSource(
                     Utilities.ProperlyFormattedConnectionString!);
-            }
             else
-            {
                 builder.Services.AddNpgsqlDataSource(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")!,
                     sourceBuilder => sourceBuilder.EnableParameterLogging());
-            }
 
 
             builder.Services.AddSingleton<ChatRepository>();
@@ -65,7 +61,7 @@ namespace api
             var port = env.Equals(EnvironmentEnums.Development.ToString())
                 ? 8181
                 : 0;
-            var server = new WebSocketServer("ws://0.0.0.0:"+port);
+            var server = new WebSocketServer("ws://0.0.0.0:" + port);
 
             void Config(IWebSocketConnection ws)
             {
@@ -94,8 +90,8 @@ namespace api
             if (!string.IsNullOrEmpty(mqttClientSetting) &&
                 mqttClientSetting.Equals("true", StringComparison.OrdinalIgnoreCase))
                 await app.Services.GetService<MqttClient>()!.Handle_Received_Application_Message();
-            
-            app.MapGet("/", async ([FromServices] AzureCognitiveServices az) =>  await az.File());
+
+            app.MapGet("/", async ([FromServices] AzureCognitiveServices az) => await az.File());
             return app;
         }
     }

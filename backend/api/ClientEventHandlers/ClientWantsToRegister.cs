@@ -26,7 +26,7 @@ public class ClientWantsToRegister(ChatRepository chatRepository) : BaseEventHan
             throw new Exception("User already exists!");
         var salt = SecurityUtilities.GenerateSalt();
         var hash = SecurityUtilities.Hash(dto.password!, salt);
-        var user =  chatRepository.InsertUser(new InsertUserParams(dto.email!, hash, salt));
+        var user = chatRepository.InsertUser(new InsertUserParams(dto.email!, hash, salt));
         var jwt = SecurityUtilities.IssueJwt(user);
         socket.Authenticate(user);
         socket.SendDto(new ServerAuthenticatesUser

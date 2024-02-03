@@ -30,9 +30,7 @@ public static class EnvSetup
             {
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ==
                     EnvironmentEnums.Production.ToString())
-                {
-                    Log.Error("Environment variable '{Key}' not found.", pair.Key); 
-                }
+                    Log.Error("Environment variable '{Key}' not found.", pair.Key);
 
                 Environment.SetEnvironmentVariable(pair.Key, pair.Value);
                 Log.Information($"Environment variable '{pair.Key}' not found. Setting default value.");

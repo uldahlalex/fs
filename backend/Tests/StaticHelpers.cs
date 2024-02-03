@@ -7,10 +7,11 @@ namespace Tests;
 
 public static class StaticHelpers
 {
-    public static async Task SetupTestClass(PostgreSqlContainer pgContainer, bool skipRateLimit = false, bool skipToxFilter = false)
+    public static async Task SetupTestClass(PostgreSqlContainer pgContainer, bool skipRateLimit = false,
+        bool skipToxFilter = false)
     {
         await pgContainer.StartAsync();
-        string connectionString = pgContainer.GetConnectionString();
+        var connectionString = pgContainer.GetConnectionString();
         connectionString += ";Pooling=true;MinPoolSize=1;MaxPoolSize=100;";
         Environment.SetEnvironmentVariable("FULLSTACK_PG_CONN", connectionString);
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", EnvironmentEnums.Testing.ToString());

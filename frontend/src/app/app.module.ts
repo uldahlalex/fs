@@ -22,33 +22,33 @@ import {ComponentNontextualdata} from "./components/component.nontextualdata";
 
 
 @NgModule({
-    imports: [
-        BrowserModule,
-        CommonModule,
-        ToastModule,
-        MessageModule,
-        BrowserAnimationsModule,
-        ReactiveFormsModule,
-        NgApexchartsModule,
-        FormsModule,
-        RouterModule.forRoot([
-            {
-                path: 'room/:id', component: ComponentRoom
-            },
-            {
-                path: 'login', component: ComponentLogin
-            },
-            {
-                path: 'timeseries', component: TimeSeriesComponent
-            },
-          {
-            path: 'nontextualdata', component: ComponentNontextualdata
-          }
-        ]),
-        DialogModule,
-        ChipModule,
+  imports: [
+    BrowserModule,
+    CommonModule,
+    ToastModule,
+    MessageModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    NgApexchartsModule,
+    FormsModule,
+    RouterModule.forRoot([
+      {
+        path: 'room/:id', component: ComponentRoom
+      },
+      {
+        path: 'login', component: ComponentLogin
+      },
+      {
+        path: 'timeseries', component: TimeSeriesComponent
+      },
+      {
+        path: 'nontextualdata', component: ComponentNontextualdata
+      }
+    ]),
+    DialogModule,
+    ChipModule,
 
-    ],
+  ],
   declarations: [
     ComponentApp,
     ComponentRoom,
@@ -58,7 +58,7 @@ import {ComponentNontextualdata} from "./components/component.nontextualdata";
     TimeSeriesComponent
   ],
   providers: [MessageService, {
-      provide: ErrorHandler, useClass: GlobalErrorHandlerService
+    provide: ErrorHandler, useClass: GlobalErrorHandlerService
   }],
   bootstrap: [ComponentApp]
 })

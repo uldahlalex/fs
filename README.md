@@ -8,11 +8,14 @@
 
 ## What is it?
 
-When settling on technologies, style and architecture, I spend some time experimenting to find a fit where I will create a sample app - this is that.
+When settling on technologies, style and architecture, I spend some time experimenting to find a fit where I will create
+a sample app - this is that.
 
-Naturally, some of the contents end up not being part of the actual course contents, since I deem they don't fit into the scope, but I might still leave the code in here.
+Naturally, some of the contents end up not being part of the actual course contents, since I deem they don't fit into
+the scope, but I might still leave the code in here.
 
 ### Try the deployed version:
+
 The current version can be used here: (link coming soon)
 
 ## Quickstart: Run Locally
@@ -23,7 +26,8 @@ The current version can be used here: (link coming soon)
 docker-compose up --build
 ```
 
-### Without docker. With .NET 8 CLI: 
+### Without docker. With .NET 8 CLI:
+
 (will use some default environment variables without certain 3rd party services like Azure
 Cognitive Services):
 
@@ -34,8 +38,6 @@ cd backend/api && dotnet run --rebuild-db
 ## What does it do?
 
 - Demonstration of realtime chat application + live data presentation from IoT edge devices
-
-
 
 xml file for graphical representation: (draw.io): [fs.xml](fs.xml)
 

@@ -36,7 +36,7 @@ public class ClientWantsToEnterRoom(ChatRepository chatRepository) : BaseEventHa
             user = socket.GetMetadata().UserInfo,
             roomId = dto.roomId
         }, topic);
-        
+
         return Task.CompletedTask;
     }
 }

@@ -96,7 +96,7 @@ select count(*) from chat.enduser where email = @{nameof(findByEmailParams.email
     public bool IsMessageOwner(IsMessageOwnerParams isMessageOwnerParams)
     {
         using var conn = source.OpenConnection();
-        return conn.ExecuteScalar<int>(@$"
+        return conn.ExecuteScalar<int>(@"
 SELECT userid FROM chat.enduser 
 JOIN chat.messages m on enduser.id = m.sender 
 WHERE m.id = @messageid;", isMessageOwnerParams) == isMessageOwnerParams.userId;

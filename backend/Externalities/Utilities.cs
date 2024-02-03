@@ -5,7 +5,7 @@ namespace Externalities;
 
 public static class Utilities
 {
-    private static readonly Uri Uri = new Uri(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN_PRODUCTION")!);
+    private static readonly Uri Uri = new(Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN_PRODUCTION")!);
 
     public static readonly string
         ProperlyFormattedConnectionString = string.Format(
@@ -18,8 +18,8 @@ public static class Utilities
 
     public static void ExecuteRebuildFromSqlScript(string? alternativeConnectionString = null)
     {
-        
-        using (var conn = new NpgsqlConnection(alternativeConnectionString ?? Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")))
+        using (var conn = new NpgsqlConnection(alternativeConnectionString ??
+                                               Environment.GetEnvironmentVariable("FULLSTACK_PG_CONN")))
         {
             conn.Execute(@"
 /* 

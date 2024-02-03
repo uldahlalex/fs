@@ -16,6 +16,7 @@ public class ClientWantsToAuthenticateWithJwtDto : BaseDto
     [Required] public string? jwt { get; set; }
 }
 
+[ValidateDataAnnotations]
 [RateLimit(6, 60)]
 public class ClientWantsToAuthenticateWithJwt(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToAuthenticateWithJwtDto>

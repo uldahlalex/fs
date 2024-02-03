@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using api.ClientEventHandlers;
 using api.Models.ServerEvents;
+using lib;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
@@ -31,16 +32,18 @@ public class ApiOnlyThroughputTest
         var numberOfMessages = 100_000;
         var stopwatch = Stopwatch.StartNew();
         Console.WriteLine("Time the stopwatch started: " + DateTime.Now);
-        for (var i = 0; i < numberOfMessages-1; i++)
+        for (var i = 0; i < numberOfMessages - 1; i++)
             await ws.DoAndAssert(new ClientWantsToEchoDto());
 
-        await ws.DoAndAssert(new ClientWantsToEchoDto(), receivedMessages =>
-        {
-            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerEchosClient))) == numberOfMessages;
-        });
-        
+        await ws.DoAndAssert(new ClientWantsToEchoDto(),
+            receivedMessages =>
+            {
+                return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerEchosClient))) == numberOfMessages;
+            });
 
-        Console.WriteLine("TIME FOR "+numberOfMessages+" ECHOS: " + stopwatch.ElapsedMilliseconds + " milliseconds");
+
+        Console.WriteLine("TIME FOR " + numberOfMessages + " ECHOS: " + stopwatch.ElapsedMilliseconds +
+                          " milliseconds");
         Console.WriteLine("Time the stopwatch stopped: " + DateTime.Now);
     }
 }

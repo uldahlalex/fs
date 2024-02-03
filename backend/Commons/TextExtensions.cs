@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
 namespace Commons;
@@ -11,4 +12,5 @@ public static class TextExtensions
             PropertyNameCaseInsensitive = true
         }) ?? throw new ArgumentException("Could not deserialize string: " + str);
     }
+    
 }

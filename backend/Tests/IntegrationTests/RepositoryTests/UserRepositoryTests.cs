@@ -38,10 +38,8 @@ public class UserRepositoryTests
     {
         var iterations = 10_000;
         var users = new List<EndUser>();
-        for (var i = 0; i < iterations; i++) 
+        for (var i = 0; i < iterations; i++)
             users.Add(_chatRepository.GetUser(new FindByEmailParams("bla@bla.dk")));
         users.Count.Should().Be(iterations);
     }
-
-   
 }

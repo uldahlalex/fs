@@ -14,9 +14,9 @@ public class ClientWantsToSendBase64EncodedData : BaseEventHandler<ClientWantsTo
 {
     public override Task Handle(ClientWantsToSendBase64EncodedDataDto dto, IWebSocketConnection socket)
     {
-        var resp = new ServerSendsBase64EncodedData()
+        var resp = new ServerSendsBase64EncodedData
         {
-base64EncodedData = dto.base64EncodedData
+            base64EncodedData = dto.base64EncodedData
         };
         socket.SendDto(resp); //todo Echo to test transmission of image
         return Task.CompletedTask;

@@ -1,5 +1,6 @@
 using api.Models.ServerEvents;
 using api.StaticHelpers;
+using lib;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
@@ -33,11 +34,10 @@ public class RateLimiterTest
         await client.DoAndAssert(StaticValues.AuthEvent, null);
         await client.DoAndAssert(StaticValues.AuthEvent, dtos =>
         {
-            return dtos.Count(x => x.eventType.Equals(nameof(ServerSendsErrorMessageToClient))) == 1 
+            return dtos.Count(x => x.eventType.Equals(nameof(ServerSendsErrorMessageToClient))) == 1
                    && dtos.Count(x => x.eventType.Equals(nameof(ServerAuthenticatesUser))) == 3;
         });
-        
-        client.Client.Dispose();
 
+        client.Client.Dispose();
     }
 }

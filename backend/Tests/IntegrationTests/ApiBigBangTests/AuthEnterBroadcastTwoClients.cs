@@ -1,5 +1,6 @@
 using api.Models.ServerEvents;
 using api.StaticHelpers;
+using lib;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 
@@ -30,15 +31,17 @@ public class AuthEnterBroadcast
     {
         var client = await new WebSocketTestClient().ConnectAsync();
         var client2 = await new WebSocketTestClient().ConnectAsync();
-        await client.DoAndAssert(StaticValues.AuthEvent, receivedMessages =>
-        {
-            return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAuthenticatesUser)));
-        });
-        
-        await client2.DoAndAssert(StaticValues.AuthEvent, receivedMessages =>
-        {
-            return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAuthenticatesUser)));
-        });
+        await client.DoAndAssert(StaticValues.AuthEvent,
+            receivedMessages =>
+            {
+                return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAuthenticatesUser)));
+            });
+
+        await client2.DoAndAssert(StaticValues.AuthEvent,
+            receivedMessages =>
+            {
+                return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAuthenticatesUser)));
+            });
         await client.DoAndAssert(StaticValues.EnterRoomEvent, receivedMessages =>
         {
             return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAddsClientToRoom))) &&
@@ -48,16 +51,21 @@ public class AuthEnterBroadcast
         await client2.DoAndAssert(StaticValues.EnterRoomEvent, receivedMessages =>
         {
             return receivedMessages.Any(x => x.eventType.Equals(nameof(ServerAddsClientToRoom))) &&
-                   receivedMessages.Count(x => x.eventType.Equals(nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom)))==1;
+                   receivedMessages.Count(x =>
+                       x.eventType.Equals(nameof(ServerNotifiesClientsInRoomSomeoneHasJoinedRoom))) == 1;
         });
-        await client.DoAndAssert(StaticValues.SendMessageEvent, receivedMessages =>
-        {
-            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 1;
-        });
-        await client2.DoAndAssert(StaticValues.SendMessageEvent, receivedMessages =>
-        {
-            return receivedMessages.Count(x => x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 2;
-        });
+        await client.DoAndAssert(StaticValues.SendMessageEvent,
+            receivedMessages =>
+            {
+                return receivedMessages.Count(x =>
+                    x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 1;
+            });
+        await client2.DoAndAssert(StaticValues.SendMessageEvent,
+            receivedMessages =>
+            {
+                return receivedMessages.Count(x =>
+                    x.eventType.Equals(nameof(ServerBroadcastsMessageToClientsInRoom))) == 2;
+            });
 
 
         client.Client.Dispose();
