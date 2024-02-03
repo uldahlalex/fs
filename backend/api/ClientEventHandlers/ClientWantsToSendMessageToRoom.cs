@@ -1,7 +1,5 @@
 using System.Text.Json;
-using api.Abstractions;
 using api.Attributes.EventFilters;
-using api.Models;
 using api.Models.ServerEvents;
 using api.State;
 using api.StaticHelpers;
@@ -11,6 +9,7 @@ using Externalities;
 using Externalities._3rdPartyTransferModels;
 using Externalities.QueryModels;
 using Fleck;
+using lib;
 using Serilog;
 using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
@@ -22,7 +21,7 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
 
     public int roomId { get; set; }
 
-    public override async Task ValidateAsync()
+    public async Task ValidateAsync()
     {
         var azKey = Environment.GetEnvironmentVariable("FULLSTACK_AZURE_COGNITIVE_SERVICES");
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -74,8 +73,9 @@ public class ClientWantsToSendMessageToRoomDto : BaseDto
 public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
     : BaseEventHandler<ClientWantsToSendMessageToRoomDto>
 {
-    public override Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
+    public override async Task Handle(ClientWantsToSendMessageToRoomDto dto, IWebSocketConnection socket)
     {
+        await dto.ValidateAsync();
         var topic = dto.roomId.ParseTopicFromRoomId();
         var getValue = WebsocketConnections.TopicSubscriptions.TryGetValue(topic,
             out var topicSubscriptions);
@@ -103,6 +103,5 @@ public class ClientWantsToSendMessageToRoom(ChatRepository chatRepository)
             message = messageWithUserInfo,
             roomId = dto.roomId
         }, topic);
-        return Task.CompletedTask;
     }
 }

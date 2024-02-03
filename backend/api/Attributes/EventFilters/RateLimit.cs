@@ -1,14 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.RateLimiting;
-using api.Abstractions;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
+using lib;
 using Serilog;
 
 namespace api.Attributes.EventFilters;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame) : BaseEventFilterAttribute
+public class RateLimitAttribute(int eventsPerTimeframe, int secondTimeFrame) : BaseEventFilter
 {
     public override async Task Handle<T>(IWebSocketConnection socket, T dto)
     {

@@ -1,15 +1,13 @@
 using System.Reflection;
 using System.Text.Json;
 using api;
-using api.Abstractions;
 using api.StaticHelpers;
 using api.StaticHelpers.ExtensionMethods;
 using Commons;
-using Dapper;
 using Externalities;
 using Fleck;
+using lib;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
 using Serilog;
 
 var app = await ApiStartup.StartApi();
@@ -55,7 +53,7 @@ namespace api
             builder.Services.AddSingleton<MqttClient>();
             builder.Services.AddSingleton<AzureCognitiveServices>();
 
-            var types = builder.AddServiceAndReturnAll(Assembly.GetExecutingAssembly());
+            var types = builder.FindAndInjectClientEventHandlers(Assembly.GetExecutingAssembly());
 
 
             var app = builder.Build();
@@ -79,7 +77,7 @@ namespace api
                     if (!app.Environment.IsProduction()) Log.Information(message);
                     try
                     {
-                        await app.InvokeCorrectClientEventHandler(types, ws, message);
+                        await app.InvokeClientEventHandler(types, ws, message);
                     }
                     catch (Exception ex)
                     {

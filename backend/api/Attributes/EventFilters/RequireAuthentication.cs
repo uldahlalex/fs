@@ -1,12 +1,11 @@
 using System.Security.Authentication;
-using api.Abstractions;
 using api.StaticHelpers.ExtensionMethods;
 using Fleck;
+using lib;
 
 namespace api.Attributes.EventFilters;
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class RequireAuthenticationAttribute : BaseEventFilterAttribute
+public class RequireAuthenticationAttribute : BaseEventFilter
 {
     public override Task Handle<T>(IWebSocketConnection socket, T dto)
     {

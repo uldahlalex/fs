@@ -1,14 +1,7 @@
-using System.Text.Json;
 using api;
-using api.Models;
-using api.StaticHelpers;
 using Commons;
-using Dapper;
 using Externalities;
-using Npgsql;
-using NUnit.Framework;
 using Testcontainers.PostgreSql;
-using Websocket.Client;
 
 namespace Tests;
 

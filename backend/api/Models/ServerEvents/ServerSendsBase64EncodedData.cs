@@ -1,3 +1,5 @@
+using lib;
+
 namespace api.Models.ServerEvents;
 
 public class ServerSendsBase64EncodedData : BaseDto

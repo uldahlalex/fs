@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using System.Text.Json;
-using Commons;
 using Externalities._3rdPartyTransferModels;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;

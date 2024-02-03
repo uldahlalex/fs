@@ -1,10 +1,6 @@
 using System.Diagnostics;
-using System.Text.Json;
-using api;
-using api.Models;
 using api.Models.ServerEvents;
 using api.StaticHelpers;
-using FluentAssertions;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 

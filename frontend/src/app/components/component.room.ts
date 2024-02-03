@@ -80,6 +80,8 @@ export class ComponentRoom {
     return JSON.parse(jsonPayload);
   }
 
+
+
   async enterRoom() {
       let clientWantsToEnterRoom = new ClientWantsToEnterRoom({roomId: this.roomId});
       this.webSocketClientService.socketConnection.sendDto(clientWantsToEnterRoom);
